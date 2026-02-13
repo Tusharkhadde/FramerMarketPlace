@@ -7,13 +7,13 @@ import rateLimit from 'express-rate-limit'
 
 // Import routes
 import authRoutes from './routes/auth.routes.js'
-import userRoutes from './routes/user.routes.js'
+//import userRoutes from './routes/user.routes.js'
 import productRoutes from './routes/product.routes.js'
 import orderRoutes from './routes/order.routes.js'
-import paymentRoutes from './routes/payment.routes.js'
-import apmcRoutes from './routes/apmc.routes.js'
-import aiRoutes from './routes/ai.routes.js'
-import adminRoutes from './routes/admin.routes.js'
+//import paymentRoutes from './routes/payment.routes.js'
+//import apmcRoutes from './routes/apmc.routes.js'
+//import aiRoutes from './routes/ai.routes.js'
+//import adminRoutes from './routes/admin.routes.js'
 
 // Import middleware
 import errorHandler from './middleware/error.middleware.js'
@@ -63,13 +63,13 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes)
-app.use('/api/users', userRoutes)
+// app.use('/api/users', userRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/orders', orderRoutes)
-app.use('/api/payments', paymentRoutes)
-app.use('/api/apmc', apmcRoutes)
-app.use('/api/ai', aiRoutes)
-app.use('/api/admin', adminRoutes)
+// app.use('/api/payments', paymentRoutes)
+// app.use('/api/apmc', apmcRoutes)
+// app.use('/api/ai', aiRoutes)
+// app.use('/api/admin', adminRoutes)
 
 // 404 handler
 app.use('*', (req, res) => {
