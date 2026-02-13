@@ -1,0 +1,98 @@
+{
+  "categories": [
+    {
+      "id": "vegetables",
+      "name": "Vegetables",
+      "nameMarathi": "भाज्या",
+      "crops": [
+        {"name": "Tomato", "nameMarathi": "टोमॅटो"},
+        {"name": "Onion", "nameMarathi": "कांदा"},
+        {"name": "Potato", "nameMarathi": "बटाटा"},
+        {"name": "Brinjal", "nameMarathi": "वांगे"},
+        {"name": "Cabbage", "nameMarathi": "कोबी"},
+        {"name": "Cauliflower", "nameMarathi": "फुलकोबी"},
+        {"name": "Carrot", "nameMarathi": "गाजर"},
+        {"name": "Green Chilli", "nameMarathi": "हिरवी मिरची"},
+        {"name": "Capsicum", "nameMarathi": "शिमला मिरची"},
+        {"name": "Cucumber", "nameMarathi": "काकडी"},
+        {"name": "Bitter Gourd", "nameMarathi": "कारले"},
+        {"name": "Bottle Gourd", "nameMarathi": "दुधी भोपळा"},
+        {"name": "Lady Finger", "nameMarathi": "भेंडी"},
+        {"name": "Spinach", "nameMarathi": "पालक"},
+        {"name": "Fenugreek", "nameMarathi": "मेथी"},
+        {"name": "Coriander", "nameMarathi": "कोथिंबीर"},
+        {"name": "Ginger", "nameMarathi": "आले"},
+        {"name": "Garlic", "nameMarathi": "लसूण"}
+      ]
+    },
+    {
+      "id": "fruits",
+      "name": "Fruits",
+      "nameMarathi": "फळे",
+      "crops": [
+        {"name": "Mango", "nameMarathi": "आंबा"},
+        {"name": "Banana", "nameMarathi": "केळे"},
+        {"name": "Grapes", "nameMarathi": "द्राक्षे"},
+        {"name": "Orange", "nameMarathi": "संत्रा"},
+        {"name": "Pomegranate", "nameMarathi": "डाळिंब"},
+        {"name": "Papaya", "nameMarathi": "पपई"},
+        {"name": "Watermelon", "nameMarathi": "कलिंगड"},
+        {"name": "Guava", "nameMarathi": "पेरू"},
+        {"name": "Chikoo", "nameMarathi": "चिकू"},
+        {"name": "Strawberry", "nameMarathi": "स्ट्रॉबेरी"},
+        {"name": "Sweet Lime", "nameMarathi": "मोसंबी"},
+        {"name": "Custard Apple", "nameMarathi": "सीताफळ"}
+      ]
+    },
+    {
+      "id": "grains",
+      "name": "Grains & Cereals",
+      "nameMarathi": "धान्य",
+      "crops": [
+        {"name": "Rice", "nameMarathi": "तांदूळ"},
+        {"name": "Wheat", "nameMarathi": "गहू"},
+        {"name": "Jowar", "nameMarathi": "ज्वारी"},
+        {"name": "Bajra", "nameMarathi": "बाजरी"},
+        {"name": "Maize", "nameMarathi": "मका"},
+        {"name": "Ragi", "nameMarathi": "नाचणी"}
+      ]
+    },
+    {
+      "id": "pulses",
+      "name": "Pulses & Legumes",
+      "nameMarathi": "कडधान्ये",
+      "crops": [
+        {"name": "Tur Dal", "nameMarathi": "तूर डाळ"},
+        {"name": "Chana Dal", "nameMarathi": "हरभरा डाळ"},
+        {"name": "Moong Dal", "nameMarathi": "मूग डाळ"},
+        {"name": "Urad Dal", "nameMarathi": "उडीद डाळ"},
+        {"name": "Soybean", "nameMarathi": "सोयाबीन"},
+        {"name": "Groundnut", "nameMarathi": "भुईमूग"}
+      ]
+    },
+    {
+      "id": "spices",
+      "name": "Spices",
+      "nameMarathi": "मसाले",
+      "crops": [
+        {"name": "Turmeric", "nameMarathi": "हळद"},
+        {"name": "Red Chilli", "nameMarathi": "लाल मिरची"},
+        {"name": "Cumin", "nameMarathi": "जिरे"},
+        {"name": "Coriander Seeds", "nameMarathi": "धणे"},
+        {"name": "Mustard", "nameMarathi": "मोहरी"}
+      ]
+    },
+    {
+      "id": "dairy",
+      "name": "Dairy Products",
+      "nameMarathi": "दुग्धजन्य पदार्थ",
+      "crops": [
+        {"name": "Milk", "nameMarathi": "दूध"},
+        {"name": "Curd", "nameMarathi": "दही"},
+        {"name": "Butter", "nameMarathi": "लोणी"},
+        {"name": "Ghee", "nameMarathi": "तूप"},
+        {"name": "Paneer", "nameMarathi": "पनीर"}
+      ]
+    }
+  ]
+}
