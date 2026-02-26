@@ -1,84 +1,39 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
-  MapPin,
-  Clock,
   CreditCard,
-  Check,
-  ChevronRight,
-  ArrowLeft,
-  Plus,
-  Loader2,
-  Truck,
   Wallet,
-  Building2,
+  MapPin,
+  Plus,
+  Check,
+  ArrowLeft,
+  Package,
+  Truck,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
-import orderService from '@/services/order.service'
-import paymentService from '@/services/payment.service'
-import { formatPrice, cn } from '@/lib/utils'
+import api from '@/config/api'
+import { formatPrice } from '@/lib/utils'
+import Loading from '@/components/shared/Loading'
 import { toast } from 'sonner'
-
-const districts = [
-  'Ahmednagar', 'Akola', 'Amravati', 'Aurangabad', 'Beed', 'Bhandara',
-  'Buldhana', 'Chandrapur', 'Dhule', 'Gadchiroli', 'Gondia', 'Hingoli',
-  'Jalgaon', 'Jalna', 'Kolhapur', 'Latur', 'Mumbai City', 'Mumbai Suburban',
-  'Nagpur', 'Nanded', 'Nandurbar', 'Nashik', 'Osmanabad', 'Palghar',
-  'Parbhani', 'Pune', 'Raigad', 'Ratnagiri', 'Sangli', 'Satara',
-  'Sindhudurg', 'Solapur', 'Thane', 'Wardha', 'Washim', 'Yavatmal',
-]
-
-const timeSlots = [
-  { value: 'morning', label: 'Morning (8 AM - 12 PM)' },
-  { value: 'afternoon', label: 'Afternoon (12 PM - 4 PM)' },
-  { value: 'evening', label: 'Evening (4 PM - 8 PM)' },
-]
 
 const Checkout = () => {
   const navigate = useNavigate()
+  const { cart, cartTotal, clearCart } = useCart()
   const { user } = useAuth()
-  const { items, getCartTotal, clearCart, getItemsByFarmer } = useCart()
 
-  const [currentStep, setCurrentStep] = useState(1)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [orderComplete, setOrderComplete] = useState(false)
-  const [completedOrder, setCompletedOrder] = useState(null)
-  const [addressDialogOpen, setAddressDialogOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [addresses, setAddresses] = useState([])
+  const [selectedAddress, setSelectedAddress] = useState(null)
+  const [paymentMethod, setPaymentMethod] = useState('razorpay')
+  const [showAddressForm, setShowAddressForm] = useState(false)
 
-  // Form states
-  const [savedAddresses, setSavedAddresses] = useState([])
-  const [selectedAddressId, setSelectedAddressId] = useState(null)
-  const [newAddress, setNewAddress] = useState({
+  const [addressForm, setAddressForm] = useState({
+    label: 'home',
     fullName: user?.fullName || '',
     phone: user?.phone || '',
     addressLine1: '',
@@ -86,826 +41,424 @@ const Checkout = () => {
     city: '',
     district: '',
     pincode: '',
+    isDefault: false,
   })
-  const [deliverySchedule, setDeliverySchedule] = useState({
-    date: '',
-    timeSlot: 'morning',
-  })
-  const [paymentMethod, setPaymentMethod] = useState('online')
-  const [orderNotes, setOrderNotes] = useState('')
-
-  // Calculate totals
-  const subtotal = getCartTotal()
-  const deliveryCharge = subtotal >= 500 ? 0 : 50
-  const total = subtotal + deliveryCharge
 
   useEffect(() => {
-    if (items.length === 0 && !orderComplete) {
+    if (cart.length === 0) {
       navigate('/cart')
     }
-    fetchSavedAddresses()
-  }, [items, navigate, orderComplete])
+    fetchAddresses()
+  }, [])
 
-  const fetchSavedAddresses = async () => {
+  const fetchAddresses = async () => {
     try {
-      // Fetch user's saved addresses
-      // For now, using user's addresses from profile
-      if (user?.addresses?.length > 0) {
-        setSavedAddresses(user.addresses)
-        const defaultAddr = user.addresses.find((a) => a.isDefault)
-        if (defaultAddr) {
-          setSelectedAddressId(defaultAddr._id)
-        }
-      }
+      const response = await api.get('/users/addresses')
+      const userAddresses = response.data.data.addresses || []
+      setAddresses(userAddresses)
+
+      // Select default address or first address
+      const defaultAddr = userAddresses.find(addr => addr.isDefault)
+      setSelectedAddress(defaultAddr || userAddresses[0])
     } catch (error) {
       console.error('Error fetching addresses:', error)
     }
   }
 
-  const handleAddAddress = () => {
-    // Validate new address
-    if (
-      !newAddress.fullName ||
-      !newAddress.phone ||
-      !newAddress.addressLine1 ||
-      !newAddress.district ||
-      !newAddress.pincode
-    ) {
-      toast.error('Please fill all required fields')
-      return
+  const handleAddAddress = async (e) => {
+    e.preventDefault()
+    try {
+      const response = await api.post('/users/addresses', addressForm)
+      const newAddress = response.data.data.address
+      setAddresses([...addresses, newAddress])
+      setSelectedAddress(newAddress)
+      setShowAddressForm(false)
+      setAddressForm({
+        label: 'home',
+        fullName: user?.fullName || '',
+        phone: user?.phone || '',
+        addressLine1: '',
+        addressLine2: '',
+        city: '',
+        district: '',
+        pincode: '',
+        isDefault: false,
+      })
+      toast.success('Address added successfully')
+    } catch (error) {
+      toast.error('Failed to add address')
     }
-
-    const newAddr = {
-      _id: Date.now().toString(),
-      ...newAddress,
-      isDefault: savedAddresses.length === 0,
-    }
-    setSavedAddresses([...savedAddresses, newAddr])
-    setSelectedAddressId(newAddr._id)
-    setAddressDialogOpen(false)
-    setNewAddress({
-      fullName: user?.fullName || '',
-      phone: user?.phone || '',
-      addressLine1: '',
-      addressLine2: '',
-      city: '',
-      district: '',
-      pincode: '',
-    })
-    toast.success('Address added')
-  }
-
-  const getMinDeliveryDate = () => {
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    return tomorrow.toISOString().split('T')[0]
-  }
-
-  const handleNextStep = () => {
-    if (currentStep === 1 && !selectedAddressId) {
-      toast.error('Please select a delivery address')
-      return
-    }
-    if (currentStep === 2 && !deliverySchedule.date) {
-      toast.error('Please select a delivery date')
-      return
-    }
-    setCurrentStep(currentStep + 1)
-  }
-
-  const handlePreviousStep = () => {
-    setCurrentStep(currentStep - 1)
-  }
-
-  const loadRazorpay = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script')
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
-      script.onload = () => resolve(true)
-      script.onerror = () => resolve(false)
-      document.body.appendChild(script)
-    })
   }
 
   const handlePlaceOrder = async () => {
-    setIsProcessing(true)
+    if (!selectedAddress) {
+      toast.error('Please select a delivery address')
+      return
+    }
 
     try {
-      const selectedAddress = savedAddresses.find(
-        (a) => a._id === selectedAddressId
-      )
+      setLoading(true)
 
       const orderData = {
-        items: items.map((item) => ({
-          productId: item.productId,
+        items: cart.map(item => ({
+          product: item.product._id,
           quantity: item.quantity,
+          price: item.price,
         })),
         deliveryAddress: selectedAddress,
-        deliverySchedule,
         paymentMethod,
-        notes: orderNotes,
+        totalAmount: cartTotal + (cartTotal > 500 ? 0 : 50) + (cartTotal * 0.05),
       }
 
-      if (paymentMethod === 'online') {
-        // Create Razorpay order
-        const razorpayLoaded = await loadRazorpay()
-        if (!razorpayLoaded) {
-          toast.error('Payment gateway failed to load')
-          setIsProcessing(false)
-          return
-        }
+      const response = await api.post('/orders', orderData)
+      const order = response.data.data.order
 
-        const { data } = await paymentService.createOrder(total)
-
-        const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-          amount: data.amount,
-          currency: data.currency,
-          name: 'FarmMarket',
-          description: 'Order Payment',
-          order_id: data.razorpayOrderId,
-          handler: async (response) => {
-            try {
-              // Verify payment
-              await paymentService.verifyPayment({
-                razorpayOrderId: response.razorpay_order_id,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature,
-              })
-
-              // Create order
-              const orderResponse = await orderService.createOrder({
-                ...orderData,
-                paymentDetails: {
-                  razorpayOrderId: response.razorpay_order_id,
-                  razorpayPaymentId: response.razorpay_payment_id,
-                },
-              })
-
-              setCompletedOrder(orderResponse.data.order)
-              setOrderComplete(true)
-              clearCart()
-              toast.success('Order placed successfully!')
-            } catch (error) {
-              toast.error('Payment verification failed')
-            }
-          },
-          prefill: {
-            name: user?.fullName,
-            email: user?.email,
-            contact: user?.phone,
-          },
-          theme: {
-            color: '#22c55e',
-          },
-          modal: {
-            ondismiss: () => {
-              setIsProcessing(false)
-            },
-          },
-        }
-
-        const razorpay = new window.Razorpay(options)
-        razorpay.open()
+      if (paymentMethod === 'razorpay') {
+        // Initiate Razorpay payment
+        await initiateRazorpayPayment(order)
       } else {
         // COD order
-        const orderResponse = await orderService.createOrder(orderData)
-        setCompletedOrder(orderResponse.data.order)
-        setOrderComplete(true)
-        clearCart()
         toast.success('Order placed successfully!')
+        await clearCart()
+        navigate(`/orders/${order._id}`)
       }
     } catch (error) {
-      console.error('Order error:', error)
+      console.error('Error placing order:', error)
       toast.error(error.response?.data?.message || 'Failed to place order')
     } finally {
-      setIsProcessing(false)
+      setLoading(false)
     }
   }
 
-  const steps = [
-    { number: 1, title: 'Address', icon: MapPin },
-    { number: 2, title: 'Schedule', icon: Clock },
-    { number: 3, title: 'Payment', icon: CreditCard },
-  ]
+  const initiateRazorpayPayment = async (order) => {
+    try {
+      // Create Razorpay order
+      const response = await api.post('/payment/create-order', {
+        orderId: order._id,
+        amount: order.totalAmount,
+      })
 
-  // Order Confirmation Screen
-  if (orderComplete && completedOrder) {
-    return (
-      <div className="min-h-screen bg-gray-50 pt-20">
-        <div className="max-w-2xl mx-auto px-4 py-16">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center"
-          >
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-10 h-10 text-green-600" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Order Placed Successfully!
-            </h1>
-            <p className="text-gray-600 mb-8">
-              Thank you for your order. You will receive a confirmation email shortly.
-            </p>
+      const { razorpayOrderId, amount, currency } = response.data.data
 
-            <Card className="text-left mb-8">
-              <CardHeader>
-                <CardTitle className="text-lg">Order Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Order Number</span>
-                  <span className="font-semibold">#{completedOrder.orderNumber}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Amount</span>
-                  <span className="font-semibold text-farmer-600">
-                    {formatPrice(completedOrder.pricing?.total || total)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Payment Method</span>
-                  <span className="font-semibold capitalize">
-                    {completedOrder.paymentMethod === 'cod'
-                      ? 'Cash on Delivery'
-                      : 'Online Payment'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Expected Delivery</span>
-                  <span className="font-semibold">
-                    {new Date(deliverySchedule.date).toLocaleDateString('en-IN', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: amount,
+        currency: currency,
+        name: 'FarmMarket',
+        description: 'Fresh Farm Products',
+        order_id: razorpayOrderId,
+        handler: async function (response) {
+          // Verify payment
+          try {
+            await api.post('/payment/verify', {
+              orderId: order._id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            })
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="farmer" onClick={() => navigate('/orders')}>
-                Track Order
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/products')}>
-                Continue Shopping
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    )
+            toast.success('Payment successful!')
+            await clearCart()
+            navigate(`/orders/${order._id}`)
+          } catch (error) {
+            toast.error('Payment verification failed')
+          }
+        },
+        prefill: {
+          name: user?.fullName,
+          email: user?.email,
+          contact: user?.phone,
+        },
+        theme: {
+          color: '#22c55e',
+        },
+      }
+
+      const razorpay = new window.Razorpay(options)
+      razorpay.open()
+    } catch (error) {
+      toast.error('Failed to initiate payment')
+    }
   }
 
+  if (loading) return <Loading />
+
+  const deliveryFee = cartTotal > 500 ? 0 : 50
+  const tax = cartTotal * 0.05
+  const totalAmount = cartTotal + deliveryFee + tax
+
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <Button variant="ghost" onClick={() => navigate('/cart')}>
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/cart')}
+            className="mb-4"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Cart
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900 mt-4">Checkout</h1>
-        </div>
-
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center">
-            {steps.map((step, index) => (
-              <div key={step.number} className="flex items-center">
-                <div
-                  className={cn(
-                    'flex items-center justify-center w-10 h-10 rounded-full border-2 transition-colors',
-                    currentStep >= step.number
-                      ? 'bg-farmer-500 border-farmer-500 text-white'
-                      : 'border-gray-300 text-gray-400'
-                  )}
-                >
-                  {currentStep > step.number ? (
-                    <Check className="w-5 h-5" />
-                  ) : (
-                    <step.icon className="w-5 h-5" />
-                  )}
-                </div>
-                <span
-                  className={cn(
-                    'ml-2 text-sm font-medium hidden sm:block',
-                    currentStep >= step.number
-                      ? 'text-farmer-600'
-                      : 'text-gray-400'
-                  )}
-                >
-                  {step.title}
-                </span>
-                {index < steps.length - 1 && (
-                  <div
-                    className={cn(
-                      'w-12 sm:w-24 h-0.5 mx-4',
-                      currentStep > step.number
-                        ? 'bg-farmer-500'
-                        : 'bg-gray-300'
-                    )}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2">
-            <AnimatePresence mode="wait">
-              {/* Step 1: Address */}
-              {currentStep === 1 && (
-                <motion.div
-                  key="step1"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                >
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Delivery Address</CardTitle>
-                      <CardDescription>
-                        Select or add a delivery address
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {savedAddresses.length > 0 ? (
-                        <RadioGroup
-                          value={selectedAddressId}
-                          onValueChange={setSelectedAddressId}
-                          className="space-y-3"
-                        >
-                          {savedAddresses.map((address) => (
-                            <div
-                              key={address._id}
-                              className={cn(
-                                'flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors',
-                                selectedAddressId === address._id
-                                  ? 'border-farmer-500 bg-farmer-50'
-                                  : 'hover:bg-gray-50'
-                              )}
-                              onClick={() => setSelectedAddressId(address._id)}
-                            >
-                              <RadioGroupItem value={address._id} />
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium">
-                                    {address.fullName}
-                                  </span>
-                                  {address.isDefault && (
-                                    <span className="text-xs bg-farmer-100 text-farmer-700 px-2 py-0.5 rounded">
-                                      Default
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-sm text-gray-600 mt-1">
-                                  {address.addressLine1}
-                                  {address.addressLine2 &&
-                                    `, ${address.addressLine2}`}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  {address.city && `${address.city}, `}
-                                  {address.district}, Maharashtra - {address.pincode}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Phone: {address.phone}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                      ) : (
-                        <div className="text-center py-8 text-gray-500">
-                          <MapPin className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                          <p>No saved addresses</p>
-                        </div>
-                      )}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Delivery Address */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <MapPin className="w-5 h-5 mr-2" />
+                  Delivery Address
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {addresses.map((address) => (
+                  <AddressCard
+                    key={address._id}
+                    address={address}
+                    selected={selectedAddress?._id === address._id}
+                    onSelect={() => setSelectedAddress(address)}
+                  />
+                ))}
 
+                {showAddressForm ? (
+                  <form onSubmit={handleAddAddress} className="space-y-4 p-4 border rounded-lg">
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input
+                        placeholder="Full Name"
+                        value={addressForm.fullName}
+                        onChange={(e) => setAddressForm({ ...addressForm, fullName: e.target.value })}
+                        required
+                      />
+                      <Input
+                        placeholder="Phone"
+                        value={addressForm.phone}
+                        onChange={(e) => setAddressForm({ ...addressForm, phone: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <Input
+                      placeholder="Address Line 1"
+                      value={addressForm.addressLine1}
+                      onChange={(e) => setAddressForm({ ...addressForm, addressLine1: e.target.value })}
+                      required
+                    />
+                    <Input
+                      placeholder="Address Line 2 (Optional)"
+                      value={addressForm.addressLine2}
+                      onChange={(e) => setAddressForm({ ...addressForm, addressLine2: e.target.value })}
+                    />
+                    <div className="grid grid-cols-3 gap-4">
+                      <Input
+                        placeholder="City"
+                        value={addressForm.city}
+                        onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
+                        required
+                      />
+                      <Input
+                        placeholder="District"
+                        value={addressForm.district}
+                        onChange={(e) => setAddressForm({ ...addressForm, district: e.target.value })}
+                        required
+                      />
+                      <Input
+                        placeholder="Pincode"
+                        value={addressForm.pincode}
+                        onChange={(e) => setAddressForm({ ...addressForm, pincode: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="submit">Save Address</Button>
                       <Button
+                        type="button"
                         variant="outline"
-                        className="w-full"
-                        onClick={() => setAddressDialogOpen(true)}
+                        onClick={() => setShowAddressForm(false)}
                       >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add New Address
+                        Cancel
                       </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
+                    </div>
+                  </form>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setShowAddressForm(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add New Address
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
 
-              {/* Step 2: Delivery Schedule */}
-              {currentStep === 2 && (
-                <motion.div
-                  key="step2"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                >
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Delivery Schedule</CardTitle>
-                      <CardDescription>
-                        Choose your preferred delivery date and time
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="date">Delivery Date</Label>
-                        <Input
-                          id="date"
-                          type="date"
-                          min={getMinDeliveryDate()}
-                          value={deliverySchedule.date}
-                          onChange={(e) =>
-                            setDeliverySchedule((prev) => ({
-                              ...prev,
-                              date: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Time Slot</Label>
-                        <RadioGroup
-                          value={deliverySchedule.timeSlot}
-                          onValueChange={(value) =>
-                            setDeliverySchedule((prev) => ({
-                              ...prev,
-                              timeSlot: value,
-                            }))
-                          }
-                          className="grid grid-cols-1 sm:grid-cols-3 gap-3"
-                        >
-                          {timeSlots.map((slot) => (
-                            <div
-                              key={slot.value}
-                              className={cn(
-                                'flex items-center space-x-2 p-4 border rounded-lg cursor-pointer transition-colors',
-                                deliverySchedule.timeSlot === slot.value
-                                  ? 'border-farmer-500 bg-farmer-50'
-                                  : 'hover:bg-gray-50'
-                              )}
-                              onClick={() =>
-                                setDeliverySchedule((prev) => ({
-                                  ...prev,
-                                  timeSlot: slot.value,
-                                }))
-                              }
-                            >
-                              <RadioGroupItem value={slot.value} />
-                              <span className="text-sm font-medium">
-                                {slot.label}
-                              </span>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="notes">Order Notes (Optional)</Label>
-                        <Textarea
-                          id="notes"
-                          placeholder="Any special instructions for delivery..."
-                          value={orderNotes}
-                          onChange={(e) => setOrderNotes(e.target.value)}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-
-              {/* Step 3: Payment */}
-              {currentStep === 3 && (
-                <motion.div
-                  key="step3"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                >
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Payment Method</CardTitle>
-                      <CardDescription>
-                        Choose how you'd like to pay
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <RadioGroup
-                        value={paymentMethod}
-                        onValueChange={setPaymentMethod}
-                        className="space-y-3"
-                      >
-                        <div
-                          className={cn(
-                            'flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors',
-                            paymentMethod === 'online'
-                              ? 'border-farmer-500 bg-farmer-50'
-                              : 'hover:bg-gray-50'
-                          )}
-                          onClick={() => setPaymentMethod('online')}
-                        >
-                          <RadioGroupItem value="online" />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <CreditCard className="w-5 h-5 text-farmer-600" />
-                              <span className="font-medium">Online Payment</span>
-                            </div>
-                            <p className="text-sm text-gray-500 mt-1">
-                              Pay securely with UPI, Card, Net Banking
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <img
-                              src="/images/upi.png"
-                              alt="UPI"
-                              className="h-6"
-                            />
-                            <img
-                              src="/images/visa.png"
-                              alt="Visa"
-                              className="h-6"
-                            />
-                          </div>
-                        </div>
-
-                        <div
-                          className={cn(
-                            'flex items-center space-x-3 p-4 border rounded-lg cursor-pointer transition-colors',
-                            paymentMethod === 'cod'
-                              ? 'border-farmer-500 bg-farmer-50'
-                              : 'hover:bg-gray-50'
-                          )}
-                          onClick={() => setPaymentMethod('cod')}
-                        >
-                          <RadioGroupItem value="cod" />
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <Wallet className="w-5 h-5 text-farmer-600" />
-                              <span className="font-medium">Cash on Delivery</span>
-                            </div>
-                            <p className="text-sm text-gray-500 mt-1">
-                              Pay when you receive your order
-                            </p>
-                          </div>
-                        </div>
-                      </RadioGroup>
-
-                      {paymentMethod === 'online' && (
-                        <div className="p-4 bg-blue-50 rounded-lg">
-                          <p className="text-sm text-blue-700 flex items-center">
-                            <Building2 className="w-4 h-4 mr-2" />
-                            Powered by Razorpay. Your payment is 100% secure.
-                          </p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Navigation Buttons */}
-            <div className="flex justify-between mt-6">
-              {currentStep > 1 ? (
-                <Button variant="outline" onClick={handlePreviousStep}>
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Button>
-              ) : (
-                <div />
-              )}
-
-              {currentStep < 3 ? (
-                <Button variant="farmer" onClick={handleNextStep}>
-                  Continue
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              ) : (
-                <Button
-                  variant="farmer"
-                  onClick={handlePlaceOrder}
-                  disabled={isProcessing}
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      Place Order - {formatPrice(total)}
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
+            {/* Payment Method */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  Payment Method
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <PaymentOption
+                  id="razorpay"
+                  label="UPI / Cards / Net Banking"
+                  icon={Wallet}
+                  selected={paymentMethod === 'razorpay'}
+                  onSelect={() => setPaymentMethod('razorpay')}
+                />
+                <PaymentOption
+                  id="cod"
+                  label="Cash on Delivery"
+                  icon={Package}
+                  selected={paymentMethod === 'cod'}
+                  onSelect={() => setPaymentMethod('cod')}
+                />
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Order Summary Sidebar */}
+          {/* Order Summary */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-24">
+            <Card className="sticky top-4">
               <CardHeader>
                 <CardTitle>Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Items */}
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {items.map((item) => (
-                    <div key={item.productId} className="flex gap-3">
+                {/* Cart Items */}
+                <div className="space-y-3 max-h-60 overflow-y-auto">
+                  {cart.map((item) => (
+                    <div key={item.product._id} className="flex gap-3">
                       <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-12 h-12 object-cover rounded"
+                        src={item.product.images?.[0]?.url || '/placeholder.jpg'}
+                        alt={item.product.cropName}
+                        className="w-16 h-16 object-cover rounded"
                       />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{item.name}</p>
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{item.product.cropName}</p>
                         <p className="text-xs text-gray-500">
                           {item.quantity} kg × {formatPrice(item.price)}
                         </p>
+                        <p className="text-sm font-semibold text-farmer-600">
+                          {formatPrice(item.price * item.quantity)}
+                        </p>
                       </div>
-                      <span className="text-sm font-medium">
-                        {formatPrice(item.price * item.quantity)}
-                      </span>
                     </div>
                   ))}
                 </div>
 
-                <Separator />
-
-                {/* Price Breakdown */}
-                <div className="space-y-2">
+                <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal</span>
-                    <span>{formatPrice(subtotal)}</span>
+                    <span>{formatPrice(cartTotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Delivery</span>
+                    <span className="text-gray-600">Delivery Fee</span>
                     <span>
-                      {deliveryCharge === 0 ? (
+                      {deliveryFee === 0 ? (
                         <span className="text-green-600">FREE</span>
                       ) : (
-                        formatPrice(deliveryCharge)
+                        formatPrice(deliveryFee)
                       )}
                     </span>
                   </div>
-                  <Separator />
-                  <div className="flex justify-between font-semibold">
-                    <span>Total</span>
-                    <span className="text-farmer-600">{formatPrice(total)}</span>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Tax (5%)</span>
+                    <span>{formatPrice(tax)}</span>
                   </div>
                 </div>
 
-                {/* Delivery Info */}
-                {selectedAddressId && currentStep >= 1 && (
-                  <>
-                    <Separator />
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-medium">
-                        <Truck className="w-4 h-4 text-farmer-600" />
-                        Delivering to
-                      </div>
-                      <p className="text-sm text-gray-600">
-                        {savedAddresses.find((a) => a._id === selectedAddressId)
-                          ?.fullName}
-                        ,{' '}
-                        {savedAddresses.find((a) => a._id === selectedAddressId)
-                          ?.district}
-                      </p>
-                    </div>
-                  </>
-                )}
+                <div className="border-t pt-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-lg font-bold">Total</span>
+                    <span className="text-2xl font-bold text-farmer-600">
+                      {formatPrice(totalAmount)}
+                    </span>
+                  </div>
+
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    onClick={handlePlaceOrder}
+                    disabled={loading || !selectedAddress}
+                  >
+                    {loading ? 'Processing...' : 'Place Order'}
+                  </Button>
+                </div>
+
+                <p className="text-xs text-gray-500 text-center">
+                  By placing this order, you agree to our terms and conditions
+                </p>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
-
-      {/* Add Address Dialog */}
-      <Dialog open={addressDialogOpen} onOpenChange={setAddressDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Add New Address</DialogTitle>
-            <DialogDescription>
-              Enter your delivery address details
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name *</Label>
-                <Input
-                  id="fullName"
-                  value={newAddress.fullName}
-                  onChange={(e) =>
-                    setNewAddress((prev) => ({ ...prev, fullName: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone *</Label>
-                <Input
-                  id="phone"
-                  value={newAddress.phone}
-                  onChange={(e) =>
-                    setNewAddress((prev) => ({ ...prev, phone: e.target.value }))
-                  }
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="addressLine1">Address Line 1 *</Label>
-              <Input
-                id="addressLine1"
-                placeholder="House/Flat No., Building Name"
-                value={newAddress.addressLine1}
-                onChange={(e) =>
-                  setNewAddress((prev) => ({
-                    ...prev,
-                    addressLine1: e.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="addressLine2">Address Line 2</Label>
-              <Input
-                id="addressLine2"
-                placeholder="Street, Area"
-                value={newAddress.addressLine2}
-                onChange={(e) =>
-                  setNewAddress((prev) => ({
-                    ...prev,
-                    addressLine2: e.target.value,
-                  }))
-                }
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  value={newAddress.city}
-                  onChange={(e) =>
-                    setNewAddress((prev) => ({ ...prev, city: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="district">District *</Label>
-                <Select
-                  value={newAddress.district}
-                  onValueChange={(value) =>
-                    setNewAddress((prev) => ({ ...prev, district: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select district" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {districts.map((district) => (
-                      <SelectItem key={district} value={district}>
-                        {district}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="pincode">Pincode *</Label>
-              <Input
-                id="pincode"
-                value={newAddress.pincode}
-                onChange={(e) =>
-                  setNewAddress((prev) => ({ ...prev, pincode: e.target.value }))
-                }
-                maxLength={6}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddressDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="farmer" onClick={handleAddAddress}>
-              Add Address
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
+
+// Address Card Component
+const AddressCard = ({ address, selected, onSelect }) => (
+  <div
+    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${selected ? 'border-farmer-500 bg-farmer-50' : 'border-gray-200 hover:border-gray-300'
+      }`}
+    onClick={onSelect}
+  >
+    <div className="flex items-start justify-between">
+      <div className="flex-1">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="font-semibold">{address.fullName}</span>
+          {address.isDefault && (
+            <span className="bg-farmer-100 text-farmer-700 text-xs px-2 py-1 rounded">
+              Default
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-gray-600">
+          {address.addressLine1}
+          {address.addressLine2 && `, ${address.addressLine2}`}
+        </p>
+        <p className="text-sm text-gray-600">
+          {address.city}, {address.district}, {address.state} - {address.pincode}
+        </p>
+        <p className="text-sm text-gray-600 mt-1">Phone: {address.phone}</p>
+      </div>
+      {selected && (
+        <div className="w-6 h-6 bg-farmer-500 rounded-full flex items-center justify-center flex-shrink-0">
+          <Check className="w-4 h-4 text-white" />
+        </div>
+      )}
+    </div>
+  </div>
+)
+
+// Payment Option Component
+const PaymentOption = ({ id, label, icon: Icon, selected, onSelect }) => (
+  <div
+    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${selected ? 'border-farmer-500 bg-farmer-50' : 'border-gray-200 hover:border-gray-300'
+      }`}
+    onClick={onSelect}
+  >
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${selected ? 'bg-farmer-500 text-white' : 'bg-gray-100 text-gray-600'
+          }`}>
+          <Icon className="w-5 h-5" />
+        </div>
+        <span className="font-medium">{label}</span>
+      </div>
+      {selected && (
+        <div className="w-6 h-6 bg-farmer-500 rounded-full flex items-center justify-center">
+          <Check className="w-4 h-4 text-white" />
+        </div>
+      )}
+    </div>
+  </div>
+)
 
 export default Checkout
