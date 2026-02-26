@@ -1,45 +1,109 @@
+// import multer from 'multer'
+// import path from 'path'
+
+// // Configure multer for file uploads
+// const storage = multer.diskStorage({
+//   filename: (req, file, cb) => {
+//     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
+//     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname))
+//   },
+// })
+
+// // File filter
+// const fileFilter = (req, file, cb) => {
+//   const allowedTypes = /jpeg|jpg|png|webp/
+//   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase())
+//   const mimetype = allowedTypes.test(file.mimetype)
+
+//   if (extname && mimetype) {
+//     cb(null, true)
+//   } else {
+//     cb(new Error('Only image files are allowed (jpeg, jpg, png, webp)'))
+//   }
+// }
+
+// export const upload = multer({
+//   storage,
+//   fileFilter,
+//   limits: {
+//     fileSize: 5 * 1024 * 1024, // 5MB
+//   },
+// })
+// import multer from 'multer'
+// import path from 'path'
+// import fs from 'fs'
+// import { fileURLToPath } from 'url'
+
+// const __filename = fileURLToPath(import.meta.url)
+// const __dirname = path.dirname(__filename)
+
+// // Ensure uploads directory exists
+// const uploadsDir = path.join(__dirname, '../../uploads')
+// if (!fs.existsSync(uploadsDir)) {
+//   fs.mkdirSync(uploadsDir, { recursive: true })
+// }
+
+// // Configure multer storage
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, uploadsDir)
+//   },
+//   filename: (req, file, cb) => {
+//     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
+//     const ext = path.extname(file.originalname)
+//     cb(null, `product-${uniqueSuffix}${ext}`)
+//   },
+// })
+
+// // File filter
+// const fileFilter = (req, file, cb) => {
+//   const allowedTypes = /jpeg|jpg|png|webp|gif/
+//   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase())
+//   const mimetype = allowedTypes.test(file.mimetype)
+
+//   if (extname && mimetype) {
+//     cb(null, true)
+//   } else {
+//     cb(new Error('Only image files are allowed (jpeg, jpg, png, webp, gif)'), false)
+//   }
+// }
+
+// export const upload = multer({
+//   storage,
+//   fileFilter,
+//   limits: {
+//     fileSize: 5 * 1024 * 1024, // 5MB
+//   },
+// })
 import multer from 'multer'
-import { ApiError } from '../utils/apiError.js'
+import path from 'path'
+import fs from 'fs'
+import { fileURLToPath } from 'url'
 
-// Use memory storage for Cloudinary upload
-const storage = multer.memoryStorage()
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-// File filter
-const fileFilter = (req, file, cb) => {
-  // Accept images only
-  if (file.mimetype.startsWith('image/')) {
-    cb(null, true)
-  } else {
-    cb(new ApiError('Only image files are allowed!', 400), false)
-  }
+const uploadsDir = path.join(__dirname, '../../uploads')
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true })
 }
 
-// Configure multer
-export const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB max file size
-    files: 5, // Max 5 files
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
+    cb(null, `product-${uniqueSuffix}${path.extname(file.originalname)}`)
   },
 })
 
-// Single file upload
-export const uploadSingle = (fieldName) => upload.single(fieldName)
-
-// Multiple files upload
-export const uploadMultiple = (fieldName, maxCount = 5) => upload.array(fieldName, maxCount)
-
-// Handle multer errors
-export const handleMulterError = (err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      return next(new ApiError('File too large. Maximum size is 5MB', 400))
-    }
-    if (err.code === 'LIMIT_FILE_COUNT') {
-      return next(new ApiError('Too many files. Maximum is 5 files', 400))
-    }
-    return next(new ApiError(err.message, 400))
-  }
-  next(err)
+const fileFilter = (req, file, cb) => {
+  const allowed = /jpeg|jpg|png|webp|gif/
+  const isValid = allowed.test(path.extname(file.originalname).toLowerCase()) && allowed.test(file.mimetype)
+  cb(isValid ? null : new Error('Only images allowed'), isValid)
 }
+
+export const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 },
+})

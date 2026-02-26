@@ -1,455 +1,690 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { motion } from 'framer-motion'
 import {
-  ArrowLeft,
   Upload,
   X,
-  Loader2,
-  Image as ImageIcon,
-  Leaf,
+  Plus,
   Calendar,
   Package,
+  DollarSign,
+  FileText,
+  MapPin,
+  Leaf,
+  Award,
+  Image as ImageIcon,
+  AlertCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { useDropzone } from 'react-dropzone'
-//import productService from '@/services/product.service'
-import { cn } from '@/lib/utils'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import api from '@/config/api'
 import { toast } from 'sonner'
-
-// Validation schema
-const productSchema = z.object({
-  cropName: z.string().min(2, 'Crop name is required'),
-  category: z.string().min(1, 'Please select a category'),
-  description: z.string().max(1000, 'Description too long').optional(),
-  quantityAvailable: z.number().min(1, 'Quantity must be at least 1'),
-  pricePerKg: z.number().min(1, 'Price must be at least ₹1'),
-  qualityGrade: z.enum(['A', 'B', 'C'], { required_error: 'Please select a grade' }),
-  harvestDate: z.string().min(1, 'Please select harvest date'),
-  isOrganic: z.boolean().default(false),
-  minimumOrder: z.number().min(1).default(1),
-})
-
-const categories = [
-  { value: 'vegetables', label: 'Vegetables' },
-  { value: 'fruits', label: 'Fruits' },
-  { value: 'grains', label: 'Grains & Cereals' },
-  { value: 'pulses', label: 'Pulses & Legumes' },
-  { value: 'spices', label: 'Spices' },
-  { value: 'dairy', label: 'Dairy Products' },
-  { value: 'other', label: 'Other' },
-]
-
-const commonCrops = [
-  'Tomato', 'Onion', 'Potato', 'Brinjal', 'Cabbage', 'Cauliflower',
-  'Carrot', 'Green Chilli', 'Capsicum', 'Cucumber', 'Bitter Gourd',
-  'Lady Finger', 'Spinach', 'Coriander', 'Ginger', 'Garlic',
-  'Mango', 'Banana', 'Grapes', 'Orange', 'Pomegranate', 'Papaya',
-  'Watermelon', 'Guava', 'Strawberry', 'Rice', 'Wheat', 'Jowar',
-  'Bajra', 'Maize', 'Tur Dal', 'Chana Dal', 'Moong Dal', 'Soybean',
-  'Turmeric', 'Red Chilli', 'Cumin', 'Milk', 'Curd', 'Ghee',
-]
+import { useAuth } from '@/context/AuthContext'
 
 const AddProduct = () => {
   const navigate = useNavigate()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { user } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const [imagePreview, setImagePreview] = useState([])
+
+  const [formData, setFormData] = useState({
+    cropName: '',
+    category: '',
+    description: '',
+    quantityAvailable: '',
+    unit: 'kg',
+    pricePerKg: '',
+    qualityGrade: 'A',
+    harvestDate: '',
+    expiryDate: '',
+    district: user?.district || '',
+    isOrganic: false,
+    certifications: [],
+    tags: [],
+    minimumOrder: 1,
+    deliveryOptions: {
+      pickup: true,
+      delivery: true,
+      deliveryRadius: 50,
+    },
+  })
+
   const [images, setImages] = useState([])
-  const [imageError, setImageError] = useState('')
+  const [newTag, setNewTag] = useState('')
+  const [newCertification, setNewCertification] = useState('')
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      cropName: '',
-      category: '',
-      description: '',
-      quantityAvailable: '',
-      pricePerKg: '',
-      qualityGrade: '',
-      harvestDate: '',
-      isOrganic: false,
-      minimumOrder: 1,
-    },
-  })
+  const categories = [
+    { value: 'vegetables', label: 'Vegetables', icon: '🥬' },
+    { value: 'fruits', label: 'Fruits', icon: '🍎' },
+    { value: 'grains', label: 'Grains', icon: '🌾' },
+    { value: 'pulses', label: 'Pulses', icon: '🫘' },
+    { value: 'spices', label: 'Spices', icon: '🌶️' },
+    { value: 'dairy', label: 'Dairy', icon: '🥛' },
+    { value: 'other', label: 'Other', icon: '📦' },
+  ]
 
-  const watchedValues = watch()
+  const districts = [
+    'Mumbai', 'Pune', 'Nashik', 'Nagpur', 'Aurangabad', 'Solapur',
+    'Kolhapur', 'Satara', 'Sangli', 'Ahmednagar', 'Ratnagiri',
+    'Thane', 'Jalgaon', 'Amravati', 'Nanded', 'Beed', 'Latur',
+  ]
 
-  // Image dropzone
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.webp'],
-    },
-    maxFiles: 5,
-    maxSize: 5 * 1024 * 1024, // 5MB
-    onDrop: (acceptedFiles, rejectedFiles) => {
-      if (rejectedFiles.length > 0) {
-        setImageError('Some files were rejected. Max 5 images, 5MB each.')
-        return
-      }
+  const units = ['kg', 'quintal', 'ton', 'piece', 'dozen', 'litre']
 
-      const newImages = acceptedFiles.map((file) =>
-        Object.assign(file, {
-          preview: URL.createObjectURL(file),
-        })
-      )
-
-      setImages((prev) => [...prev, ...newImages].slice(0, 5))
-      setImageError('')
-    },
-  })
-
-  const removeImage = (index) => {
-    setImages((prev) => prev.filter((_, i) => i !== index))
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }))
   }
 
-  const onSubmit = async (data) => {
-    if (images.length === 0) {
-      setImageError('Please add at least one image')
+  const handleNestedChange = (parent, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [parent]: {
+        ...prev[parent],
+        [field]: value,
+      },
+    }))
+  }
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files)
+
+    if (files.length + images.length > 5) {
+      toast.error('Maximum 5 images allowed')
       return
     }
 
-    setIsSubmitting(true)
-    try {
-      const productData = {
-        ...data,
-        images,
-      }
+    // Create preview URLs
+    const newPreviews = files.map(file => URL.createObjectURL(file))
+    setImagePreview(prev => [...prev, ...newPreviews])
+    setImages(prev => [...prev, ...files])
+  }
 
-      await productService.createProduct(productData)
+  const removeImage = (index) => {
+    setImagePreview(prev => prev.filter((_, i) => i !== index))
+    setImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const addTag = () => {
+    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, newTag.trim()],
+      }))
+      setNewTag('')
+    }
+  }
+
+  const removeTag = (tag) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(t => t !== tag),
+    }))
+  }
+
+  const addCertification = () => {
+    if (newCertification.trim() && !formData.certifications.includes(newCertification.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        certifications: [...prev.certifications, newCertification.trim()],
+      }))
+      setNewCertification('')
+    }
+  }
+
+  const removeCertification = (cert) => {
+    setFormData(prev => ({
+      ...prev,
+      certifications: prev.certifications.filter(c => c !== cert),
+    }))
+  }
+
+  const validateForm = () => {
+    if (!formData.cropName.trim()) {
+      toast.error('Please enter crop name')
+      return false
+    }
+    if (!formData.category) {
+      toast.error('Please select a category')
+      return false
+    }
+    if (!formData.quantityAvailable || formData.quantityAvailable <= 0) {
+      toast.error('Please enter valid quantity')
+      return false
+    }
+    if (!formData.pricePerKg || formData.pricePerKg <= 0) {
+      toast.error('Please enter valid price')
+      return false
+    }
+    if (!formData.harvestDate) {
+      toast.error('Please select harvest date')
+      return false
+    }
+    if (!formData.district) {
+      toast.error('Please select district')
+      return false
+    }
+    if (images.length === 0) {
+      toast.error('Please upload at least one image')
+      return false
+    }
+    return true
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    if (!validateForm()) return
+
+    try {
+      setLoading(true)
+
+      // Create FormData for file upload
+      const submitData = new FormData()
+
+      // Append all form fields
+      Object.keys(formData).forEach(key => {
+        if (key === 'deliveryOptions') {
+          submitData.append(key, JSON.stringify(formData[key]))
+        } else if (key === 'tags' || key === 'certifications') {
+          submitData.append(key, JSON.stringify(formData[key]))
+        } else {
+          submitData.append(key, formData[key])
+        }
+      })
+
+      // Append images
+      images.forEach((image) => {
+        submitData.append('images', image)
+      })
+
+      const response = await api.post('/products', submitData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+
       toast.success('Product added successfully!')
       navigate('/farmer/products')
     } catch (error) {
-      console.error('Error creating product:', error)
+      console.error('Error adding product:', error)
       toast.error(error.response?.data?.message || 'Failed to add product')
     } finally {
-      setIsSubmitting(false)
+      setLoading(false)
     }
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="mb-6">
-        <Button
-          variant="ghost"
-          className="mb-4"
-          onClick={() => navigate('/farmer/products')}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Products
-        </Button>
-        <h1 className="text-2xl font-bold text-gray-900">Add New Product</h1>
-        <p className="text-gray-500 mt-1">
-          Fill in the details below to list your product
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Add New Product
+        </h1>
+        <p className="text-gray-600">
+          List your fresh produce to reach buyers across Maharashtra
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Images Section */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Information */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <ImageIcon className="w-5 h-5 mr-2 text-farmer-600" />
-              Product Images
-            </CardTitle>
-            <CardDescription>
-              Add up to 5 images of your product. First image will be the main image.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div
-              {...getRootProps()}
-              className={cn(
-                'border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors',
-                isDragActive
-                  ? 'border-farmer-500 bg-farmer-50'
-                  : 'border-gray-300 hover:border-farmer-500',
-                imageError && 'border-red-500'
-              )}
-            >
-              <input {...getInputProps()} />
-              <Upload className="w-10 h-10 text-gray-400 mx-auto mb-4" />
-              {isDragActive ? (
-                <p className="text-farmer-600">Drop the files here...</p>
-              ) : (
-                <>
-                  <p className="text-gray-600 mb-2">
-                    Drag & drop images here, or click to select
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    Max 5 images, up to 5MB each (JPEG, PNG, WebP)
-                  </p>
-                </>
-              )}
-            </div>
-
-            {imageError && (
-              <p className="text-sm text-red-500 mt-2">{imageError}</p>
-            )}
-
-            {/* Image Previews */}
-            {images.length > 0 && (
-              <div className="grid grid-cols-5 gap-4 mt-4">
-                {images.map((image, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={image.preview}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full aspect-square object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                    {index === 0 && (
-                      <span className="absolute bottom-1 left-1 bg-farmer-500 text-white text-xs px-2 py-0.5 rounded">
-                        Main
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Basic Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Package className="w-5 h-5 mr-2 text-farmer-600" />
+              <FileText className="w-5 h-5 mr-2" />
               Basic Information
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Crop Name */}
-            <div className="space-y-2">
-              <Label htmlFor="cropName">Crop Name *</Label>
-              <Input
-                id="cropName"
-                placeholder="e.g., Tomato, Onion, Mango"
-                list="crop-suggestions"
-                {...register('cropName')}
-              />
-              <datalist id="crop-suggestions">
-                {commonCrops.map((crop) => (
-                  <option key={crop} value={crop} />
-                ))}
-              </datalist>
-              {errors.cropName && (
-                <p className="text-sm text-red-500">{errors.cropName.message}</p>
-              )}
-            </div>
-
-            {/* Category */}
-            <div className="space-y-2">
-              <Label htmlFor="category">Category *</Label>
-              <Select
-                onValueChange={(value) => setValue('category', value)}
-                value={watchedValues.category}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.category && (
-                <p className="text-sm text-red-500">{errors.category.message}</p>
-              )}
-            </div>
-
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Description (Optional)</Label>
-              <Textarea
-                id="description"
-                placeholder="Describe your product..."
-                rows={4}
-                {...register('description')}
-              />
-              {errors.description && (
-                <p className="text-sm text-red-500">{errors.description.message}</p>
-              )}
-            </div>
-
-            {/* Organic Checkbox */}
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="isOrganic"
-                checked={watchedValues.isOrganic}
-                onCheckedChange={(checked) => setValue('isOrganic', checked)}
-              />
-              <Label htmlFor="isOrganic" className="flex items-center cursor-pointer">
-                <Leaf className="w-4 h-4 mr-2 text-green-600" />
-                This is an organic product
-              </Label>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Pricing & Stock */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Pricing & Stock</CardTitle>
-          </CardHeader>
-          <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Price */}
-              <div className="space-y-2">
-                <Label htmlFor="pricePerKg">Price per kg (₹) *</Label>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Crop Name *
+                </label>
                 <Input
-                  id="pricePerKg"
-                  type="number"
-                  placeholder="e.g., 50"
-                  min="1"
-                  {...register('pricePerKg', { valueAsNumber: true })}
-                />
-                {errors.pricePerKg && (
-                  <p className="text-sm text-red-500">{errors.pricePerKg.message}</p>
-                )}
-              </div>
-
-              {/* Quantity */}
-              <div className="space-y-2">
-                <Label htmlFor="quantityAvailable">Available Quantity (kg) *</Label>
-                <Input
-                  id="quantityAvailable"
-                  type="number"
-                  placeholder="e.g., 100"
-                  min="1"
-                  {...register('quantityAvailable', { valueAsNumber: true })}
-                />
-                {errors.quantityAvailable && (
-                  <p className="text-sm text-red-500">{errors.quantityAvailable.message}</p>
-                )}
-              </div>
-
-              {/* Minimum Order */}
-              <div className="space-y-2">
-                <Label htmlFor="minimumOrder">Minimum Order (kg)</Label>
-                <Input
-                  id="minimumOrder"
-                  type="number"
-                  placeholder="e.g., 1"
-                  min="1"
-                  {...register('minimumOrder', { valueAsNumber: true })}
+                  name="cropName"
+                  value={formData.cropName}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Fresh Tomatoes"
+                  required
                 />
               </div>
 
-              {/* Quality Grade */}
-              <div className="space-y-2">
-                <Label>Quality Grade *</Label>
-                <div className="flex space-x-4">
-                  {['A', 'B', 'C'].map((grade) => (
-                    <label
-                      key={grade}
-                      className={cn(
-                        'flex-1 p-4 border-2 rounded-lg cursor-pointer text-center transition-colors',
-                        watchedValues.qualityGrade === grade
-                          ? 'border-farmer-500 bg-farmer-50'
-                          : 'border-gray-200 hover:border-farmer-300'
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        value={grade}
-                        className="sr-only"
-                        {...register('qualityGrade')}
-                      />
-                      <div className="font-semibold">Grade {grade}</div>
-                      <div className="text-xs text-gray-500">
-                        {grade === 'A' && 'Premium'}
-                        {grade === 'B' && 'Standard'}
-                        {grade === 'C' && 'Economy'}
-                      </div>
-                    </label>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Category *
+                </label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  className="w-full border rounded-md p-2"
+                  required
+                >
+                  <option value="">Select Category</option>
+                  {categories.map(cat => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.icon} {cat.label}
+                    </option>
                   ))}
-                </div>
-                {errors.qualityGrade && (
-                  <p className="text-sm text-red-500">{errors.qualityGrade.message}</p>
-                )}
+                </select>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Describe your product, growing methods, etc."
+                rows={4}
+                className="w-full border rounded-md p-2"
+                maxLength={1000}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {formData.description.length}/1000 characters
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Harvest Date */}
+        {/* Quantity & Pricing */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
-              <Calendar className="w-5 h-5 mr-2 text-farmer-600" />
-              Harvest Information
+              <Package className="w-5 h-5 mr-2" />
+              Quantity & Pricing
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Quantity Available *
+                </label>
+                <Input
+                  type="number"
+                  name="quantityAvailable"
+                  value={formData.quantityAvailable}
+                  onChange={handleInputChange}
+                  placeholder="100"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Unit *
+                </label>
+                <select
+                  name="unit"
+                  value={formData.unit}
+                  onChange={handleInputChange}
+                  className="w-full border rounded-md p-2"
+                  required
+                >
+                  {units.map(unit => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Price per Kg (₹) *
+                </label>
+                <Input
+                  type="number"
+                  name="pricePerKg"
+                  value={formData.pricePerKg}
+                  onChange={handleInputChange}
+                  placeholder="50"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Quality Grade *
+                </label>
+                <select
+                  name="qualityGrade"
+                  value={formData.qualityGrade}
+                  onChange={handleInputChange}
+                  className="w-full border rounded-md p-2"
+                  required
+                >
+                  <option value="A">Grade A (Premium)</option>
+                  <option value="B">Grade B (Standard)</option>
+                  <option value="C">Grade C (Economy)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Minimum Order (kg)
+                </label>
+                <Input
+                  type="number"
+                  name="minimumOrder"
+                  value={formData.minimumOrder}
+                  onChange={handleInputChange}
+                  placeholder="1"
+                  min="1"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Harvest & Location */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Calendar className="w-5 h-5 mr-2" />
+              Harvest & Location Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Harvest Date *
+                </label>
+                <Input
+                  type="date"
+                  name="harvestDate"
+                  value={formData.harvestDate}
+                  onChange={handleInputChange}
+                  max={new Date().toISOString().split('T')[0]}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Expiry Date (Optional)
+                </label>
+                <Input
+                  type="date"
+                  name="expiryDate"
+                  value={formData.expiryDate}
+                  onChange={handleInputChange}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                District *
+              </label>
+              <select
+                name="district"
+                value={formData.district}
+                onChange={handleInputChange}
+                className="w-full border rounded-md p-2"
+                required
+              >
+                <option value="">Select District</option>
+                {districts.map(dist => (
+                  <option key={dist} value={dist}>
+                    {dist}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Product Images */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <ImageIcon className="w-5 h-5 mr-2" />
+              Product Images *
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <Label htmlFor="harvestDate">Harvest Date *</Label>
-              <Input
-                id="harvestDate"
-                type="date"
-                max={new Date().toISOString().split('T')[0]}
-                {...register('harvestDate')}
-              />
-              {errors.harvestDate && (
-                <p className="text-sm text-red-500">{errors.harvestDate.message}</p>
+            <div className="space-y-4">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageChange}
+                  className="hidden"
+                  id="image-upload"
+                  disabled={images.length >= 5}
+                />
+                <label
+                  htmlFor="image-upload"
+                  className={`cursor-pointer ${images.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <Upload className="w-12 h-12 mx-auto text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-600">
+                    Click to upload images (Max 5)
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    JPG, PNG or WEBP (Max 5MB each)
+                  </p>
+                </label>
+              </div>
+
+              {imagePreview.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  {imagePreview.map((preview, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={preview}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      {index === 0 && (
+                        <span className="absolute bottom-2 left-2 bg-farmer-500 text-white text-xs px-2 py-1 rounded">
+                          Main
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Organic & Certifications */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Leaf className="w-5 h-5 mr-2" />
+              Organic & Certifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                name="isOrganic"
+                checked={formData.isOrganic}
+                onChange={handleInputChange}
+                className="mr-2"
+              />
+              <Leaf className="w-4 h-4 mr-1 text-green-600" />
+              This is an organic product
+            </label>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Certifications
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  value={newCertification}
+                  onChange={(e) => setNewCertification(e.target.value)}
+                  placeholder="e.g., Organic India Certified"
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCertification())}
+                />
+                <Button
+                  type="button"
+                  onClick={addCertification}
+                  variant="outline"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              {formData.certifications.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.certifications.map((cert, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm"
+                    >
+                      <Award className="w-3 h-3" />
+                      {cert}
+                      <button
+                        type="button"
+                        onClick={() => removeCertification(cert)}
+                        className="hover:bg-green-200 rounded-full p-0.5"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Delivery Options */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <MapPin className="w-5 h-5 mr-2" />
+              Delivery Options
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.deliveryOptions.pickup}
+                  onChange={(e) => handleNestedChange('deliveryOptions', 'pickup', e.target.checked)}
+                  className="mr-2"
+                />
+                Farm Pickup Available
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.deliveryOptions.delivery}
+                  onChange={(e) => handleNestedChange('deliveryOptions', 'delivery', e.target.checked)}
+                  className="mr-2"
+                />
+                Home Delivery Available
+              </label>
+            </div>
+
+            {formData.deliveryOptions.delivery && (
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Delivery Radius (km)
+                </label>
+                <Input
+                  type="number"
+                  value={formData.deliveryOptions.deliveryRadius}
+                  onChange={(e) => handleNestedChange('deliveryOptions', 'deliveryRadius', Number(e.target.value))}
+                  placeholder="50"
+                  min="1"
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Tags */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tags (Optional)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Input
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                placeholder="e.g., fresh, pesticide-free, farm-grown"
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+              />
+              <Button
+                type="button"
+                onClick={addTag}
+                variant="outline"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+            {formData.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {formData.tags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => removeTag(tag)}
+                      className="hover:bg-gray-200 rounded-full p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Submit Buttons */}
-        <div className="flex justify-end space-x-4">
+        <div className="flex gap-4">
+          <Button
+            type="submit"
+            className="flex-1"
+            disabled={loading}
+          >
+            {loading ? 'Adding Product...' : 'Add Product'}
+          </Button>
           <Button
             type="button"
             variant="outline"
             onClick={() => navigate('/farmer/products')}
+            disabled={loading}
           >
             Cancel
-          </Button>
-          <Button type="submit" variant="farmer" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Adding Product...
-              </>
-            ) : (
-              'Add Product'
-            )}
           </Button>
         </div>
       </form>

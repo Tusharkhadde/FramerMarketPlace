@@ -1,72 +1,11 @@
 import Product from '../models/Product.js'
-import User from '../models/User.js'
 import { ApiError } from '../utils/apiError.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { sendResponse } from '../utils/apiResponse.js'
-import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary.js'
+import fs from 'fs'
+import path from 'path'
 
-// @desc    Create a new product
-// @route   POST /api/products
-// @access  Private (Farmers only)
-export const createProduct = asyncHandler(async (req, res, next) => {
-  const {
-    cropName,
-    category,
-    description,
-    quantityAvailable,
-    unit,
-    pricePerKg,
-    qualityGrade,
-    harvestDate,
-    isOrganic,
-    minimumOrder,
-    deliveryOptions,
-    tags,
-  } = req.body
-
-  // Get farmer's district from profile
-  const farmer = await User.findById(req.user.id)
-  if (!farmer || farmer.userType !== 'farmer') {
-    return next(new ApiError('Only farmers can create products', 403))
-  }
-
-  // Handle image uploads
-  let images = []
-  if (req.files && req.files.length > 0) {
-    for (const file of req.files) {
-      const result = await uploadToCloudinary(file.buffer, 'products')
-      images.push({
-        url: result.secure_url,
-        publicId: result.public_id,
-      })
-    }
-  }
-
-  const product = await Product.create({
-    farmer: req.user.id,
-    cropName,
-    category,
-    description,
-    quantityAvailable,
-    unit: unit || 'kg',
-    pricePerKg,
-    qualityGrade,
-    harvestDate,
-    isOrganic: isOrganic || false,
-    minimumOrder: minimumOrder || 1,
-    deliveryOptions: deliveryOptions || { pickup: true, delivery: true },
-    tags: tags || [],
-    district: farmer.district,
-    images,
-  })
-
-  // Populate farmer details
-  await product.populate('farmer', 'fullName phone district village')
-
-  sendResponse(res, 201, { product }, 'Product created successfully')
-})
-
-// @desc    Get all products with filters
+// @desc    Get all products with filtering
 // @route   GET /api/products
 // @access  Public
 export const getProducts = asyncHandler(async (req, res, next) => {
@@ -80,153 +19,218 @@ export const getProducts = asyncHandler(async (req, res, next) => {
     maxPrice,
     qualityGrade,
     isOrganic,
-    isAvailable = 'true',
+    featured,
     sortBy = 'createdAt',
     sortOrder = 'desc',
-    featured,
   } = req.query
 
   // Build query
-  const query = {}
+  const query = { isAvailable: true, isApproved: true }
 
   // Search by crop name or description
   if (search) {
-    query.$text = { $search: search }
+    query.$or = [
+      { cropName: { $regex: search, $options: 'i' } },
+      { description: { $regex: search, $options: 'i' } },
+    ]
   }
 
-  // Filter by category
-  if (category && category !== 'all') {
-    query.category = category.toLowerCase()
-  }
+  if (category) query.category = category
+  if (district) query.district = district
+  if (qualityGrade) query.qualityGrade = qualityGrade
+  if (isOrganic === 'true') query.isOrganic = true
+  if (featured === 'true') query.isFeatured = true
 
-  // Filter by district
-  if (district) {
-    query.district = district
-  }
-
-  // Filter by price range
+  // Price range filter
   if (minPrice || maxPrice) {
     query.pricePerKg = {}
-    if (minPrice) query.pricePerKg.$gte = parseFloat(minPrice)
-    if (maxPrice) query.pricePerKg.$lte = parseFloat(maxPrice)
+    if (minPrice) query.pricePerKg.$gte = Number(minPrice)
+    if (maxPrice) query.pricePerKg.$lte = Number(maxPrice)
   }
-
-  // Filter by quality grade
-  if (qualityGrade) {
-    query.qualityGrade = qualityGrade.toUpperCase()
-  }
-
-  // Filter by organic
-  if (isOrganic === 'true') {
-    query.isOrganic = true
-  }
-
-  // Filter by availability
-  if (isAvailable === 'true') {
-    query.isAvailable = true
-    query.quantityAvailable = { $gt: 0 }
-  }
-
-  // Filter by featured
-  if (featured === 'true') {
-    query.isFeatured = true
-  }
-
-  // Only show approved products
-  query.isApproved = true
-
-  // Sort options
-  const sortOptions = {}
-  sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1
 
   // Pagination
-  const pageNum = parseInt(page)
-  const limitNum = parseInt(limit)
-  const skip = (pageNum - 1) * limitNum
+  const skip = (Number(page) - 1) * Number(limit)
 
-  // Execute query
-  const [products, total] = await Promise.all([
-    Product.find(query)
-      .populate('farmer', 'fullName phone district village ratings')
-      .sort(sortOptions)
-      .skip(skip)
-      .limit(limitNum)
-      .lean(),
-    Product.countDocuments(query),
-  ])
+  // Sort
+  const sort = {}
+  sort[sortBy] = sortOrder === 'desc' ? -1 : 1
+
+  const products = await Product.find(query)
+    .populate('farmer', 'fullName district phone')
+    .sort(sort)
+    .skip(skip)
+    .limit(Number(limit))
+
+  const total = await Product.countDocuments(query)
 
   sendResponse(res, 200, {
     products,
+    total,
     pagination: {
-      currentPage: pageNum,
-      totalPages: Math.ceil(total / limitNum),
-      totalProducts: total,
-      hasMore: skip + products.length < total,
+      page: Number(page),
+      limit: Number(limit),
+      total,
+      pages: Math.ceil(total / Number(limit)),
     },
   }, 'Products fetched successfully')
 })
 
-// @desc    Get single product by ID
+// @desc    Get single product
 // @route   GET /api/products/:id
 // @access  Public
 export const getProductById = asyncHandler(async (req, res, next) => {
   const product = await Product.findById(req.params.id)
-    .populate('farmer', 'fullName phone email district village taluka farmSize isVerified createdAt')
+    .populate('farmer', 'fullName district phone email village')
 
   if (!product) {
     return next(new ApiError('Product not found', 404))
   }
 
-  // Increment view count
-  product.views += 1
+  // Increment views
+  product.views = (product.views || 0) + 1
   await product.save({ validateBeforeSave: false })
 
   sendResponse(res, 200, { product }, 'Product fetched successfully')
 })
 
-// @desc    Get farmer's own products
-// @route   GET /api/products/my-products
-// @access  Private (Farmers only)
+// @desc    Get farmer's products
+// @route   GET /api/products/my/products
+// @access  Private (Farmer)
 export const getMyProducts = asyncHandler(async (req, res, next) => {
-  const { page = 1, limit = 10, status } = req.query
+  const products = await Product.find({ farmer: req.user.id })
+    .sort({ createdAt: -1 })
 
-  const query = { farmer: req.user.id }
-
-  if (status === 'available') {
-    query.isAvailable = true
-    query.quantityAvailable = { $gt: 0 }
-  } else if (status === 'unavailable') {
-    query.$or = [
-      { isAvailable: false },
-      { quantityAvailable: 0 },
-    ]
+  const stats = {
+    total: products.length,
+    active: products.filter(p => p.isAvailable).length,
+    inactive: products.filter(p => !p.isAvailable).length,
+    totalValue: products.reduce((sum, p) => sum + (p.pricePerKg * p.quantityAvailable), 0),
   }
 
-  const pageNum = parseInt(page)
-  const limitNum = parseInt(limit)
-  const skip = (pageNum - 1) * limitNum
+  sendResponse(res, 200, { products, stats }, 'Products fetched successfully')
+})
 
-  const [products, total] = await Promise.all([
-    Product.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limitNum),
-    Product.countDocuments(query),
-  ])
+// @desc    Create new product
+// @route   POST /api/products
+// @access  Private (Farmer)
+export const createProduct = asyncHandler(async (req, res, next) => {
+  console.log('=== CREATE PRODUCT START ===')
+  console.log('User:', req.user?.id, req.user?.userType)
+  console.log('Body:', req.body)
+  console.log('Files:', req.files?.length || 0, 'files')
 
-  sendResponse(res, 200, {
-    products,
-    pagination: {
-      currentPage: pageNum,
-      totalPages: Math.ceil(total / limitNum),
-      totalProducts: total,
-    },
-  }, 'Products fetched successfully')
+  try {
+    // Handle images - store locally
+    let uploadedImages = []
+
+    if (req.files && req.files.length > 0) {
+      uploadedImages = req.files.map(file => ({
+        url: `/uploads/${file.filename}`,
+        publicId: file.filename,
+      }))
+      console.log('Images uploaded:', uploadedImages)
+    } else {
+      // Default placeholder image
+      uploadedImages = [{
+        url: 'https://via.placeholder.com/400x400.png?text=Product+Image',
+        publicId: null,
+      }]
+    }
+
+    // Parse JSON fields safely
+    let deliveryOptions = { pickup: true, delivery: true, deliveryRadius: 50 }
+    let tags = []
+    let certifications = []
+
+    if (req.body.deliveryOptions) {
+      try {
+        deliveryOptions = typeof req.body.deliveryOptions === 'string'
+          ? JSON.parse(req.body.deliveryOptions)
+          : req.body.deliveryOptions
+      } catch (e) {
+        console.log('Parse deliveryOptions error:', e.message)
+      }
+    }
+
+    if (req.body.tags) {
+      try {
+        tags = typeof req.body.tags === 'string'
+          ? JSON.parse(req.body.tags)
+          : req.body.tags
+      } catch (e) {
+        console.log('Parse tags error:', e.message)
+      }
+    }
+
+    if (req.body.certifications) {
+      try {
+        certifications = typeof req.body.certifications === 'string'
+          ? JSON.parse(req.body.certifications)
+          : req.body.certifications
+      } catch (e) {
+        console.log('Parse certifications error:', e.message)
+      }
+    }
+
+    // Build product data
+    const productData = {
+      farmer: req.user.id,
+      cropName: req.body.cropName,
+      category: req.body.category,
+      description: req.body.description || '',
+      quantityAvailable: Number(req.body.quantityAvailable) || 0,
+      unit: req.body.unit || 'kg',
+      pricePerKg: Number(req.body.pricePerKg) || 0,
+      qualityGrade: req.body.qualityGrade || 'A',
+      harvestDate: req.body.harvestDate ? new Date(req.body.harvestDate) : new Date(),
+      expiryDate: req.body.expiryDate ? new Date(req.body.expiryDate) : undefined,
+      district: req.body.district,
+      isOrganic: req.body.isOrganic === 'true' || req.body.isOrganic === true,
+      images: uploadedImages,
+      deliveryOptions,
+      tags: Array.isArray(tags) ? tags : [],
+      certifications: Array.isArray(certifications) ? certifications : [],
+      minimumOrder: Number(req.body.minimumOrder) || 1,
+      isAvailable: true,
+      isApproved: true,
+    }
+
+    console.log('Product data:', JSON.stringify(productData, null, 2))
+
+    // Create product
+    const product = await Product.create(productData)
+    console.log('Product created with ID:', product._id)
+
+    // Populate farmer info
+    await product.populate('farmer', 'fullName district')
+
+    console.log('=== CREATE PRODUCT SUCCESS ===')
+    sendResponse(res, 201, { product }, 'Product created successfully')
+
+  } catch (error) {
+    console.error('=== CREATE PRODUCT ERROR ===')
+    console.error('Error name:', error.name)
+    console.error('Error message:', error.message)
+    console.error('Error stack:', error.stack)
+
+    // Clean up uploaded files on error
+    if (req.files) {
+      req.files.forEach(file => {
+        try {
+          fs.unlinkSync(file.path)
+        } catch (e) {
+          console.log('Error deleting file:', e.message)
+        }
+      })
+    }
+
+    return next(new ApiError(error.message || 'Failed to create product', 500))
+  }
 })
 
 // @desc    Update product
 // @route   PUT /api/products/:id
-// @access  Private (Product owner only)
+// @access  Private (Farmer/Admin)
 export const updateProduct = asyncHandler(async (req, res, next) => {
   let product = await Product.findById(req.params.id)
 
@@ -235,72 +239,80 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
   }
 
   // Check ownership
-  if (product.farmer.toString() !== req.user.id && req.user.userType !== 'admin') {
+  if (req.user.userType === 'farmer' && product.farmer.toString() !== req.user.id) {
     return next(new ApiError('Not authorized to update this product', 403))
   }
 
-  const updateFields = [
-    'cropName', 'category', 'description', 'quantityAvailable',
-    'unit', 'pricePerKg', 'qualityGrade', 'harvestDate',
-    'isOrganic', 'minimumOrder', 'deliveryOptions', 'tags', 'isAvailable',
-  ]
+  // Handle new images
+  let uploadedImages = product.images
 
-  const updateData = {}
-  updateFields.forEach(field => {
-    if (req.body[field] !== undefined) {
-      updateData[field] = req.body[field]
-    }
-  })
-
-  // Handle new image uploads
   if (req.files && req.files.length > 0) {
-    const newImages = []
-    for (const file of req.files) {
-      const result = await uploadToCloudinary(file.buffer, 'products')
-      newImages.push({
-        url: result.secure_url,
-        publicId: result.public_id,
-      })
-    }
-    
-    // If replacing all images, delete old ones
-    if (req.body.replaceImages === 'true') {
-      for (const image of product.images) {
-        if (image.publicId) {
-          await deleteFromCloudinary(image.publicId)
-        }
-      }
-      updateData.images = newImages
-    } else {
-      // Add to existing images (max 5)
-      const combinedImages = [...product.images, ...newImages].slice(0, 5)
-      updateData.images = combinedImages
-    }
+    uploadedImages = req.files.map(file => ({
+      url: `/uploads/${file.filename}`,
+      publicId: file.filename,
+    }))
   }
 
-  // Handle image deletion
-  if (req.body.deleteImages) {
-    const imagesToDelete = JSON.parse(req.body.deleteImages)
-    for (const publicId of imagesToDelete) {
-      await deleteFromCloudinary(publicId)
-    }
-    updateData.images = product.images.filter(
-      img => !imagesToDelete.includes(img.publicId)
-    )
+  // Parse JSON fields
+  let deliveryOptions = product.deliveryOptions
+  let tags = product.tags
+  let certifications = product.certifications
+
+  if (req.body.deliveryOptions) {
+    try {
+      deliveryOptions = typeof req.body.deliveryOptions === 'string'
+        ? JSON.parse(req.body.deliveryOptions)
+        : req.body.deliveryOptions
+    } catch (e) { }
+  }
+
+  if (req.body.tags) {
+    try {
+      tags = typeof req.body.tags === 'string'
+        ? JSON.parse(req.body.tags)
+        : req.body.tags
+    } catch (e) { }
+  }
+
+  if (req.body.certifications) {
+    try {
+      certifications = typeof req.body.certifications === 'string'
+        ? JSON.parse(req.body.certifications)
+        : req.body.certifications
+    } catch (e) { }
+  }
+
+  const updateData = {
+    cropName: req.body.cropName || product.cropName,
+    category: req.body.category || product.category,
+    description: req.body.description ?? product.description,
+    quantityAvailable: req.body.quantityAvailable ? Number(req.body.quantityAvailable) : product.quantityAvailable,
+    unit: req.body.unit || product.unit,
+    pricePerKg: req.body.pricePerKg ? Number(req.body.pricePerKg) : product.pricePerKg,
+    qualityGrade: req.body.qualityGrade || product.qualityGrade,
+    harvestDate: req.body.harvestDate ? new Date(req.body.harvestDate) : product.harvestDate,
+    expiryDate: req.body.expiryDate ? new Date(req.body.expiryDate) : product.expiryDate,
+    district: req.body.district || product.district,
+    isOrganic: req.body.isOrganic === 'true' || req.body.isOrganic === true,
+    images: uploadedImages,
+    deliveryOptions,
+    tags,
+    certifications,
+    minimumOrder: req.body.minimumOrder ? Number(req.body.minimumOrder) : product.minimumOrder,
   }
 
   product = await Product.findByIdAndUpdate(
     req.params.id,
     updateData,
     { new: true, runValidators: true }
-  ).populate('farmer', 'fullName phone district village')
+  ).populate('farmer', 'fullName district')
 
   sendResponse(res, 200, { product }, 'Product updated successfully')
 })
 
 // @desc    Delete product
 // @route   DELETE /api/products/:id
-// @access  Private (Product owner or admin)
+// @access  Private (Farmer/Admin)
 export const deleteProduct = asyncHandler(async (req, res, next) => {
   const product = await Product.findById(req.params.id)
 
@@ -309,15 +321,8 @@ export const deleteProduct = asyncHandler(async (req, res, next) => {
   }
 
   // Check ownership
-  if (product.farmer.toString() !== req.user.id && req.user.userType !== 'admin') {
+  if (req.user.userType === 'farmer' && product.farmer.toString() !== req.user.id) {
     return next(new ApiError('Not authorized to delete this product', 403))
-  }
-
-  // Delete images from Cloudinary
-  for (const image of product.images) {
-    if (image.publicId) {
-      await deleteFromCloudinary(image.publicId)
-    }
   }
 
   await product.deleteOne()
@@ -327,7 +332,7 @@ export const deleteProduct = asyncHandler(async (req, res, next) => {
 
 // @desc    Toggle product availability
 // @route   PATCH /api/products/:id/toggle-availability
-// @access  Private (Product owner only)
+// @access  Private (Farmer)
 export const toggleAvailability = asyncHandler(async (req, res, next) => {
   const product = await Product.findById(req.params.id)
 
@@ -342,80 +347,40 @@ export const toggleAvailability = asyncHandler(async (req, res, next) => {
   product.isAvailable = !product.isAvailable
   await product.save()
 
-  sendResponse(res, 200, { 
-    product,
-    isAvailable: product.isAvailable 
-  }, `Product ${product.isAvailable ? 'enabled' : 'disabled'} successfully`)
+  sendResponse(res, 200, { product }, 'Product availability updated')
 })
 
-// @desc    Get product categories with counts
+// @desc    Get product categories
 // @route   GET /api/products/categories
 // @access  Public
 export const getCategories = asyncHandler(async (req, res, next) => {
-  const categories = await Product.aggregate([
-    { $match: { isAvailable: true, isApproved: true } },
-    {
-      $group: {
-        _id: '$category',
-        count: { $sum: 1 },
-      },
-    },
-    { $sort: { count: -1 } },
-  ])
+  const categories = [
+    { category: 'vegetables', count: await Product.countDocuments({ category: 'vegetables', isAvailable: true }) },
+    { category: 'fruits', count: await Product.countDocuments({ category: 'fruits', isAvailable: true }) },
+    { category: 'grains', count: await Product.countDocuments({ category: 'grains', isAvailable: true }) },
+    { category: 'pulses', count: await Product.countDocuments({ category: 'pulses', isAvailable: true }) },
+    { category: 'spices', count: await Product.countDocuments({ category: 'spices', isAvailable: true }) },
+    { category: 'dairy', count: await Product.countDocuments({ category: 'dairy', isAvailable: true }) },
+  ]
 
   sendResponse(res, 200, { categories }, 'Categories fetched successfully')
 })
 
-// @desc    Get products by farmer ID
+// @desc    Get products by farmer
 // @route   GET /api/products/farmer/:farmerId
 // @access  Public
 export const getProductsByFarmer = asyncHandler(async (req, res, next) => {
-  const { farmerId } = req.params
-  const { page = 1, limit = 10 } = req.query
+  const products = await Product.find({
+    farmer: req.params.farmerId,
+    isAvailable: true,
+  })
+    .populate('farmer', 'fullName district')
+    .sort({ createdAt: -1 })
 
-  const farmer = await User.findById(farmerId)
-  if (!farmer || farmer.userType !== 'farmer') {
-    return next(new ApiError('Farmer not found', 404))
-  }
-
-  const pageNum = parseInt(page)
-  const limitNum = parseInt(limit)
-  const skip = (pageNum - 1) * limitNum
-
-  const [products, total] = await Promise.all([
-    Product.find({
-      farmer: farmerId,
-      isAvailable: true,
-      isApproved: true,
-    })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limitNum),
-    Product.countDocuments({
-      farmer: farmerId,
-      isAvailable: true,
-      isApproved: true,
-    }),
-  ])
-
-  sendResponse(res, 200, {
-    farmer: {
-      _id: farmer._id,
-      fullName: farmer.fullName,
-      district: farmer.district,
-      village: farmer.village,
-      isVerified: farmer.isVerified,
-    },
-    products,
-    pagination: {
-      currentPage: pageNum,
-      totalPages: Math.ceil(total / limitNum),
-      totalProducts: total,
-    },
-  }, 'Farmer products fetched successfully')
+  sendResponse(res, 200, { products }, 'Farmer products fetched successfully')
 })
 
-// @desc    Search products with autocomplete
+// @desc    Search autocomplete
 // @route   GET /api/products/search/autocomplete
 // @access  Public
 export const searchAutocomplete = asyncHandler(async (req, res, next) => {
@@ -428,14 +393,9 @@ export const searchAutocomplete = asyncHandler(async (req, res, next) => {
   const suggestions = await Product.find({
     cropName: { $regex: q, $options: 'i' },
     isAvailable: true,
-    isApproved: true,
   })
     .select('cropName category')
     .limit(10)
-    .lean()
 
-  // Get unique crop names
-  const uniqueSuggestions = [...new Set(suggestions.map(s => s.cropName))]
-
-  sendResponse(res, 200, { suggestions: uniqueSuggestions }, 'Suggestions fetched')
+  sendResponse(res, 200, { suggestions }, 'Suggestions fetched successfully')
 })

@@ -4,59 +4,28 @@ import { motion } from 'framer-motion'
 import {
   Plus,
   Search,
-  Filter,
-  MoreVertical,
   Edit,
   Trash2,
   Eye,
   EyeOff,
+  MoreVertical,
   Package,
+  TrendingUp,
   AlertCircle,
+  Filter,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-//import productService from '@/services/product.service'
-import { formatPrice, formatDate, cn } from '@/lib/utils'
+import api from '@/config/api'
+import { formatPrice } from '@/lib/utils'
+import Loading from '@/components/shared/Loading'
 import { toast } from 'sonner'
 
 const FarmerProducts = () => {
@@ -64,30 +33,28 @@ const FarmerProducts = () => {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [productToDelete, setProductToDelete] = useState(null)
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    totalProducts: 0,
-  })
+  const [filterCategory, setFilterCategory] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
+
+  const categories = [
+    { value: '', label: 'All Categories' },
+    { value: 'vegetables', label: 'Vegetables' },
+    { value: 'fruits', label: 'Fruits' },
+    { value: 'grains', label: 'Grains' },
+    { value: 'pulses', label: 'Pulses' },
+    { value: 'spices', label: 'Spices' },
+    { value: 'dairy', label: 'Dairy' },
+  ]
 
   useEffect(() => {
     fetchProducts()
-  }, [statusFilter])
+  }, [])
 
-  const fetchProducts = async (page = 1) => {
-    setLoading(true)
+  const fetchProducts = async () => {
     try {
-      const params = {
-        page,
-        limit: 10,
-        ...(statusFilter !== 'all' && { status: statusFilter }),
-      }
-      const response = await productService.getMyProducts(params)
-      setProducts(response.data.products)
-      setPagination(response.data.pagination)
+      setLoading(true)
+      const response = await api.get('/products/my/products')
+      setProducts(response.data.data.products || [])
     } catch (error) {
       console.error('Error fetching products:', error)
       toast.error('Failed to load products')
@@ -96,317 +63,306 @@ const FarmerProducts = () => {
     }
   }
 
-  const handleToggleAvailability = async (productId) => {
+  const handleToggleAvailability = async (productId, currentStatus) => {
     try {
-      await productService.toggleAvailability(productId)
-      toast.success('Product availability updated')
-      fetchProducts(pagination.currentPage)
+      await api.patch(`/products/${productId}/toggle-availability`)
+      setProducts(products.map(p =>
+        p._id === productId ? { ...p, isAvailable: !currentStatus } : p
+      ))
+      toast.success(`Product ${!currentStatus ? 'activated' : 'deactivated'} successfully`)
     } catch (error) {
-      toast.error('Failed to update product')
+      toast.error('Failed to update product status')
     }
   }
 
-  const handleDeleteProduct = async () => {
-    if (!productToDelete) return
+  const handleDeleteProduct = async (productId) => {
+    if (!window.confirm('Are you sure you want to delete this product?')) return
 
     try {
-      await productService.deleteProduct(productToDelete._id)
+      await api.delete(`/products/${productId}`)
+      setProducts(products.filter(p => p._id !== productId))
       toast.success('Product deleted successfully')
-      setDeleteDialogOpen(false)
-      setProductToDelete(null)
-      fetchProducts(pagination.currentPage)
     } catch (error) {
       toast.error('Failed to delete product')
     }
   }
 
-  const filteredProducts = products.filter((product) =>
-    product.cropName.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.cropName.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = !filterCategory || product.category === filterCategory
+    const matchesStatus =
+      filterStatus === 'all' ||
+      (filterStatus === 'active' && product.isAvailable) ||
+      (filterStatus === 'inactive' && !product.isAvailable)
+
+    return matchesSearch && matchesCategory && matchesStatus
+  })
 
   const stats = {
     total: products.length,
-    available: products.filter((p) => p.isAvailable && p.quantityAvailable > 0).length,
-    outOfStock: products.filter((p) => p.quantityAvailable === 0).length,
-    disabled: products.filter((p) => !p.isAvailable).length,
+    active: products.filter(p => p.isAvailable).length,
+    inactive: products.filter(p => !p.isAvailable).length,
+    lowStock: products.filter(p => p.quantityAvailable < 10).length,
   }
+
+  if (loading) return <Loading />
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Products</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold text-gray-900">My Products</h1>
+          <p className="text-gray-600 mt-1">
             Manage your product listings
           </p>
         </div>
-        <Button variant="farmer" onClick={() => navigate('/farmer/products/add')}>
+        <Button onClick={() => navigate('/farmer/products/add')}>
           <Plus className="w-4 h-4 mr-2" />
           Add Product
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Products', value: stats.total, color: 'text-blue-600' },
-          { label: 'Available', value: stats.available, color: 'text-green-600' },
-          { label: 'Out of Stock', value: stats.outOfStock, color: 'text-orange-600' },
-          { label: 'Disabled', value: stats.disabled, color: 'text-red-600' },
-        ].map((stat) => (
-          <Card key={stat.label}>
-            <CardContent className="p-4">
-              <p className="text-sm text-gray-500">{stat.label}</p>
-              <p className={cn('text-2xl font-bold', stat.color)}>{stat.value}</p>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Total Products"
+          value={stats.total}
+          icon={Package}
+          color="blue"
+        />
+        <StatCard
+          label="Active"
+          value={stats.active}
+          icon={TrendingUp}
+          color="green"
+        />
+        <StatCard
+          label="Inactive"
+          value={stats.inactive}
+          icon={EyeOff}
+          color="gray"
+        />
+        <StatCard
+          label="Low Stock"
+          value={stats.lowStock}
+          icon={AlertCircle}
+          color="red"
+        />
       </div>
 
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
+                type="text"
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Products</SelectItem>
-                <SelectItem value="available">Available</SelectItem>
-                <SelectItem value="unavailable">Out of Stock</SelectItem>
-              </SelectContent>
-            </Select>
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="border rounded-md px-4 py-2 w-full md:w-48"
+            >
+              {categories.map(cat => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="border rounded-md px-4 py-2 w-full md:w-48"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Products Table */}
-      <Card>
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin w-8 h-8 border-2 border-farmer-500 border-t-transparent rounded-full mx-auto" />
-              <p className="text-gray-500 mt-4">Loading products...</p>
-            </div>
-          ) : filteredProducts.length === 0 ? (
-            <div className="p-8 text-center">
-              <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No products found
+      {/* Products List */}
+      {filteredProducts.length === 0 ? (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              No products found
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {products.length === 0
+                ? "You haven't added any products yet"
+                : 'Try adjusting your filters'}
+            </p>
+            {products.length === 0 && (
+              <Button onClick={() => navigate('/farmer/products/add')}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Your First Product
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProducts.map((product) => (
+            <ProductCard
+              key={product._id}
+              product={product}
+              onToggleAvailability={handleToggleAvailability}
+              onDelete={handleDeleteProduct}
+              onEdit={(id) => navigate(`/farmer/products/edit/${id}`)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Stat Card Component
+const StatCard = ({ label, value, icon: Icon, color }) => {
+  const colorClasses = {
+    blue: 'bg-blue-100 text-blue-600',
+    green: 'bg-green-100 text-green-600',
+    gray: 'bg-gray-100 text-gray-600',
+    red: 'bg-red-100 text-red-600',
+  }
+
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-gray-600 mb-1">{label}</p>
+            <p className="text-3xl font-bold text-gray-900">{value}</p>
+          </div>
+          <div className={`w-12 h-12 rounded-lg ${colorClasses[color]} flex items-center justify-center`}>
+            <Icon className="w-6 h-6" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// Product Card Component
+const ProductCard = ({ product, onToggleAvailability, onDelete, onEdit }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+    >
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+        <div className="relative">
+          <img
+            src={product.images?.[0]?.url || '/placeholder.jpg'}
+            alt={product.cropName}
+            className="w-full h-48 object-cover"
+          />
+          <div className="absolute top-2 right-2 flex gap-2">
+            {product.isOrganic && (
+              <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                Organic
+              </span>
+            )}
+            <span className={`text-xs px-2 py-1 rounded-full ${product.qualityGrade === 'A' ? 'bg-farmer-500 text-white' :
+                product.qualityGrade === 'B' ? 'bg-yellow-500 text-white' :
+                  'bg-gray-500 text-white'
+              }`}>
+              Grade {product.qualityGrade}
+            </span>
+          </div>
+          <div className="absolute top-2 left-2">
+            <span className={`text-xs px-2 py-1 rounded-full ${product.isAvailable ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+              }`}>
+              {product.isAvailable ? 'Active' : 'Inactive'}
+            </span>
+          </div>
+        </div>
+
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between mb-2">
+            <div className="flex-1">
+              <h3 className="font-semibold text-lg text-gray-900 truncate">
+                {product.cropName}
               </h3>
-              <p className="text-gray-500 mb-4">
-                {searchTerm
-                  ? 'Try a different search term'
-                  : 'Start by adding your first product'}
-              </p>
-              {!searchTerm && (
-                <Button
-                  variant="farmer"
-                  onClick={() => navigate('/farmer/products/add')}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Product
-                </Button>
-              )}
+              <p className="text-sm text-gray-500 capitalize">{product.category}</p>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Product</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Stock</TableHead>
-                    <TableHead>Grade</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Added</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProducts.map((product) => (
-                    <TableRow key={product._id}>
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
-                          <img
-                            src={product.images?.[0]?.url || '/images/placeholder-product.jpg'}
-                            alt={product.cropName}
-                            className="w-10 h-10 rounded-lg object-cover"
-                          />
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {product.cropName}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {product.views} views
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="capitalize">{product.category}</TableCell>
-                      <TableCell className="font-medium">
-                        {formatPrice(product.pricePerKg)}/kg
-                      </TableCell>
-                      <TableCell>
-                        <span
-                          className={cn(
-                            'font-medium',
-                            product.quantityAvailable === 0
-                              ? 'text-red-600'
-                              : product.quantityAvailable < 10
-                              ? 'text-orange-600'
-                              : 'text-green-600'
-                          )}
-                        >
-                          {product.quantityAvailable} kg
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={cn(
-                            product.qualityGrade === 'A'
-                              ? 'bg-farmer-500'
-                              : product.qualityGrade === 'B'
-                              ? 'bg-yellow-500'
-                              : 'bg-gray-500'
-                          )}
-                        >
-                          Grade {product.qualityGrade}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {product.isAvailable && product.quantityAvailable > 0 ? (
-                          <Badge className="bg-green-100 text-green-700">
-                            Available
-                          </Badge>
-                        ) : product.quantityAvailable === 0 ? (
-                          <Badge className="bg-red-100 text-red-700">
-                            Out of Stock
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-gray-100 text-gray-700">
-                            Disabled
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-gray-500">
-                        {formatDate(product.createdAt)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => navigate(`/farmer/products/edit/${product._id}`)}
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => window.open(`/products/${product._id}`, '_blank')}
-                            >
-                              <Eye className="w-4 h-4 mr-2" />
-                              View Public
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleToggleAvailability(product._id)}
-                            >
-                              {product.isAvailable ? (
-                                <>
-                                  <EyeOff className="w-4 h-4 mr-2" />
-                                  Disable
-                                </>
-                              ) : (
-                                <>
-                                  <Eye className="w-4 h-4 mr-2" />
-                                  Enable
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => {
-                                setProductToDelete(product)
-                                setDeleteDialogOpen(true)
-                              }}
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onEdit(product._id)}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => onToggleAvailability(product._id, product.isAvailable)}
+                >
+                  {product.isAvailable ? (
+                    <>
+                      <EyeOff className="w-4 h-4 mr-2" />
+                      Deactivate
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-4 h-4 mr-2" />
+                      Activate
+                    </>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => onDelete(product._id)}
+                  className="text-red-600"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Price:</span>
+              <span className="font-semibold text-farmer-600">
+                {formatPrice(product.pricePerKg)}/kg
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Stock:</span>
+              <span className={`font-semibold ${product.quantityAvailable < 10 ? 'text-red-600' : 'text-gray-900'
+                }`}>
+                {product.quantityAvailable} {product.unit}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Views:</span>
+              <span className="text-sm text-gray-900">{product.views || 0}</span>
+            </div>
+          </div>
+
+          {product.quantityAvailable < 10 && (
+            <div className="mt-3 flex items-center text-xs text-red-600">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              Low stock warning
             </div>
           )}
         </CardContent>
       </Card>
-
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="flex justify-center space-x-2">
-          <Button
-            variant="outline"
-            disabled={pagination.currentPage === 1}
-            onClick={() => fetchProducts(pagination.currentPage - 1)}
-          >
-            Previous
-          </Button>
-          <span className="flex items-center px-4">
-            Page {pagination.currentPage} of {pagination.totalPages}
-          </span>
-          <Button
-            variant="outline"
-            disabled={pagination.currentPage === pagination.totalPages}
-            onClick={() => fetchProducts(pagination.currentPage + 1)}
-          >
-            Next
-          </Button>
-        </div>
-      )}
-
-      {/* Delete Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Product</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{productToDelete?.cropName}"? This
-              action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteProduct}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+    </motion.div>
   )
 }
 

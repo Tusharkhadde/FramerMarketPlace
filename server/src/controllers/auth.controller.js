@@ -66,6 +66,7 @@ export const register = asyncHandler(async (req, res, next) => {
 // @route   POST /api/auth/login
 // @access  Public
 export const login = asyncHandler(async (req, res, next) => {
+  console.log("Login controller running")
   const { email, password } = req.body
 
   // Validate email & password
