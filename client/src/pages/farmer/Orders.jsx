@@ -45,6 +45,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
+import { DownloadAnimation } from '@/components/animated-download'
 import orderService from '@/services/order.service'
 import { formatPrice, formatDate, cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -434,16 +435,20 @@ const FarmerOrders = () => {
                 )}
 
                 {/* Actions */}
-                {statusActions[selectedOrder.orderStatus] && (
-                  <DialogFooter>
-                    <Button
-                      variant="farmer"
-                      onClick={() => setUpdateDialogOpen(true)}
-                    >
-                      Update Status
-                    </Button>
-                  </DialogFooter>
-                )}
+                <DialogFooter className="flex flex-col sm:flex-row justify-between items-center w-full gap-4 mt-8">
+                  <div className="flex-1 flex justify-start">
+                      <DownloadAnimation />
+                  </div>
+                  {statusActions[selectedOrder.orderStatus] && (
+                      <Button
+                        variant="farmer"
+                        onClick={() => setUpdateDialogOpen(true)}
+                        className="w-full sm:w-auto hover:scale-105 transition-transform"
+                      >
+                        Update Status
+                      </Button>
+                  )}
+                </DialogFooter>
               </div>
             </>
           )}
