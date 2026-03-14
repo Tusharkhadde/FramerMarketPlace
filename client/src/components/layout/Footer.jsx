@@ -12,7 +12,7 @@ const Footer = () => {
       { name: 'Organic', href: '/products?organic=true' },
     ],
     farmers: [
-      { name: 'Sell Your Produce', href: '/register?type=farmer' },
+      { name: 'Sell Your Products', href: '/register?type=farmer' },
       { name: 'Farmer Dashboard', href: '/farmer/dashboard' },
       { name: 'Market Prices', href: '/farmer/market-prices' },
       { name: 'Success Stories', href: '/stories' },
