@@ -106,8 +106,10 @@
 // export default router
 import express from 'express'
 import Product from '../models/Product.js'
+import fs from 'fs'
 import { protect, authorize } from '../middleware/auth.middleware.js'
 import { upload } from '../middleware/upload.middleware.js'
+import { uploadToCloudinary } from '../config/cloudinary.js'
 
 const router = express.Router()
 
@@ -193,10 +195,19 @@ router.post('/', protect, authorize('farmer'), upload.array('images', 5), async 
 
     let images = []
     if (req.files && req.files.length > 0) {
-      images = req.files.map(file => ({
-        url: `/uploads/${file.filename}`,
-        publicId: file.filename,
-      }))
+      try {
+        const uploads = await Promise.all(
+          req.files.map(f => uploadToCloudinary(f.path, 'products'))
+        )
+
+        images = uploads.map(u => ({ url: u.secure_url || u.url, publicId: u.public_id }))
+      } catch (err) {
+        // cleanup any local files if upload failed
+        req.files.forEach(file => {
+          try { fs.unlinkSync(file.path) } catch (e) { }
+        })
+        return res.status(500).json({ success: false, message: err.message || 'Failed to upload images' })
+      }
     } else {
       images = [{ url: 'https://via.placeholder.com/400x400.png?text=Product', publicId: null }]
     }

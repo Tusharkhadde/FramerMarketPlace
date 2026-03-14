@@ -21,6 +21,53 @@ router.put('/profile', asyncHandler(async (req, res) => {
   sendResponse(res, 200, { user }, 'Profile updated')
 }))
 
+// Get user addresses
+router.get('/addresses', asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id)
+  sendResponse(res, 200, { addresses: user.addresses || [] }, 'Addresses fetched')
+}))
+
+// Add new address
+router.post('/addresses', asyncHandler(async (req, res) => {
+  const {
+    label,
+    fullName,
+    phone,
+    addressLine1,
+    addressLine2,
+    city,
+    district,
+    state,
+    pincode,
+    isDefault,
+  } = req.body
+
+  const user = await User.findById(req.user.id)
+
+  if (isDefault) {
+    // unset other defaults
+    user.addresses.forEach(a => { a.isDefault = false })
+  }
+
+  user.addresses.push({
+    label,
+    fullName,
+    phone,
+    addressLine1,
+    addressLine2,
+    city,
+    district,
+    state,
+    pincode,
+    isDefault: !!isDefault,
+  })
+
+  await user.save()
+
+  const newAddress = user.addresses[user.addresses.length - 1]
+  sendResponse(res, 201, { address: newAddress }, 'Address added')
+}))
+
 // Get farmer stats
 router.get('/farmer/stats', authorize('farmer'), asyncHandler(async (req, res) => {
   const Product = (await import('../models/Product.js')).default
