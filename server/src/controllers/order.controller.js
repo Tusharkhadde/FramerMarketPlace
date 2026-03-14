@@ -28,13 +28,14 @@ export const createOrder = asyncHandler(async (req, res, next) => {
   let subtotal = 0
 
   for (const item of items) {
-    const product = await Product.findById(item.productId).populate(
+    const productId = item.productId || item.product
+    const product = await Product.findById(productId).populate(
       'farmer',
       'fullName email phone'
     )
 
     if (!product) {
-      return next(new ApiError(`Product not found: ${item.productId}`, 404))
+      return next(new ApiError(`Product not found: ${productId}`, 404))
     }
 
     if (!product.isAvailable) {

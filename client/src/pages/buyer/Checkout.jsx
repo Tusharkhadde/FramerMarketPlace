@@ -29,7 +29,7 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false)
   const [addresses, setAddresses] = useState([])
   const [selectedAddress, setSelectedAddress] = useState(null)
-  const [paymentMethod, setPaymentMethod] = useState('razorpay')
+  const [paymentMethod, setPaymentMethod] = useState('cod')
   const [showAddressForm, setShowAddressForm] = useState(false)
 
   const [addressForm, setAddressForm] = useState({
@@ -113,15 +113,10 @@ const Checkout = () => {
       const response = await api.post('/orders', orderData)
       const order = response.data.data.order
 
-      if (paymentMethod === 'razorpay') {
-        // Initiate Razorpay payment
-        await initiateRazorpayPayment(order)
-      } else {
-        // COD order
-        toast.success('Order placed successfully!')
-        await clearCart()
-        navigate(`/orders/${order._id}`)
-      }
+      // Cash on Delivery (COD) flow
+      toast.success('Order placed successfully!')
+      await clearCart()
+      navigate(`/orders/${order._id}`)
     } catch (error) {
       console.error('Error placing order:', error)
       toast.error(error.response?.data?.message || 'Failed to place order')
@@ -130,56 +125,7 @@ const Checkout = () => {
     }
   }
 
-  const initiateRazorpayPayment = async (order) => {
-    try {
-      // Create Razorpay order
-      const response = await api.post('/payment/create-order', {
-        orderId: order._id,
-        amount: order.totalAmount,
-      })
-
-      const { razorpayOrderId, amount, currency } = response.data.data
-
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: amount,
-        currency: currency,
-        name: 'FarmMarket',
-        description: 'Fresh Farm Products',
-        order_id: razorpayOrderId,
-        handler: async function (response) {
-          // Verify payment
-          try {
-            await api.post('/payment/verify', {
-              orderId: order._id,
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
-            })
-
-            toast.success('Payment successful!')
-            await clearCart()
-            navigate(`/orders/${order._id}`)
-          } catch (error) {
-            toast.error('Payment verification failed')
-          }
-        },
-        prefill: {
-          name: user?.fullName,
-          email: user?.email,
-          contact: user?.phone,
-        },
-        theme: {
-          color: '#22c55e',
-        },
-      }
-
-      const razorpay = new window.Razorpay(options)
-      razorpay.open()
-    } catch (error) {
-      toast.error('Failed to initiate payment')
-    }
-  }
+  // Razorpay removed: using Cash on Delivery only
 
   if (loading) return <Loading />
 

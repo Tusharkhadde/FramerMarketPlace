@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  flexRender,
+} from "@tanstack/react-table";
+import {
   Search,
   MoreVertical,
   Eye,
@@ -107,6 +115,7 @@ const AdminProducts = () => {
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
   const [confirmDialog, setConfirmDialog] = useState({ open: false, action: null, product: null })
+  const [columnVisibility, setColumnVisibility] = useState({})
 
   const stats = {
     total: products.length,
@@ -149,6 +158,177 @@ const AdminProducts = () => {
     toast.success('Product deleted')
     setConfirmDialog({ open: false, action: null, product: null })
   }
+
+  const columns = [
+    {
+      accessorKey: "product",
+      header: "Product",
+      cell: ({ row }) => {
+        const product = row.original;
+        return (
+          <div className="flex items-center gap-3">
+            <img
+              src={product.images?.[0]?.url || '/images/placeholder-product.jpg'}
+              alt={product.cropName}
+              className="w-10 h-10 rounded-lg object-cover shadow-sm"
+            />
+            <div>
+              <p className="font-medium text-gray-900 dark:text-white flex items-center gap-1">
+                {product.cropName}
+                {product.isFeatured && (
+                  <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                )}
+              </p>
+              <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                <MapPin className="w-3 h-3" />
+                {product.district}
+                {product.isOrganic && (
+                  <Badge className="ml-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[10px] px-1 border-none">
+                    Organic
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      accessorKey: "category",
+      header: "Category",
+      cell: ({ row }) => <span className="capitalize">{row.getValue("category")}</span>
+    },
+    {
+      accessorKey: "farmer",
+      header: "Farmer",
+      cell: ({ row }) => <span>{row.original.farmer?.fullName}</span>
+    },
+    {
+      accessorKey: "pricePerKg",
+      header: "Price",
+      cell: ({ row }) => <span className="font-medium">{formatPrice(row.getValue("pricePerKg"))}/kg</span>
+    },
+    {
+       accessorKey: "quantityAvailable",
+       header: "Stock",
+       cell: ({ row }) => {
+         const qty = row.getValue("quantityAvailable");
+         return (
+            <span className={cn(
+              'text-sm font-medium',
+               qty === 0 ? 'text-red-500 dark:text-red-400' :
+               qty < 50 ? 'text-orange-500 dark:text-orange-400' : 'text-green-600 dark:text-green-400'
+            )}>
+              {qty} kg
+            </span>
+         )
+       }
+    },
+    {
+      accessorKey: "qualityGrade",
+      header: "Grade",
+      cell: ({ row }) => {
+        const grade = row.getValue("qualityGrade");
+        return (
+          <Badge className={cn(
+            grade === 'A' ? 'bg-farmer-500 dark:bg-farmer-600' :
+            grade === 'B' ? 'bg-yellow-500 dark:bg-yellow-600' : 'bg-gray-500 dark:bg-gray-600', 'border-none text-white'
+          )}>
+            Grade {grade}
+          </Badge>
+        )
+      }
+    },
+    {
+       accessorKey: "isApproved",
+       header: "Status",
+       cell: ({ row }) => {
+         const isApproved = row.getValue("isApproved");
+         return isApproved ? (
+            <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-none">
+              <CheckCircle className="w-3 h-3 mr-1" />
+              Approved
+            </Badge>
+          ) : (
+            <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-none">
+              <AlertCircle className="w-3 h-3 mr-1" />
+              Pending
+            </Badge>
+          )
+       }
+    },
+    { accessorKey: "views", header: "Views" },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => {
+        const product = row.original;
+        return (
+          <div className="flex justify-end">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100 dark:hover:bg-neutral-800 rounded-full transition-colors active:scale-95">
+                  <MoreVertical className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 shadow-xl rounded-xl">
+                <DropdownMenuItem onClick={() => {
+                  setSelectedProduct(product)
+                  setDetailsDialogOpen(true)
+                }} className="hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors py-2 cursor-pointer">
+                  <Eye className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                  View Details
+                </DropdownMenuItem>
+                {!product.isApproved && (
+                  <DropdownMenuItem
+                    className="text-green-600 dark:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors py-2 cursor-pointer"
+                    onClick={() => setConfirmDialog({ open: true, action: 'approve', product })}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Approve
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => handleToggleFeatured(product._id)} className="hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors py-2 cursor-pointer">
+                  <Star className="w-4 h-4 mr-2 text-yellow-500" />
+                  {product.isFeatured ? 'Unfeature' : 'Feature'}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-gray-100 dark:bg-neutral-800 my-1" />
+                <DropdownMenuItem
+                  className="text-orange-600 dark:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors py-2 cursor-pointer"
+                  onClick={() => setConfirmDialog({ open: true, action: 'reject', product })}
+                >
+                  <Ban className="w-4 h-4 mr-2" />
+                  Reject
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors py-2 cursor-pointer"
+                  onClick={() => setConfirmDialog({ open: true, action: 'delete', product })}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )
+      }
+    }
+  ];
+
+  const table = useReactTable({
+    data: filteredProducts,
+    columns,
+    state: {
+      globalFilter: searchTerm,
+      columnVisibility,
+    },
+    onGlobalFilterChange: setSearchTerm,
+    onColumnVisibilityChange: setColumnVisibility,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+  });
 
   return (
     <div className="space-y-6">
@@ -224,143 +404,109 @@ const AdminProducts = () => {
       </Card>
 
       {/* Products Table */}
-      <Card>
+      <Card className="border-0 shadow-md ring-1 ring-gray-200 dark:ring-neutral-800 overflow-hidden">
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Farmer</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead>Grade</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Views</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.map(product => (
-                  <TableRow key={product._id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={product.images?.[0]?.url || '/images/placeholder-product.jpg'}
-                          alt={product.cropName}
-                          className="w-10 h-10 rounded-lg object-cover"
-                        />
-                        <div>
-                          <p className="font-medium text-gray-900 flex items-center gap-1">
-                            {product.cropName}
-                            {product.isFeatured && (
-                              <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                            )}
-                          </p>
-                          <div className="flex items-center gap-1 text-xs text-gray-500">
-                            <MapPin className="w-3 h-3" />
-                            {product.district}
-                            {product.isOrganic && (
-                              <Badge className="ml-1 bg-green-100 text-green-700 text-[10px] px-1">
-                                Organic
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="capitalize text-sm">{product.category}</TableCell>
-                    <TableCell className="text-sm">{product.farmer.fullName}</TableCell>
-                    <TableCell className="font-medium">{formatPrice(product.pricePerKg)}/kg</TableCell>
-                    <TableCell>
-                      <span className={cn(
-                        'text-sm font-medium',
-                        product.quantityAvailable === 0 ? 'text-red-600' :
-                        product.quantityAvailable < 50 ? 'text-orange-600' : 'text-green-600'
-                      )}>
-                        {product.quantityAvailable} kg
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={cn(
-                        product.qualityGrade === 'A' ? 'bg-farmer-500' :
-                        product.qualityGrade === 'B' ? 'bg-yellow-500' : 'bg-gray-500'
-                      )}>
-                        Grade {product.qualityGrade}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {product.isApproved ? (
-                        <Badge className="bg-green-100 text-green-700">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Approved
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-yellow-100 text-yellow-700">
-                          <AlertCircle className="w-3 h-3 mr-1" />
-                          Pending
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-500">{product.views}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => {
-                            setSelectedProduct(product)
-                            setDetailsDialogOpen(true)
-                          }}>
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-                          {!product.isApproved && (
-                            <DropdownMenuItem
-                              className="text-green-600"
-                              onClick={() => setConfirmDialog({ open: true, action: 'approve', product })}
+          <div className="w-full bg-white dark:bg-neutral-900 px-4 py-6 sm:px-6">
+            <div className="w-full space-y-6">
+              
+              <div className="hidden sm:flex justify-end gap-2 mb-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const keys = table.getAllLeafColumns().map((col) => col.id);
+                      setColumnVisibility((prev) =>
+                        keys.reduce((acc, key) => {
+                          acc[key] = !prev[key];
+                          return acc;
+                        }, {}));
+                    }}
+                    className="border-gray-300 dark:border-neutral-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 bg-white dark:bg-neutral-900 shadow-sm transition-all active:scale-95 text-xs"
+                  >
+                    {table.getAllLeafColumns().some((col) => !col.getIsVisible())
+                      ? "Expand Columns"
+                      : "Collapse Columns"}
+                  </Button>
+              </div>
+
+              {/* Table */}
+              <div className="border border-gray-200 dark:border-neutral-800 rounded-lg overflow-hidden bg-white dark:bg-neutral-950 shadow-sm">
+                <div className="overflow-x-auto">
+                    <Table className="w-full text-sm text-left">
+                    <TableHeader className="bg-gray-50/80 dark:bg-neutral-900/50 backdrop-blur-sm border-b border-gray-200 dark:border-neutral-800">
+                        {table.getHeaderGroups().map((headerGroup) => (
+                        <TableRow key={headerGroup.id} className="hover:bg-transparent border-none">
+                            {headerGroup.headers.map((header) => (
+                            <TableHead
+                                key={header.id}
+                                className="whitespace-nowrap px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 transition-colors"
                             >
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Approve
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem onClick={() => handleToggleFeatured(product._id)}>
-                            <Star className="w-4 h-4 mr-2" />
-                            {product.isFeatured ? 'Unfeature' : 'Feature'}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-orange-600"
-                            onClick={() => setConfirmDialog({ open: true, action: 'reject', product })}
-                          >
-                            <Ban className="w-4 h-4 mr-2" />
-                            Reject
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => setConfirmDialog({ open: true, action: 'delete', product })}
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          {filteredProducts.length === 0 && (
-            <div className="py-16 text-center text-gray-500">
-              <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>No products found</p>
+                                {flexRender(header.column.columnDef.header, header.getContext())}
+                            </TableHead>
+                            ))}
+                        </TableRow>
+                        ))}
+                    </TableHeader>
+                    <TableBody>
+                        {table.getRowModel().rows.length ? (
+                        table.getRowModel().rows.map((row) => (
+                            <TableRow 
+                                key={row.id} 
+                                className="border-b border-gray-100 dark:border-neutral-800/60 hover:bg-gray-50/80 dark:hover:bg-neutral-800/40 transition-colors data-[state=selected]:bg-gray-100 dark:data-[state=selected]:bg-neutral-800"
+                            >
+                            {row.getVisibleCells().map((cell) => (
+                                <TableCell key={cell.id} className="px-4 py-3 align-middle text-gray-600 dark:text-gray-300">
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                </TableCell>
+                            ))}
+                            </TableRow>
+                        ))
+                        ) : (
+                        <TableRow>
+                            <TableCell colSpan={columns.length} className="h-48 text-center text-gray-500 dark:text-gray-400">
+                                <div className="flex flex-col items-center justify-center">
+                                    <Package className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
+                                    <p className="text-lg font-medium text-gray-900 dark:text-gray-100">No products found</p>
+                                    <p className="text-sm mt-1 mb-4">No products match your current filters.</p>
+                                </div>
+                            </TableCell>
+                        </TableRow>
+                        )}
+                    </TableBody>
+                    </Table>
+                </div>
+              </div>
+
+               {/* Pagination */}
+               {table.getRowModel().rows.length > 0 && (
+                  <div className="flex items-center justify-between pt-4 text-sm text-gray-600 dark:text-gray-400 border-t border-gray-100 dark:border-neutral-800">
+                  <span>
+                      Showing <span className="font-medium text-gray-900 dark:text-white">{table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}</span> to <span className="font-medium text-gray-900 dark:text-white">{Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getFilteredRowModel().rows.length)}</span> of{" "}
+                      <span className="font-medium text-gray-900 dark:text-white">{table.getFilteredRowModel().rows.length}</span> entries
+                  </span>
+                  <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => table.previousPage()}
+                        disabled={!table.getCanPreviousPage()}
+                        className="bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-900 dark:hover:text-white shadow-sm"
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => table.nextPage()}
+                        disabled={!table.getCanNextPage()}
+                        className="bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-gray-900 dark:hover:text-white shadow-sm"
+                      >
+                        Next
+                      </Button>
+                  </div>
+                  </div>
+              )}
             </div>
-          )}
+          </div>
         </CardContent>
       </Card>
 
