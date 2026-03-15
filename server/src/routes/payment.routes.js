@@ -1,11 +1,11 @@
 import express from 'express'
-// import {
-//   createRazorpayOrder,
-//   verifyPayment,
-//   getPaymentDetails,
-//   processRefund,
-//   handleWebhook,
-// } from '../controllers/payment.controller.js'
+import {
+  createRazorpayOrder,
+  verifyPayment,
+  getPaymentDetails,
+  processRefund,
+  handleWebhook,
+} from '../controllers/payment.controller.js'
 import { protect, authorize } from '../middleware/auth.middleware.js'
 
 const router = express.Router()

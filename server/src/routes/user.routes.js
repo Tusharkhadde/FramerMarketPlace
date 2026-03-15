@@ -21,6 +21,59 @@ router.put('/profile', asyncHandler(async (req, res) => {
   sendResponse(res, 200, { user }, 'Profile updated')
 }))
 
+// Address Management
+// @desc    Get all addresses
+router.get('/addresses', asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id).select('addresses')
+  sendResponse(res, 200, { addresses: user.addresses }, 'Addresses fetched')
+}))
+
+// @desc    Add new address
+router.post('/addresses', asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id)
+  user.addresses.push(req.body)
+  
+  // If first address, make it default
+  if (user.addresses.length === 1) {
+    user.addresses[0].isDefault = true
+  }
+  
+  await user.save()
+  sendResponse(res, 201, { addresses: user.addresses }, 'Address added successfully')
+}))
+
+// @desc    Update address
+router.put('/addresses/:addressId', asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id)
+  const address = user.addresses.id(req.params.addressId)
+  
+  if (!address) {
+    return res.status(404).json({ success: false, message: 'Address not found' })
+  }
+  
+  Object.assign(address, req.body)
+  await user.save()
+  sendResponse(res, 200, { addresses: user.addresses }, 'Address updated successfully')
+}))
+
+// @desc    Delete address
+router.delete('/addresses/:addressId', asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id)
+  user.addresses.pull(req.params.addressId)
+  await user.save()
+  sendResponse(res, 200, { addresses: user.addresses }, 'Address deleted successfully')
+}))
+
+// @desc    Set default address
+router.patch('/addresses/:addressId/default', asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id)
+  user.addresses.forEach(addr => {
+    addr.isDefault = (addr._id.toString() === req.params.addressId)
+  })
+  await user.save()
+  sendResponse(res, 200, { addresses: user.addresses }, 'Default address updated')
+}))
+
 // Get farmer stats
 router.get('/farmer/stats', authorize('farmer'), asyncHandler(async (req, res) => {
   const Product = (await import('../models/Product.js')).default
