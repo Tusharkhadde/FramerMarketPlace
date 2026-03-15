@@ -54,3 +54,11 @@ export function debounce(func, wait) {
     timeout = setTimeout(later, wait)
   }
 }
+
+export function getProductImageUrl(url) {
+  if (!url) return '/placeholder.jpg'
+  if (url.startsWith('http')) return url
+  if (url.startsWith('/uploads/')) return `http://localhost:5000${url}`
+  if (url.startsWith('uploads/')) return `http://localhost:5000/${url}`
+  return url
+}
