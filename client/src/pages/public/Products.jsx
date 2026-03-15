@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import api from '@/config/api'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, getProductImageUrl } from '@/lib/utils'
 import Loading from '@/components/shared/Loading'
 import { toast } from 'sonner'
 
@@ -451,7 +451,7 @@ const ProductCard = ({ product, viewMode }) => {
       <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/products/${product._id}`)}>
         <CardContent className="p-4 flex gap-4">
           <img
-            src={product.images?.[0]?.url || '/placeholder.jpg'}
+            src={getProductImageUrl(product.images?.[0]?.url)}
             alt={product.cropName}
             className="w-24 h-24 object-cover rounded-lg"
           />
@@ -498,7 +498,7 @@ const ProductCard = ({ product, viewMode }) => {
       onClick={() => navigate(`/products/${product._id}`)}>
       <div className="relative overflow-hidden">
         <img
-          src={product.images?.[0]?.url || '/placeholder.jpg'}
+          src={getProductImageUrl(product.images?.[0]?.url)}
           alt={product.cropName}
           className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
         />
