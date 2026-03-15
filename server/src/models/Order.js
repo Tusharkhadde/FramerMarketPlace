@@ -166,9 +166,9 @@ orderSchema.index({ orderStatus: 1 })
 orderSchema.index({ paymentStatus: 1 })
 orderSchema.index({ createdAt: -1 })
 
-// Generate order number before saving
-orderSchema.pre('save', async function (next) {
-  if (this.isNew) {
+// Generate order number before validation
+orderSchema.pre('validate', async function (next) {
+  if (this.isNew && !this.orderNumber) {
     const date = new Date()
     const year = date.getFullYear().toString().slice(-2)
     const month = (date.getMonth() + 1).toString().padStart(2, '0')
