@@ -29,7 +29,7 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false)
   const [addresses, setAddresses] = useState([])
   const [selectedAddress, setSelectedAddress] = useState(null)
-  const [paymentMethod, setPaymentMethod] = useState('razorpay')
+  const [paymentMethod, setPaymentMethod] = useState('cod')
   const [showAddressForm, setShowAddressForm] = useState(false)
 
   const [addressForm, setAddressForm] = useState({
@@ -101,7 +101,7 @@ const Checkout = () => {
 
       const orderData = {
         items: cart.map(item => ({
-          product: item.product._id,
+          productId: item.product._id,
           quantity: item.quantity,
           price: item.price,
         })),
@@ -306,10 +306,10 @@ const Checkout = () => {
               <CardContent className="space-y-3">
                 <PaymentOption
                   id="razorpay"
-                  label="UPI / Cards / Net Banking"
+                  label="UPI / Cards / Net Banking (disabled)"
                   icon={Wallet}
                   selected={paymentMethod === 'razorpay'}
-                  onSelect={() => setPaymentMethod('razorpay')}
+                  onSelect={() => toast.error('Online payments are disabled. Please choose Cash on Delivery.')}
                 />
                 <PaymentOption
                   id="cod"
