@@ -247,7 +247,7 @@ const AdminProducts = () => {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <img
-                          src={product.images?.[0]?.url || '/images/placeholder-product.jpg'}
+                          src={getProductImageUrl(product.images?.[0]?.url)}
                           alt={product.cropName}
                           className="w-10 h-10 rounded-lg object-cover"
                         />
@@ -375,7 +375,7 @@ const AdminProducts = () => {
               </DialogHeader>
               <div className="space-y-4">
                 <img
-                  src={selectedProduct.images?.[0]?.url || '/images/placeholder-product.jpg'}
+                  src={getProductImageUrl(selectedProduct.images?.[0]?.url)}
                   alt={selectedProduct.cropName}
                   className="w-full h-48 object-cover rounded-lg"
                 />
