@@ -133,7 +133,7 @@ const DashboardLayout = () => {
           {/* Navigation Links */}
           <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
             {sidebarLinks.map((link) => {
-              const isActive = location.pathname === link.href
+              const isActive = location.pathname.startsWith(link.href)
               return (
                 <Link
                   key={link.name}
