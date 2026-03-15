@@ -56,9 +56,16 @@ export function debounce(func, wait) {
 }
 
 export function getProductImageUrl(url) {
-  if (!url) return '/placeholder.jpg'
+  // Derive API base from VITE_API_URL (which is like http://localhost:5000/api)
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+  const apiBase = apiUrl.replace(/\/api\/?$/, '')
+
+  // Fallback placeholder (external) so missing local file doesn't break UI
+  const placeholder = 'https://via.placeholder.com/800x800?text=No+Image'
+
+  if (!url) return placeholder
   if (url.startsWith('http')) return url
-  if (url.startsWith('/uploads/')) return `http://localhost:5000${url}`
-  if (url.startsWith('uploads/')) return `http://localhost:5000/${url}`
+  if (url.startsWith('/uploads')) return `${apiBase}${url}`
+  if (url.startsWith('uploads')) return `${apiBase}/${url}`
   return url
 }
