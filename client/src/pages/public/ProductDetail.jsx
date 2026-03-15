@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import api from '@/config/api'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, getProductImageUrl } from '@/lib/utils'
 import Loading from '@/components/shared/Loading'
 import { toast } from 'sonner'
 import { useAuth } from '@/context/AuthContext'
@@ -146,7 +146,7 @@ const ProductDetail = () => {
             <Card className="overflow-hidden">
               <div className="relative aspect-square">
                 <img
-                  src={product.images[currentImageIndex]?.url || '/placeholder.jpg'}
+                  src={getProductImageUrl(product.images[currentImageIndex]?.url)}
                   alt={product.cropName}
                   className="w-full h-full object-cover"
                 />
@@ -204,7 +204,7 @@ const ProductDetail = () => {
                       }`}
                   >
                     <img
-                      src={image.url}
+                      src={getProductImageUrl(image.url)}
                       alt={`${product.cropName} ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
@@ -425,7 +425,7 @@ const ProductDetail = () => {
                   onClick={() => navigate(`/products/${product._id}`)}
                 >
                   <img
-                    src={product.images[0]?.url || '/placeholder.jpg'}
+                    src={getProductImageUrl(product.images[0]?.url)}
                     alt={product.cropName}
                     className="w-full h-48 object-cover rounded-t-lg"
                   />
