@@ -56,7 +56,7 @@ const AdminLayout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Mobile Overlay */}
       <AnimatePresence>
         {sidebarOpen && (
@@ -93,7 +93,7 @@ const AdminLayout = () => {
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-1 hover:bg-gray-800 rounded"
+              className="lg:hidden p-1 hover:bg-card rounded"
             >
               <X className="w-5 h-5" />
             </button>
@@ -112,11 +112,11 @@ const AdminLayout = () => {
                   to={link.href}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    'flex items-center space-x-3 px-4 py-3 rounded-xl transition-all',
-                    isActive
-                      ? 'bg-farmer-600 text-white shadow-lg shadow-farmer-600/30'
-                      : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                  )}
+                      'flex items-center space-x-3 px-4 py-3 rounded-xl transition-all',
+                      isActive
+                        ? 'bg-farmer-600 text-white shadow-lg shadow-farmer-600/30'
+                        : 'text-muted-foreground hover:bg-card hover:text-foreground'
+                    )}
                 >
                   <link.icon className="w-5 h-5" />
                   <span className="font-medium">{link.name}</span>
@@ -158,12 +158,12 @@ const AdminLayout = () => {
       {/* Main Content */}
       <div className="lg:pl-72">
         {/* Header */}
-        <header className="sticky top-0 z-30 bg-white border-b shadow-sm">
+        <header className="sticky top-0 z-30 bg-card border-b shadow-sm">
           <div className="flex items-center justify-between h-16 px-4 lg:px-8">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+                className="lg:hidden p-2 hover:bg-card rounded-lg"
               >
                 <Menu className="w-6 h-6" />
               </button>
@@ -173,20 +173,20 @@ const AdminLayout = () => {
             </div>
 
             <div className="flex items-center space-x-3">
-              <button className="relative p-2 hover:bg-gray-100 rounded-lg">
+              <button className="relative p-2 hover:bg-card rounded-lg">
                 <Bell className="w-5 h-5 text-gray-600" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
               </button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg">
+                  <button className="flex items-center space-x-2 p-2 hover:bg-card rounded-lg">
                     <Avatar className="w-8 h-8">
                       <AvatarFallback className="bg-farmer-600 text-white text-sm">
                         {getInitials(user?.fullName || 'A')}
                       </AvatarFallback>
                     </Avatar>
-                    <ChevronDown className="w-4 h-4 text-gray-600" />
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">

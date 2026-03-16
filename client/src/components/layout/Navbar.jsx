@@ -82,8 +82,8 @@ const Navbar = () => {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-md'
-          : 'bg-white/80 backdrop-blur-sm'
+          ? 'bg-card/95 backdrop-blur-md shadow-md'
+          : 'bg-card/80 backdrop-blur-sm'
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -93,7 +93,7 @@ const Navbar = () => {
             <div className="w-10 h-10 bg-gradient-to-br from-farmer-500 to-farmer-600 rounded-xl flex items-center justify-center">
               <Leaf className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">
+            <span className="text-xl font-bold text-zinc-900">
               Farm<span className="text-farmer-600">Market</span>
             </span>
           </Link>
@@ -109,7 +109,7 @@ const Navbar = () => {
                   to={link.href}
                   className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
                       ? 'bg-farmer-100 text-farmer-700'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      : 'text-zinc-900 hover:bg-zinc-100'
                     }`}
                 >
                   <Icon className="w-4 h-4 mr-2" />
@@ -122,7 +122,7 @@ const Navbar = () => {
           {/* Search Bar */}
           <form onSubmit={handleSearch} className="hidden lg:flex flex-1 max-w-md mx-6">
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 type="text"
                 placeholder="Search products..."
@@ -237,7 +237,7 @@ const Navbar = () => {
               </>
             ) : (
               <div className="flex items-center space-x-3">
-                <Button variant="ghost" onClick={() => navigate('/login')}>
+                <Button variant="ghost" onClick={() => navigate('/login')} className="text-zinc-900">
                   Sign In
                 </Button>
                 <Button onClick={() => navigate('/register')}>
@@ -282,7 +282,7 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white border-t"
+            className="md:hidden bg-card border-t border-border"
           >
             <div className="px-4 py-4 space-y-4">
               {/* Mobile Search */}
@@ -309,9 +309,9 @@ const Navbar = () => {
                       key={link.name}
                       to={link.href}
                       className={`flex items-center px-4 py-3 rounded-lg ${isActive
-                          ? 'bg-farmer-100 text-farmer-700'
-                          : 'text-gray-700 hover:bg-gray-100'
-                        }`}
+                            ? 'bg-farmer-100 text-farmer-700'
+                            : 'text-foreground hover:bg-card'
+                          }`}
                     >
                       <Icon className="w-5 h-5 mr-3" />
                       {link.name}
@@ -332,13 +332,13 @@ const Navbar = () => {
                     </Avatar>
                     <div>
                       <p className="font-medium">{user?.fullName}</p>
-                      <p className="text-sm text-gray-500 capitalize">{user?.userType}</p>
+                      <p className="text-sm text-muted-foreground capitalize">{user?.userType}</p>
                     </div>
                   </div>
 
                   <Link
                     to={getDashboardLink()}
-                    className="flex items-center px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100"
+                    className="flex items-center px-4 py-3 rounded-lg text-foreground hover:bg-card"
                   >
                     <LayoutDashboard className="w-5 h-5 mr-3" />
                     Dashboard
@@ -347,7 +347,7 @@ const Navbar = () => {
                   {isBuyer && (
                     <Link
                       to="/orders"
-                      className="flex items-center px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100"
+                      className="flex items-center px-4 py-3 rounded-lg text-foreground hover:bg-card"
                     >
                       <Package className="w-5 h-5 mr-3" />
                       My Orders
@@ -357,7 +357,7 @@ const Navbar = () => {
                   {isFarmer && (
                     <Link
                       to="/farmer/products"
-                      className="flex items-center px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100"
+                      className="flex items-center px-4 py-3 rounded-lg text-foreground hover:bg-card"
                     >
                       <Package className="w-5 h-5 mr-3" />
                       My Products

@@ -32,7 +32,7 @@ const Footer = () => {
   }
 
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="bg-card text-foreground">
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-12">
@@ -42,22 +42,22 @@ const Footer = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-farmer-500 to-farmer-700 rounded-xl flex items-center justify-center">
                 <Leaf className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-bold text-white">FarmMarket</span>
+              <span className="text-xl font-bold text-foreground">FarmMarket</span>
             </Link>
-            <p className="text-sm text-gray-400 mb-6 max-w-sm">
+            <p className="text-sm text-muted-foreground mb-6 max-w-sm">
               Connecting Maharashtra's farmers directly with buyers. Fresh produce, fair prices, and sustainable farming.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-farmer-600 transition-colors">
+              <a href="#" className="w-10 h-10 bg-card rounded-full flex items-center justify-center hover:bg-farmer-600 transition-colors">
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-farmer-600 transition-colors">
+              <a href="#" className="w-10 h-10 bg-card rounded-full flex items-center justify-center hover:bg-farmer-600 transition-colors">
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-farmer-600 transition-colors">
+              <a href="#" className="w-10 h-10 bg-card rounded-full flex items-center justify-center hover:bg-farmer-600 transition-colors">
                 <Instagram className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-farmer-600 transition-colors">
+              <a href="#" className="w-10 h-10 bg-card rounded-full flex items-center justify-center hover:bg-farmer-600 transition-colors">
                 <Youtube className="w-5 h-5" />
               </a>
             </div>
