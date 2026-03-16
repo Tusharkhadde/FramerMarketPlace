@@ -65,7 +65,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CartProvider>
-          <Router>
+          {/* Apply dark theme globally */}
+          <div className="theme min-h-screen">
+            <Router>
             <Routes>
               {/* Public Routes */}
               <Route element={<MainLayout />}>
@@ -157,7 +159,8 @@ function App() {
               {/* 404 */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-          </Router>
+            </Router>
+          </div>
 
           {/* Toast Notifications */}
           <Toaster

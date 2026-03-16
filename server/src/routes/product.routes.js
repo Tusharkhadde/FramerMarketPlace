@@ -162,15 +162,25 @@ router.get('/', async (req, res) => {
 // Get single product
 router.get('/:id', async (req, res) => {
   try {
+    // Check if ID is a valid MongoDB ObjectId
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ success: false, message: 'Invalid product ID format' })
+    }
+
     const product = await Product.findById(req.params.id).populate('farmer', 'fullName district phone email village')
+    
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' })
     }
-    product.views += 1
+
+    // Safely increment views
+    product.views = (product.views || 0) + 1
     await product.save({ validateBeforeSave: false })
+
     res.json({ success: true, data: { product } })
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message })
+    console.error(`Error fetching product ${req.params.id}:`, error)
+    res.status(500).json({ success: false, message: 'Internal server error' })
   }
 })
 
@@ -198,7 +208,7 @@ router.post('/', protect, authorize('farmer'), upload.array('images', 5), async 
         publicId: file.filename,
       }))
     } else {
-      images = [{ url: 'https://via.placeholder.com/400x400.png?text=Product', publicId: null }]
+      images = [{ url: 'https://placehold.co/400x400?text=Product', publicId: null }]
     }
 
     // Parse JSON fields

@@ -60,8 +60,8 @@ export function getProductImageUrl(url) {
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
   const apiBase = apiUrl.replace(/\/api\/?$/, '')
 
-  // Fallback placeholder (external) so missing local file doesn't break UI
-  const placeholder = 'https://via.placeholder.com/800x800?text=No+Image'
+  // Prefer local placeholder in public folder
+  const placeholder = '/placeholder.svg'
 
   if (!url) return placeholder
   if (url.startsWith('http')) return url

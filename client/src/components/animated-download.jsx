@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { ChevronDown } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -121,35 +120,7 @@ export function DownloadAnimation({
     },
   };
 
-  // Updated chevron animation - simple smooth up and down motion
-  const chevronVariants = {
-    idle: { y: 0, opacity: 0.7 },
-    animating: {
-      y: shouldReduceMotion ? 0 : [0, 8, 0], // Smooth up and down oscillation, lower range
-      opacity: shouldReduceMotion ? 0.7 : [0.7, .9, .7], // High at peak, fade out as it comes back up
-      transition: {
-        duration: 1.5,
-        ease: "easeInOut",
-        repeat: isAnimating ? Infinity : 0,
-        repeatType: "loop",
-      },
-    },
-  };
-
-  const chevron2Variants = {
-    idle: { y: 14, opacity: 0.5 }, // Slightly below first chevron
-    animating: {
-      y: shouldReduceMotion ? 8 : [14, 18, 14], // Smooth up and down oscillation, lower range
-      opacity: shouldReduceMotion ? 0.5 : [0.5, 1, 0.5], // Start low, peak when first chevron fades, then back to medium
-      transition: {
-        duration: 1.5,
-        ease: "easeInOut",
-        repeat: isAnimating ? Infinity : 0,
-        repeatType: "loop",
-        delay: 0.3, // Adjusted timing for better handoff
-      },
-    },
-  };
+  
 
   // Sequential dots animation - appear 1,2,3 then disappear 1,2,3
   const dotsVariants = {

@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { ChronicleButton } from '@/components/chronicle-button'
 
 // Districts
 const districts = [
@@ -185,10 +186,8 @@ const FarmerSignupForm = () => {
             Farmer Account
           </Badge>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">
-          Create Farmer Account
-        </h2>
-        <p className="text-gray-500 text-sm mt-1">
+        <h2 className="text-2xl font-bold text-foreground">Create Farmer Account</h2>
+        <p className="text-muted-foreground text-sm mt-1">
           {step === 1 && 'Enter your personal details'}
           {step === 2 && 'Create a secure password'}
           {step === 3 && 'Tell us about your farm'}
@@ -206,7 +205,7 @@ const FarmerSignupForm = () => {
                   ? 'bg-farmer-500 text-white'
                   : idx + 1 === step
                   ? 'bg-farmer-500 text-white ring-4 ring-farmer-100'
-                  : 'bg-gray-200 text-gray-500'
+                  : 'bg-muted text-muted-foreground'
               )}
             >
               {idx + 1 < step ? <Check className="w-4 h-4" /> : idx + 1}
@@ -215,7 +214,7 @@ const FarmerSignupForm = () => {
               <div
                 className={cn(
                   'flex-1 h-1 mx-2 rounded-full',
-                  idx + 1 < step ? 'bg-farmer-500' : 'bg-gray-200'
+                  idx + 1 < step ? 'bg-farmer-500' : 'bg-muted'
                 )}
               />
             )}
@@ -238,11 +237,11 @@ const FarmerSignupForm = () => {
               <div className="space-y-1.5">
                 <Label htmlFor="fullName">Full Name *</Label>
                 <div className="relative group">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 group-focus-within:text-farmer-500 transition-colors" />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
                   <Input
                     id="fullName"
                     placeholder="Your full name"
-                    className={cn('pl-11 h-11 bg-gray-50', errors.fullName && 'border-red-500')}
+                    className={cn('pl-11 h-11', errors.fullName && 'border-red-500')}
                     {...register('fullName')}
                   />
                 </div>
@@ -258,12 +257,12 @@ const FarmerSignupForm = () => {
               <div className="space-y-1.5">
                 <Label htmlFor="email">Email Address *</Label>
                 <div className="relative group">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 group-focus-within:text-farmer-500 transition-colors" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
                   <Input
                     id="email"
                     type="email"
                     placeholder="name@example.com"
-                    className={cn('pl-11 h-11 bg-gray-50', errors.email && 'border-red-500')}
+                    className={cn('pl-11 h-11', errors.email && 'border-red-500')}
                     {...register('email')}
                   />
                 </div>
@@ -279,15 +278,15 @@ const FarmerSignupForm = () => {
               <div className="space-y-1.5">
                 <Label htmlFor="phone">Phone Number *</Label>
                 <div className="relative group">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 group-focus-within:text-farmer-500 transition-colors" />
-                  <div className="absolute left-11 top-1/2 -translate-y-1/2 text-sm text-gray-400 border-r border-gray-300 pr-2">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
+                  <div className="absolute left-11 top-1/2 -translate-y-1/2 text-sm text-muted-foreground border-r border-gray-300 pr-2">
                     +91
                   </div>
                   <Input
                     id="phone"
                     placeholder="9876543210"
                     maxLength={10}
-                    className={cn('pl-[4.5rem] h-11 bg-gray-50', errors.phone && 'border-red-500')}
+                    className={cn('pl-[4.5rem] h-11', errors.phone && 'border-red-500')}
                     {...register('phone')}
                   />
                 </div>
@@ -299,15 +298,10 @@ const FarmerSignupForm = () => {
                 )}
               </div>
 
-              <Button
-                type="button"
-                variant="farmer"
-                className="w-full h-12 mt-4"
-                onClick={handleNext}
-              >
+              <ChronicleButton type="button" onClick={handleNext} customBackground="var(--farmer-600)" customForeground="#fff" width="100%">
                 Continue
                 <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
+              </ChronicleButton>
             </motion.div>
           )}
 
@@ -324,18 +318,18 @@ const FarmerSignupForm = () => {
               <div className="space-y-1.5">
                 <Label htmlFor="password">Password *</Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 group-focus-within:text-farmer-500 transition-colors" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Create a strong password"
-                    className={cn('pl-11 pr-11 h-11 bg-gray-50', errors.password && 'border-red-500')}
+                    className={cn('pl-11 pr-11 h-11', errors.password && 'border-red-500')}
                     {...register('password')}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-farmer-600"
                   >
                     {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
                   </button>
@@ -347,17 +341,12 @@ const FarmerSignupForm = () => {
                         key={idx}
                         className={cn(
                           'flex items-center gap-1 text-xs',
-                          check.valid ? 'text-green-600' : 'text-gray-400'
+                              check.valid ? 'text-green-600' : 'text-muted-foreground'
                         )}
                       >
-                        <div
-                          className={cn(
-                            'w-3.5 h-3.5 rounded-full flex items-center justify-center',
-                            check.valid ? 'bg-green-500' : 'bg-gray-300'
-                          )}
-                        >
-                          {check.valid && <Check className="w-2.5 h-2.5 text-white" />}
-                        </div>
+                            <div className={cn('w-3.5 h-3.5 rounded-full flex items-center justify-center', check.valid ? 'bg-green-500' : 'bg-muted')}>
+                              {check.valid && <Check className="w-2.5 h-2.5 text-white" />}
+                            </div>
                         {check.text}
                       </div>
                     ))}
@@ -375,21 +364,18 @@ const FarmerSignupForm = () => {
               <div className="space-y-1.5">
                 <Label htmlFor="confirmPassword">Confirm Password *</Label>
                 <div className="relative group">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 group-focus-within:text-farmer-500 transition-colors" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
                   <Input
                     id="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
                     placeholder="Confirm your password"
-                    className={cn(
-                      'pl-11 pr-11 h-11 bg-gray-50',
-                      errors.confirmPassword && 'border-red-500'
-                    )}
+                    className={cn('pl-11 pr-11 h-11', errors.confirmPassword && 'border-red-500')}
                     {...register('confirmPassword')}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-farmer-600"
                   >
                     {showConfirmPassword ? (
                       <EyeOff className="w-4.5 h-4.5" />
@@ -435,11 +421,9 @@ const FarmerSignupForm = () => {
                   onValueChange={(value) => setValue('district', value)}
                   value={district}
                 >
-                  <SelectTrigger
-                    className={cn('h-11 bg-gray-50', errors.district && 'border-red-500')}
-                  >
+                  <SelectTrigger className={cn('h-11 bg-card', errors.district && 'border-red-500')}>
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-gray-400" />
+                      <MapPin className="w-4 h-4 text-muted-foreground" />
                       <SelectValue placeholder="Select your district" />
                     </div>
                   </SelectTrigger>
@@ -464,25 +448,15 @@ const FarmerSignupForm = () => {
                 <div className="space-y-1.5">
                   <Label htmlFor="taluka">Taluka</Label>
                   <div className="relative group">
-                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-farmer-500" />
-                    <Input
-                      id="taluka"
-                      placeholder="Your taluka"
-                      className="pl-10 h-11 bg-gray-50"
-                      {...register('taluka')}
-                    />
+                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-farmer-500" />
+                    <Input id="taluka" placeholder="Your taluka" className="pl-10 h-11" {...register('taluka')} />
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="village">Village</Label>
                   <div className="relative group">
-                    <Home className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-farmer-500" />
-                    <Input
-                      id="village"
-                      placeholder="Your village"
-                      className="pl-10 h-11 bg-gray-50"
-                      {...register('village')}
-                    />
+                    <Home className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-farmer-500" />
+                    <Input id="village" placeholder="Your village" className="pl-10 h-11" {...register('village')} />
                   </div>
                 </div>
               </div>
@@ -491,16 +465,8 @@ const FarmerSignupForm = () => {
               <div className="space-y-1.5">
                 <Label htmlFor="farmSize">Farm Size (Acres)</Label>
                 <div className="relative group">
-                  <Ruler className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-farmer-500" />
-                  <Input
-                    id="farmSize"
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    placeholder="e.g., 5"
-                    className="pl-10 h-11 bg-gray-50"
-                    {...register('farmSize')}
-                  />
+                  <Ruler className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-farmer-500" />
+                  <Input id="farmSize" type="number" step="0.1" min="0" placeholder="e.g., 5" className="pl-10 h-11" {...register('farmSize')} />
                 </div>
               </div>
 
@@ -523,14 +489,12 @@ const FarmerSignupForm = () => {
               </div>
 
               {/* Info Box */}
-              <div className="p-4 bg-farmer-50 border border-farmer-200 rounded-xl">
+              <div className="p-4 bg-card border border-border rounded-xl">
                 <div className="flex items-start gap-3">
                   <Leaf className="w-5 h-5 text-farmer-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-farmer-800">
-                      Farmer Verification
-                    </p>
-                    <p className="text-xs text-farmer-600 mt-1">
+                    <p className="text-sm font-medium text-foreground">Farmer Verification</p>
+                    <p className="text-xs text-muted-foreground mt-1">
                       After signup, your account will be reviewed. You can start
                       listing products immediately, but verification helps build
                       buyer trust.
@@ -547,10 +511,7 @@ const FarmerSignupForm = () => {
                   onCheckedChange={setAgreeTerms}
                   className="mt-0.5"
                 />
-                <Label
-                  htmlFor="agreeTermsFarmer"
-                  className="text-sm text-gray-600 cursor-pointer leading-tight"
-                >
+                <Label htmlFor="agreeTermsFarmer" className="text-sm text-muted-foreground cursor-pointer leading-tight">
                   I agree to the{' '}
                   <Link to="/terms" className="text-farmer-600 hover:underline">
                     Terms of Service
@@ -567,12 +528,7 @@ const FarmerSignupForm = () => {
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back
                 </Button>
-                <Button
-                  type="submit"
-                  variant="farmer"
-                  className="flex-1 h-12"
-                  disabled={isLoading || !agreeTerms}
-                >
+                <ChronicleButton type="submit" customBackground="var(--farmer-600)" customForeground="#fff" width="100%" disabled={isLoading || !agreeTerms}>
                   {isLoading ? (
                     <span className="flex items-center gap-2">
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -584,14 +540,14 @@ const FarmerSignupForm = () => {
                       <Check className="w-5 h-5" />
                     </span>
                   )}
-                </Button>
+                </ChronicleButton>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </form>
 
-      <p className="text-center text-sm text-gray-600 mt-6">
+      <p className="text-center text-sm text-muted-foreground mt-6">
         Already have an account?{' '}
         <Link to="/login" className="text-farmer-600 font-semibold hover:underline">
           Sign in

@@ -2,11 +2,11 @@
 node_modules/
 .pnp/
 .pnp.js
-
+node_modules/
 # Build outputs
 dist/
 build/
-
+server/node_modules/
 # Environment files
 .env
 .env.local

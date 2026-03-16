@@ -132,7 +132,7 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     } else {
       // Default placeholder image
       uploadedImages = [{
-        url: 'https://via.placeholder.com/400x400.png?text=Product+Image',
+        url: 'https://placehold.co/400x400?text=Product+Image',
         publicId: null,
       }]
     }

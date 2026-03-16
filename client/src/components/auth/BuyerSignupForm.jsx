@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
+import { ChronicleButton } from '@/components/chronicle-button'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
@@ -124,12 +125,8 @@ const BuyerSignupForm = () => {
             Buyer Account
           </Badge>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900">
-          Create Buyer Account
-        </h2>
-        <p className="text-gray-500 text-sm mt-1">
-          Start shopping fresh produce from local farmers
-        </p>
+        <h2 className="text-2xl font-bold text-foreground">Create Buyer Account</h2>
+        <p className="text-muted-foreground text-sm mt-1">Start shopping fresh produce from local farmers</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -137,14 +134,11 @@ const BuyerSignupForm = () => {
         <div className="space-y-1.5">
           <Label htmlFor="fullName">Full Name *</Label>
           <div className="relative group">
-            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 group-focus-within:text-farmer-500 transition-colors" />
+            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
             <Input
               id="fullName"
               placeholder="Your full name"
-              className={cn(
-                'pl-11 h-11 bg-gray-50 border-gray-200 focus:bg-white',
-                errors.fullName && 'border-red-500'
-              )}
+              className={cn('pl-11 h-11', errors.fullName && 'border-red-500')}
               {...register('fullName')}
             />
           </div>
@@ -160,15 +154,12 @@ const BuyerSignupForm = () => {
         <div className="space-y-1.5">
           <Label htmlFor="email">Email Address *</Label>
           <div className="relative group">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 group-focus-within:text-farmer-500 transition-colors" />
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
             <Input
               id="email"
               type="email"
               placeholder="name@example.com"
-              className={cn(
-                'pl-11 h-11 bg-gray-50 border-gray-200 focus:bg-white',
-                errors.email && 'border-red-500'
-              )}
+              className={cn('pl-11 h-11', errors.email && 'border-red-500')}
               {...register('email')}
             />
           </div>
@@ -184,7 +175,7 @@ const BuyerSignupForm = () => {
         <div className="space-y-1.5">
           <Label htmlFor="phone">Phone Number *</Label>
           <div className="relative group">
-            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 group-focus-within:text-farmer-500 transition-colors" />
+            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
             <div className="absolute left-11 top-1/2 -translate-y-1/2 text-sm text-gray-400 border-r border-gray-300 pr-2">
               +91
             </div>
@@ -192,10 +183,7 @@ const BuyerSignupForm = () => {
               id="phone"
               placeholder="9876543210"
               maxLength={10}
-              className={cn(
-                'pl-[4.5rem] h-11 bg-gray-50 border-gray-200 focus:bg-white',
-                errors.phone && 'border-red-500'
-              )}
+              className={cn('pl-[4.5rem] h-11', errors.phone && 'border-red-500')}
               {...register('phone')}
             />
           </div>
@@ -211,21 +199,18 @@ const BuyerSignupForm = () => {
         <div className="space-y-1.5">
           <Label htmlFor="password">Password *</Label>
           <div className="relative group">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 group-focus-within:text-farmer-500 transition-colors" />
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
             <Input
               id="password"
               type={showPassword ? 'text' : 'password'}
               placeholder="Create a strong password"
-              className={cn(
-                'pl-11 pr-11 h-11 bg-gray-50 border-gray-200 focus:bg-white',
-                errors.password && 'border-red-500'
-              )}
+              className={cn('pl-11 pr-11 h-11', errors.password && 'border-red-500')}
               {...register('password')}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-farmer-600"
             >
               {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
             </button>
@@ -236,17 +221,9 @@ const BuyerSignupForm = () => {
               {passwordChecks.map((check, idx) => (
                 <div
                   key={idx}
-                  className={cn(
-                    'flex items-center gap-1 text-xs',
-                    check.valid ? 'text-green-600' : 'text-gray-400'
-                  )}
+                  className={cn('flex items-center gap-1 text-xs', check.valid ? 'text-green-600' : 'text-muted-foreground')}
                 >
-                  <div
-                    className={cn(
-                      'w-3.5 h-3.5 rounded-full flex items-center justify-center',
-                      check.valid ? 'bg-green-500' : 'bg-gray-300'
-                    )}
-                  >
+                  <div className={cn('w-3.5 h-3.5 rounded-full flex items-center justify-center', check.valid ? 'bg-green-500' : 'bg-muted')}>
                     {check.valid && <Check className="w-2.5 h-2.5 text-white" />}
                   </div>
                   {check.text}
@@ -266,15 +243,12 @@ const BuyerSignupForm = () => {
         <div className="space-y-1.5">
           <Label htmlFor="confirmPassword">Confirm Password *</Label>
           <div className="relative group">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400 group-focus-within:text-farmer-500 transition-colors" />
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
             <Input
               id="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}
               placeholder="Confirm your password"
-              className={cn(
-                'pl-11 pr-11 h-11 bg-gray-50 border-gray-200 focus:bg-white',
-                errors.confirmPassword && 'border-red-500'
-              )}
+              className={cn('pl-11 pr-11 h-11', errors.confirmPassword && 'border-red-500')}
               {...register('confirmPassword')}
             />
             <button
@@ -301,7 +275,7 @@ const BuyerSignupForm = () => {
             onCheckedChange={(checked) => setValue('agreeTerms', checked)}
             className="mt-0.5"
           />
-          <Label htmlFor="agreeTerms" className="text-sm text-gray-600 cursor-pointer leading-tight">
+          <Label htmlFor="agreeTerms" className="text-sm text-muted-foreground cursor-pointer leading-tight">
             I agree to the{' '}
             <Link to="/terms" className="text-farmer-600 hover:underline">
               Terms of Service
@@ -320,12 +294,7 @@ const BuyerSignupForm = () => {
         )}
 
         {/* Submit */}
-        <Button
-          type="submit"
-          variant="farmer"
-          className="w-full h-12 text-base shadow-lg shadow-farmer-500/30 mt-4"
-          disabled={isLoading}
-        >
+        <ChronicleButton type="submit" customBackground="var(--farmer-600)" customForeground="#fff" hoverColor="#7c4df0" width="100%" disabled={isLoading}>
           {isLoading ? (
             <span className="flex items-center gap-2">
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -337,10 +306,10 @@ const BuyerSignupForm = () => {
               <ArrowRight className="w-5 h-5" />
             </span>
           )}
-        </Button>
+        </ChronicleButton>
       </form>
 
-      <p className="text-center text-sm text-gray-600 mt-6">
+      <p className="text-center text-sm text-muted-foreground mt-6">
         Already have an account?{' '}
         <Link to="/login" className="text-farmer-600 font-semibold hover:underline">
           Sign in
