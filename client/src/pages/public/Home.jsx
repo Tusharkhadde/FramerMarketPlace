@@ -15,12 +15,15 @@ import {
   ChevronRight,
   Play,
 } from 'lucide-react'
+import { ChronicleButton } from '@/components/chronicle-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { SparklesCore } from '@/components/aceternity/sparkles'
 import { TextGenerateEffect } from '@/components/aceternity/text-generate-effect'
 import { BackgroundBeams } from '@/components/aceternity/background-beams'
 import { MovingBorder } from '@/components/aceternity/moving-border'
+import { GLSLHills } from '@/components/glsl-hills'
+import { getProductImageUrl } from '@/lib/utils'
 import api from '@/config/api'
 import { formatPrice } from '@/lib/utils'
 
@@ -109,180 +112,51 @@ const Home = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-farmer-50 to-white">
-        {/* Background Effects */}
-        <div className="absolute inset-0 overflow-hidden">
-          <SparklesCore
-            id="sparkles"
-            background="transparent"
-            minSize={0.4}
-            maxSize={1}
-            particleDensity={50}
-            particleColor="#22c55e"
-            className="w-full h-full"
+      <section className="relative h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden bg-background">
+        {/* GLSL Hills Background */}
+        <div className="absolute inset-0 z-0">
+          <GLSLHills 
+            width="100%" 
+            height="100%" 
+            cameraZ={150} 
+            planeSize={256} 
+            speed={0.3} 
           />
+          {/* Gradient Overlay for better readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/40 to-background z-[2]" />
         </div>
-        <BackgroundBeams className="opacity-20" />
 
-        {/* Floating Elements */}
-        <motion.div
-          animate={{
-            y: [0, -20, 0],
-            rotate: [0, 5, 0],
-          }}
-          transition={{
-            duration: 5,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          className="absolute top-20 left-10 text-6xl"
-        >
-          🌾
-        </motion.div>
-        <motion.div
-          animate={{
-            y: [0, 20, 0],
-            rotate: [0, -5, 0],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          className="absolute top-40 right-20 text-6xl"
-        >
-          🥕
-        </motion.div>
-        <motion.div
-          animate={{
-            y: [0, -15, 0],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          className="absolute bottom-40 left-20 text-6xl"
-        >
-          🍅
-        </motion.div>
-
-        {/* Hero Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
-          <div className="text-center">
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center space-x-2 bg-farmer-100 text-farmer-700 px-4 py-2 rounded-full text-sm font-medium mb-8"
-            >
-              <Leaf className="w-4 h-4" />
-              <span>AI-Powered Agricultural Marketplace</span>
-            </motion.div>
-
-            {/* Main Heading */}
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6"
-            >
-              Fresh from{' '}
-              <span className="bg-gradient-to-r from-farmer-600 to-farmer-400 bg-clip-text text-transparent">
-                Farm
-              </span>{' '}
-              to
-              <br />
-              Your{' '}
-              <span className="bg-gradient-to-r from-earth-600 to-earth-400 bg-clip-text text-transparent">
-                Table
-              </span>
-            </motion.h1>
-
-            {/* Subtitle */}
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-xl text-gray-600 max-w-2xl mx-auto mb-10"
-            >
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h1 className="text-4xl sm:text-5xl font-bold text-emerald-900">
+              Fresh from Farm to Your Table
+            </h1>
+            <p className="mt-4 text-lg text-emerald-900/80 max-w-2xl mx-auto">
               Connect directly with Maharashtra's farmers. Get fresh, quality produce at fair prices while supporting local agriculture.
-            </motion.p>
-
-            {/* CTA Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4"
-            >
-              <MovingBorder
-                duration={3000}
-                className="px-8 py-4"
-                containerClassName="rounded-full"
-              >
-                <Button
-                  size="xl"
-                  variant="farmer"
-                  onClick={() => navigate('/products')}
-                  className="rounded-full text-lg"
-                >
-                  Start Shopping
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </MovingBorder>
-              
-              <Button
-                size="xl"
-                variant="outline"
-                onClick={() => navigate('/register?type=farmer')}
-                className="rounded-full text-lg"
-              >
-                Sell Your Product
-              </Button>
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8"
-            >
-              {[
-                { value: `${stats.farmers}+`, label: 'Active Farmers', icon: Users },
-                { value: `${stats.products}+`, label: 'Products Listed', icon: Package },
-                { value: `${stats.orders}+`, label: 'Orders Delivered', icon: Truck },
-                { value: stats.districts, label: 'Districts Covered', icon: MapPin },
-              ].map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 bg-farmer-100 rounded-xl mb-3">
-                    <stat.icon className="w-6 h-6 text-farmer-600" />
-                  </div>
-                  <div className="text-3xl font-bold text-gray-900">{stat.value}</div>
-                  <div className="text-sm text-gray-500">{stat.label}</div>
-                </div>
-              ))}
-            </motion.div>
-          </div>
+            </p>
+            <div className="mt-8">
+              <ChronicleButton
+                text={"Shop Fresh Now"}
+                onClick={() => navigate('/products')}
+                borderRadius={'999px'}
+                customBackground={'#065f46'}
+                customForeground={'#ffffff'}
+                hoverColor={'#047857'}
+                className={'text-lg'}
+                width={'220px'}
+              />
+            </div>
+          </motion.div>
+          
         </div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
-        >
-          <div className="w-6 h-10 border-2 border-gray-300 rounded-full p-1">
-            <div className="w-1.5 h-3 bg-farmer-500 rounded-full mx-auto" />
-          </div>
-        </motion.div>
       </section>
 
       {/* Categories Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -290,10 +164,10 @@ const Home = () => {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 mb-4">
               Explore Categories
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-zinc-900/70 max-w-2xl mx-auto">
               Browse fresh produce across multiple categories from verified farmers
             </p>
           </motion.div>
@@ -318,10 +192,10 @@ const Home = () => {
                       >
                         {category.icon}
                       </div>
-                      <h3 className="font-semibold text-gray-900 mb-1">
+                      <h3 className="font-semibold text-zinc-900 mb-1">
                         {category.name}
                       </h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-zinc-900/60">
                         {category.count}+ products
                       </p>
                     </CardContent>
@@ -334,7 +208,7 @@ const Home = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -342,10 +216,10 @@ const Home = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 mb-4">
               How It Works
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-zinc-900/70 max-w-2xl mx-auto">
               Simple steps to get fresh produce from farmers
             </p>
           </motion.div>
@@ -379,16 +253,16 @@ const Home = () => {
                 transition={{ delay: index * 0.2 }}
                 className="relative"
               >
-                <Card className="h-full bg-white border-0 shadow-lg hover:shadow-xl transition-shadow">
+                <Card className="h-full bg-zinc-900/30 border-white/5 shadow-none hover:bg-zinc-900/50 transition-colors">
                   <CardContent className="p-8">
                     <div className="text-6xl mb-6">{item.icon}</div>
                     <div className="text-farmer-600 font-bold text-sm mb-2">
                       STEP {item.step}
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    <h3 className="text-xl font-bold text-zinc-900 mb-3">
                       {item.title}
                     </h3>
-                    <p className="text-gray-600">{item.description}</p>
+                    <p className="text-zinc-900/70">{item.description}</p>
                   </CardContent>
                 </Card>
                 {index < 2 && (
@@ -403,7 +277,7 @@ const Home = () => {
       </section>
 
       {/* Featured Products Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12">
             <motion.div
@@ -411,10 +285,10 @@ const Home = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+              <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 mb-2">
                 Featured Products
               </h2>
-              <p className="text-lg text-gray-600">
+              <p className="text-lg text-zinc-900/70">
                 Fresh picks from our farmers
               </p>
             </motion.div>
@@ -423,10 +297,17 @@ const Home = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <Button variant="outline" onClick={() => navigate('/products')}>
-                View All Products
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
+              <ChronicleButton
+                text={"View All Products"}
+                onClick={() => navigate('/products')}
+                outlined={true}
+                customBackground={'transparent'}
+                customForeground={'#fff'}
+                hoverColor={'var(--card)'}
+                hoverForeground={'var(--foreground)'}
+                borderRadius={'8px'}
+                width={'auto'}
+              />
             </motion.div>
           </div>
 
@@ -449,7 +330,7 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-farmer-900 text-white">
+      <section className="py-20 bg-zinc-900/20 text-zinc-900 border-y border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -460,7 +341,7 @@ const Home = () => {
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
               Why Choose FarmMarket?
             </h2>
-            <p className="text-lg text-farmer-100 max-w-2xl mx-auto">
+            <p className="text-lg text-zinc-900/80 max-w-2xl mx-auto">
               We're revolutionizing how farmers and buyers connect in Maharashtra
             </p>
           </motion.div>
@@ -479,7 +360,7 @@ const Home = () => {
                   <feature.icon className="w-8 h-8 text-farmer-400" />
                 </div>
                 <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-farmer-200">{feature.description}</p>
+                <p className="text-zinc-900/70">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -487,7 +368,7 @@ const Home = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -495,10 +376,10 @@ const Home = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold text-zinc-900 mb-4">
               What Our Users Say
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-zinc-900/70 max-w-2xl mx-auto">
               Hear from farmers and buyers who are part of our community
             </p>
           </motion.div>
@@ -522,16 +403,16 @@ const Home = () => {
                         />
                       ))}
                     </div>
-                    <p className="text-gray-600 mb-6">"{testimonial.text}"</p>
+                    <p className="text-zinc-900/70 mb-6">"{testimonial.text}"</p>
                     <div className="flex items-center space-x-3">
                       <div className="w-12 h-12 bg-farmer-100 rounded-full flex items-center justify-center text-farmer-600 font-semibold">
                         {testimonial.name.charAt(0)}
                       </div>
                       <div>
-                        <div className="font-semibold text-gray-900">
+                        <div className="font-semibold text-foreground">
                           {testimonial.name}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-zinc-900/60">
                           {testimonial.role}
                         </div>
                       </div>
@@ -555,7 +436,7 @@ const Home = () => {
             <h2 className="text-3xl sm:text-4xl font-bold mb-6">
               Ready to Get Started?
             </h2>
-            <p className="text-xl text-farmer-100 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
               Join thousands of farmers and buyers who are already benefiting from direct farm-to-table connections.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -613,11 +494,11 @@ const ProductCard = ({ product }) => {
         </span>
       </div>
       <CardContent className="p-4">
-        <div className="text-sm text-gray-500 mb-1 flex items-center">
+        <div className="text-sm text-zinc-600 mb-1 flex items-center">
           <MapPin className="w-3 h-3 mr-1" />
           {product.district}
         </div>
-        <h3 className="font-semibold text-gray-900 mb-2 truncate">
+        <h3 className="font-semibold text-zinc-900 mb-2 truncate">
           {product.cropName}
         </h3>
         <div className="flex items-center justify-between">
@@ -625,7 +506,7 @@ const ProductCard = ({ product }) => {
             <span className="text-2xl font-bold text-farmer-600">
               {formatPrice(product.pricePerKg)}
             </span>
-            <span className="text-sm text-gray-500">/kg</span>
+            <span className="text-sm text-zinc-600">/kg</span>
           </div>
           <Button
             size="sm"
@@ -635,7 +516,7 @@ const ProductCard = ({ product }) => {
             View
           </Button>
         </div>
-        <div className="mt-3 text-sm text-gray-500">
+        <div className="mt-3 text-sm text-zinc-600">
           by {product.farmer?.fullName || 'Local Farmer'}
         </div>
       </CardContent>

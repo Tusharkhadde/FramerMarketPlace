@@ -22,6 +22,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import api from '@/config/api'
 import { formatPrice, getProductImageUrl } from '@/lib/utils'
 import Loading from '@/components/shared/Loading'
@@ -115,8 +122,9 @@ const Products = () => {
     setSearchParams(params)
   }, [filters])
 
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }))
+   const handleFilterChange = (key, value) => {
+    const finalValue = value === 'all' ? '' : value
+    setFilters(prev => ({ ...prev, [key]: finalValue }))
     setCurrentPage(1)
   }
 
@@ -143,30 +151,30 @@ const Products = () => {
   const activeFiltersCount = Object.values(filters).filter(v => v && v !== 'createdAt' && v !== 'desc').length
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             Fresh Farm Products
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {totalProducts} products available from verified farmers
           </p>
         </div>
 
         {/* Search and Actions Bar */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+        <div className="bg-card rounded-lg shadow-sm p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search */}
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <Input
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+               <Input
                 type="text"
                 placeholder="Search products..."
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-white border-zinc-200"
               />
             </div>
 
@@ -290,39 +298,47 @@ const Products = () => {
                       </Button>
                     </div>
 
-                    {/* Category Filter */}
+                     {/* Category Filter */}
                     <div>
                       <label className="block text-sm font-medium mb-2">
                         Category
                       </label>
-                      <select
+                      <Select
                         value={filters.category}
-                        onChange={(e) => handleFilterChange('category', e.target.value)}
-                        className="w-full border rounded-md p-2"
+                        onValueChange={(value) => handleFilterChange('category', value)}
                       >
-                        {categories.map(cat => (
-                          <option key={cat.value} value={cat.value}>
-                            {cat.label}
-                          </option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="w-full bg-white border-zinc-200">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map(cat => (
+                            <SelectItem key={cat.value || 'all'} value={cat.value || 'all'}>
+                              {cat.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
-                    {/* District Filter */}
+                     {/* District Filter */}
                     <div>
                       <label className="block text-sm font-medium mb-2">
                         District
                       </label>
-                      <select
+                      <Select
                         value={filters.district}
-                        onChange={(e) => handleFilterChange('district', e.target.value)}
-                        className="w-full border rounded-md p-2"
+                        onValueChange={(value) => handleFilterChange('district', value === 'all' ? '' : value)}
                       >
-                        <option value="">All Districts</option>
-                        {districts.map(dist => (
-                          <option key={dist} value={dist}>{dist}</option>
-                        ))}
-                      </select>
+                        <SelectTrigger className="w-full bg-white border-zinc-200">
+                          <SelectValue placeholder="All Districts" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Districts</SelectItem>
+                          {districts.map(dist => (
+                            <SelectItem key={dist} value={dist}>{dist}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     {/* Price Range */}
@@ -331,17 +347,19 @@ const Products = () => {
                         Price Range (₹/kg)
                       </label>
                       <div className="flex gap-2">
-                        <Input
+                         <Input
                           type="number"
                           placeholder="Min"
                           value={filters.minPrice}
                           onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                          className="bg-white border-zinc-200"
                         />
                         <Input
                           type="number"
                           placeholder="Max"
                           value={filters.maxPrice}
                           onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                          className="bg-white border-zinc-200"
                         />
                       </div>
                     </div>
@@ -389,11 +407,11 @@ const Products = () => {
 
           {/* Products Grid */}
           <div className="flex-1">
-            {loading ? (
+              {loading ? (
               <Loading />
             ) : products.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">No products found</p>
+                <p className="text-muted-foreground text-lg">No products found</p>
                 <Button onClick={clearFilters} className="mt-4">
                   Clear Filters
                 </Button>
@@ -458,9 +476,9 @@ const ProductCard = ({ product, viewMode }) => {
           <div className="flex-1">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="font-semibold text-lg">{product.cropName}</h3>
-                <p className="text-sm text-gray-500 flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
+                <h3 className="font-semibold text-lg text-foreground">{product.cropName}</h3>
+                <p className="text-sm text-muted-foreground flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-muted-foreground" />
                   {product.district}
                 </p>
               </div>
@@ -515,11 +533,11 @@ const ProductCard = ({ product, viewMode }) => {
         </span>
       </div>
       <CardContent className="p-4">
-        <div className="text-sm text-gray-500 mb-1 flex items-center">
-          <MapPin className="w-3 h-3 mr-1" />
+                <div className="text-sm text-muted-foreground mb-1 flex items-center">
+          <MapPin className="w-3 h-3 mr-1 text-muted-foreground" />
           {product.district}
         </div>
-        <h3 className="font-semibold text-gray-900 mb-2 truncate">
+        <h3 className="font-semibold text-foreground mb-2 truncate">
           {product.cropName}
         </h3>
         <div className="flex items-center justify-between">
@@ -536,7 +554,7 @@ const ProductCard = ({ product, viewMode }) => {
             </div>
           )}
         </div>
-        <div className="mt-3 text-sm text-gray-500">
+        <div className="mt-3 text-sm text-muted-foreground">
           by {product.farmer?.fullName || 'Local Farmer'}
         </div>
       </CardContent>
