@@ -110,37 +110,37 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-black overflow-hidden grid-bg">
       {/* Left Side - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-8 bg-white">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-8 relative z-10">
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
-          className="w-full max-w-md"
+          className="w-full max-w-md bg-[#0a0a0a]/80 backdrop-blur-md p-8 rounded-[2rem] border border-white/5"
         >
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 mb-8">
             <motion.div
               whileHover={{ rotate: 15 }}
-              className="w-12 h-12 bg-gradient-to-br from-farmer-500 to-farmer-700 rounded-xl flex items-center justify-center shadow-lg shadow-farmer-500/30"
+              className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30"
             >
               <Leaf className="w-7 h-7 text-white" />
             </motion.div>
             <div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-farmer-600 to-farmer-800 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent">
                 FarmMarket
               </span>
-              <p className="text-xs text-gray-500 -mt-1">Maharashtra</p>
+              <p className="text-xs text-gray-400 -mt-1">Maharashtra</p>
             </div>
           </Link>
 
           {/* Welcome Text */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-white mb-2">
               Welcome back! 👋
             </h1>
-            <p className="text-gray-500">
+            <p className="text-gray-400">
               Sign in to your account to continue
             </p>
           </div>
@@ -152,12 +152,12 @@ const Login = () => {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3"
+                className="mb-6 p-4 bg-red-950/30 border border-red-500/20 rounded-xl flex items-start gap-3"
               >
                 <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-red-800">{loginError}</p>
-                  <p className="text-xs text-red-600 mt-1">
+                  <p className="text-sm font-medium text-red-400">{loginError}</p>
+                  <p className="text-xs text-red-500/60 mt-1">
                     Please check your credentials and try again
                   </p>
                 </div>
@@ -173,14 +173,14 @@ const Login = () => {
                 Email Address
               </Label>
               <div className="relative group">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-farmer-500 transition-colors" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="name@example.com"
                   className={cn(
-                    'pl-11 h-12 bg-gray-50 border-gray-200 focus:bg-white transition-all',
-                    errors.email && 'border-red-500 focus:ring-red-500'
+                    'pl-11 h-12 bg-white/5 border-white/10 focus:bg-white/10 focus:border-emerald-500/50 text-white transition-all',
+                    errors.email && 'border-red-500/50 focus:ring-red-500/50'
                   )}
                   {...register('email')}
                 />
@@ -205,27 +205,27 @@ const Login = () => {
                 </Label>
                 <Link
                   to="/forgot-password"
-                  className="text-sm text-farmer-600 hover:text-farmer-700 hover:underline font-medium"
+                  className="text-sm text-emerald-500 hover:text-emerald-400 hover:underline font-medium"
                 >
                   Forgot password?
                 </Link>
               </div>
               <div className="relative group">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-farmer-500 transition-colors" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
                   className={cn(
-                    'pl-11 pr-11 h-12 bg-gray-50 border-gray-200 focus:bg-white transition-all',
-                    errors.password && 'border-red-500 focus:ring-red-500'
+                    'pl-11 pr-11 h-12 bg-white/5 border-white/10 focus:bg-white/10 focus:border-emerald-500/50 text-white transition-all',
+                    errors.password && 'border-red-500/50 focus:ring-red-500/50'
                   )}
                   {...register('password')}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -249,8 +249,8 @@ const Login = () => {
             {/* Submit */}
             <Button
               type="submit"
-              variant="farmer"
-              className="w-full h-12 text-base shadow-lg shadow-farmer-500/30 hover:shadow-farmer-500/40 transition-shadow"
+              variant="default"
+              className="w-full h-12 text-base bg-emerald-600 hover:bg-emerald-700 text-black font-bold shadow-lg shadow-emerald-500/20 transition-all"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -297,11 +297,11 @@ const Login = () => {
           </div>
 
           {/* Sign Up Link */}
-          <p className="text-center text-sm text-gray-600 mt-8">
+          <p className="text-center text-sm text-gray-400 mt-8">
             Don't have an account?{' '}
             <Link
               to="/register"
-              className="text-farmer-600 font-semibold hover:underline"
+              className="text-emerald-500 font-semibold hover:underline"
             >
               Create account
             </Link>
@@ -310,7 +310,7 @@ const Login = () => {
       </div>
 
       {/* Right Side - Visual */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-farmer-600 via-farmer-700 to-farmer-900 relative overflow-hidden">
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-emerald-900 via-[#050505] to-black relative overflow-hidden">
         {/* Sparkle Effect */}
         <div className="absolute inset-0">
           <SparklesCore
@@ -318,15 +318,15 @@ const Login = () => {
             background="transparent"
             minSize={0.4}
             maxSize={1.4}
-            particleDensity={30}
-            particleColor="#ffffff"
+            particleDensity={40}
+            particleColor="#10b981"
             className="w-full h-full"
           />
         </div>
 
         {/* Decorative Circles */}
-        <div className="absolute top-20 right-20 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-20 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute top-20 right-20 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center justify-center p-16 text-white">
@@ -354,12 +354,12 @@ const Login = () => {
 
             <h2 className="text-4xl font-bold mb-4 leading-tight">
               Connect with{' '}
-              <span className="text-farmer-200">Maharashtra's</span>
+              <span className="text-emerald-400">Maharashtra's</span>
               <br />
               finest farmers
             </h2>
 
-            <p className="text-lg text-farmer-100 mb-10 leading-relaxed">
+            <p className="text-lg text-gray-400 mb-10 leading-relaxed">
               Join our growing community of 500+ farmers and 10,000+ buyers
               across 36 districts.
             </p>
@@ -388,14 +388,14 @@ const Login = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 + index * 0.15 }}
-                  className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl p-4 text-left"
+                  className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-2xl p-4 text-left border border-white/5"
                 >
-                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <feature.icon className="w-5 h-5" />
+                  <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <feature.icon className="w-5 h-5 text-emerald-500" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm">{feature.title}</h3>
-                    <p className="text-xs text-farmer-200">{feature.desc}</p>
+                    <h3 className="font-semibold text-sm text-white">{feature.title}</h3>
+                    <p className="text-xs text-gray-400">{feature.desc}</p>
                   </div>
                 </motion.div>
               ))}

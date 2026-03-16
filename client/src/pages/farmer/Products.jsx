@@ -23,6 +23,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import api from '@/config/api'
 import { formatPrice } from '@/lib/utils'
 import Loading from '@/components/shared/Loading'
@@ -281,9 +283,13 @@ const ProductCard = ({ product, onToggleAvailability, onDelete, onEdit }) => {
               Grade {product.qualityGrade}
             </span>
           </div>
-          <div className="absolute top-2 left-2">
-            <span className={`text-xs px-2 py-1 rounded-full ${product.isAvailable ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-              }`}>
+          <div className="absolute top-2 left-2 flex items-center gap-2 bg-black/50 backdrop-blur-sm px-2 py-1 rounded-full">
+            <Switch
+              checked={product.isAvailable}
+              onCheckedChange={() => onToggleAvailability(product._id, product.isAvailable)}
+              className="scale-75"
+            />
+            <span className="text-[10px] font-medium text-white uppercase tracking-wider">
               {product.isAvailable ? 'Active' : 'Inactive'}
             </span>
           </div>
