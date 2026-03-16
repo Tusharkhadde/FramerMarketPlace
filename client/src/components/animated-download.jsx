@@ -184,25 +184,6 @@ export function DownloadAnimation({
       animate="visible">
       {/* Top header row */}
       <div className="flex items-center mb-2">
-        {/* Animated ChevronDown icons - pulsing up and down */}
-        <div
-          className={cn(
-            "flex -mt-3 flex-col items-center justify-center w-8 h-16 overflow-hidden relative"
-          )}>
-          <motion.div
-            className="absolute"
-            variants={chevronVariants}
-            animate={isAnimating ? "animating" : "idle"}>
-            <ChevronDown size={24} className="text-primary" />
-          </motion.div>
-          <motion.div
-            className="absolute"
-            variants={chevron2Variants}
-            animate={isAnimating ? "animating" : "idle"}>
-            <ChevronDown size={24} className="text-primary" />
-          </motion.div>
-        </div>
-
         {/* DOWNLOADING/READY banner - using inline HyperText animation */}
         <div className="relative ml-2 flex-1 max-w-xs">
           <svg
@@ -211,25 +192,25 @@ export function DownloadAnimation({
             viewBox="0 0 107 15"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="absolute top-1/2 left-0 transform -translate-y-1/2 w-1/2 fill-foreground"
+            className="absolute top-1/2 left-0 transform -translate-y-1/2 w-1/2 fill-emerald-100"
             preserveAspectRatio="none">
             <path d="M0.445312 0.5H106.103V8.017L99.2813 14.838H0.445312V0.5Z" />
           </svg>
-          <div className="relative px-4 py-1.5 font-mono font-bold text-sm text-black">
+          <div className="relative px-4 py-1.5 font-mono font-bold text-sm text-emerald-900">
             <div className="flex items-center">
               <div className="flex font-mono font-bold text-black">
                 {displayText.map((letter, i) => (
                   <motion.span
-                    key={`${targetText}-${i}`}
-                    className={cn(
-                      "font-mono dark:text-black text-white font-bold",
-                      letter === " " ? "w-3" : ""
-                    )}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 3 }}>
-                    {letter}
-                  </motion.span>
+                      key={`${targetText}-${i}`}
+                      className={cn(
+                        "font-mono text-emerald-900 font-bold",
+                        letter === " " ? "w-3" : ""
+                      )}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 3 }}>
+                      {letter}
+                    </motion.span>
                 ))}
               </div>
               {isAnimating && (
@@ -248,7 +229,7 @@ export function DownloadAnimation({
         </div>
       </div>
       {/* Thick separator bar */}
-      <div className="w-full h-1 bg-foreground mb-3 rounded-full" />
+      <div className="w-full h-1 bg-emerald-100 mb-3 rounded-full" />
       {/* Labels row */}
       <div className="flex items-center mb-1">
         <div className="w-32">
@@ -269,9 +250,9 @@ export function DownloadAnimation({
         {/* Animated Progress bar */}
         <div className="w-32">
           <div
-            className="w-full h-2.5 border dark:border-white border-black bg-transparent rounded-full flex items-center px-0.5">
+            className="w-full h-2.5 border border-emerald-200 bg-emerald-50 rounded-full flex items-center px-0.5">
             <motion.div
-              className="h-1 dark:bg-white bg-black rounded-full"
+              className="h-1 bg-emerald-600 rounded-full"
               initial={{ width: "0%" }}
               animate={{
                 width: `${animatedProgress}%`,
@@ -286,19 +267,19 @@ export function DownloadAnimation({
         {/* Animated info values */}
         <div className="flex ml-6">
           <div className="w-28 text-left">
-            <div className="text-sm font-mono">
+              <div className="text-sm font-mono text-emerald-900">
               {formatTime(timeRemainingSeconds)}
             </div>
           </div>
           <div className="w-28 text-left">
-            <div className="text-sm font-mono">
+            <div className="text-sm font-mono text-emerald-900">
               {filesCount.toLocaleString()}
             </div>
           </div>
         </div>
       </div>
       {/* Static bottom bar - always visible */}
-      <div className="w-3/4 h-0.5 bg-primary mt-4 rounded-full" />
+      <div className="w-3/4 h-0.5 bg-emerald-600 mt-4 rounded-full" />
     </motion.div>
   );
 }
