@@ -42,6 +42,15 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts'
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarShortcut,
+  MenubarTrigger,
+} from '@/components/ui/menubar'
 import { formatPrice, formatDate, getInitials, cn } from '@/lib/utils'
 import api from '@/config/api'
 
@@ -174,13 +183,52 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Welcome */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Admin Dashboard 🛡️
-        </h1>
-        <p className="text-gray-500 mt-1">
-          Platform overview and management
-        </p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Admin Dashboard 🛡️
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Platform overview and management
+          </p>
+        </div>
+        
+        <Menubar className="hidden md:flex">
+          <MenubarMenu>
+            <MenubarTrigger>Management</MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem onClick={() => navigate('/admin/users')}>
+                Users <MenubarShortcut>⌘U</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem onClick={() => navigate('/admin/products')}>
+                Products <MenubarShortcut>⌘P</MenubarShortcut>
+              </MenubarItem>
+              <MenubarItem onClick={() => navigate('/admin/orders')}>
+                Orders <MenubarShortcut>⌘O</MenubarShortcut>
+              </MenubarItem>
+              <MenubarSeparator />
+              <MenubarItem onClick={() => navigate('/admin/apmc')}>
+                APMC Data
+              </MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+          <MenubarMenu>
+            <MenubarTrigger>Settings</MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem>Platform Settings</MenubarItem>
+              <MenubarItem>Security Audit</MenubarItem>
+              <MenubarItem>Manage Admins</MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+          <MenubarMenu>
+            <MenubarTrigger>Reports</MenubarTrigger>
+            <MenubarContent>
+              <MenubarItem>Revenue Report</MenubarItem>
+              <MenubarItem>Verification Log</MenubarItem>
+              <MenubarItem>User Activity</MenubarItem>
+            </MenubarContent>
+          </MenubarMenu>
+        </Menubar>
       </div>
 
       {/* Stats Cards */}

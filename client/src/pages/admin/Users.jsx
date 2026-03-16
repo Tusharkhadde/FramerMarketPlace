@@ -61,6 +61,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { formatDate, getInitials, cn } from '@/lib/utils'
@@ -363,22 +365,37 @@ const AdminUsers = () => {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        {user.isBanned ? (
-                          <Badge className="bg-red-100 text-red-700">
-                            <XCircle className="w-3 h-3 mr-1" />
-                            Banned
-                          </Badge>
-                        ) : user.isVerified ? (
-                          <Badge className="bg-green-100 text-green-700">
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Verified
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-yellow-100 text-yellow-700">
-                            <AlertCircle className="w-3 h-3 mr-1" />
-                            Pending
-                          </Badge>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={!user.isBanned}
+                            onCheckedChange={() => 
+                              openConfirmDialog(user.isBanned ? 'unban' : 'ban', user)
+                            }
+                            className="scale-75 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
+                          />
+                          <span className={cn(
+                            "text-xs font-medium",
+                            user.isBanned ? "text-red-600" : "text-green-600"
+                          )}>
+                            {user.isBanned ? 'Banned' : 'Active'}
+                          </span>
+                        </div>
+                        {user.userType === 'farmer' && (
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={user.isVerified}
+                              disabled={user.isVerified}
+                              onCheckedChange={() => openConfirmDialog('verify', user)}
+                              className="scale-75"
+                            />
+                            <span className={cn(
+                              "text-[10px] uppercase tracking-wider font-bold",
+                              user.isVerified ? "text-blue-600" : "text-gray-400"
+                            )}>
+                              {user.isVerified ? 'Verified' : 'Pending'}
+                            </span>
+                          </div>
                         )}
                       </div>
                     </TableCell>
