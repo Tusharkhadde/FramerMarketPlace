@@ -4,6 +4,21 @@ import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Button variants configuration using CVA
+ * @type {import('class-variance-authority').CVA}
+ * 
+ * Variants:
+ * - variant: default | outline | secondary | ghost | destructive | link
+ * - size: default | xs | sm | lg | icon | icon-xs | icon-sm | icon-lg
+ *
+ * Features:
+ * - Full keyboard navigation support
+ * - Accessible focus states with ring styling
+ * - Dark mode support with proper contrast
+ * - Disabled state with reduced opacity
+ * - Invalid state styling for form validation
+ */
 const buttonVariants = cva(
   "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
@@ -41,6 +56,41 @@ const buttonVariants = cva(
   }
 )
 
+/**
+ * Button Component
+ * 
+ * A versatile button component with multiple variants and sizes.
+ * 
+ * @component
+ * @param {Object} props
+ * @param {string} [props.variant='default'] - Button style variant
+ * @param {string} [props.size='default'] - Button size
+ * @param {boolean} [props.asChild=false] - Render as child element
+ * @param {string} [props.className] - Additional CSS classes
+ * @param {boolean} [props.disabled] - Disabled state
+ * @param {React.ReactNode} [props.children] - Button content
+ * @param {Function} [props.onClick] - Click handler
+ * 
+ * @example
+ * ```jsx
+ * // Basic button
+ * <Button>Click me</Button>
+ * 
+ * // With variant
+ * <Button variant="outline">Outline Button</Button>
+ * 
+ * // With size
+ * <Button size="lg">Large Button</Button>
+ * 
+ * // Disabled state
+ * <Button disabled>Disabled</Button>
+ * 
+ * // With icon
+ * <Button size="icon">
+ *   <Icon size={16} />
+ * </Button>
+ * ```
+ */
 const Button = React.forwardRef(({
   className,
   variant = "default",
@@ -56,7 +106,9 @@ const Button = React.forwardRef(({
       ref={ref}
       data-variant={variant}
       data-size={size}
+      aria-busy={props['aria-busy']}
       className={cn(buttonVariants({ variant, size, className }))}
+      role={asChild ? undefined : "button"}
       {...props} />
   );
 })
