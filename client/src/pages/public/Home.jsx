@@ -23,6 +23,7 @@ import { TextGenerateEffect } from '@/components/aceternity/text-generate-effect
 import { BackgroundBeams } from '@/components/aceternity/background-beams'
 import { MovingBorder } from '@/components/aceternity/moving-border'
 import { GLSLHills } from '@/components/glsl-hills'
+import GenerativeTreeBackground from '@/components/ui/generative-tree-background'
 import { getProductImageUrl } from '@/lib/utils'
 import api from '@/config/api'
 import { formatPrice } from '@/lib/utils'
@@ -112,51 +113,87 @@ const Home = () => {
 
   return (
     <div className="min-h-screen">
-      <section className="relative h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden bg-background">
-        {/* GLSL Hills Background */}
-        <div className="absolute inset-0 z-0">
-          <GLSLHills 
-            width="100%" 
-            height="100%" 
-            cameraZ={150} 
-            planeSize={256} 
-            speed={0.3} 
-          />
-          {/* Gradient Overlay for better readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/40 to-background z-[2]" />
-        </div>
+      <section className="relative min-h-[85vh] w-full bg-[#0a0a0a] overflow-hidden flex items-center py-20 lg:py-0 border-b border-white/5">
+        
+        {/* Subtle radial gradient background for depth */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-farmer-900/20 via-[#0a0a0a] to-[#0a0a0a] z-0"></div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h1 className="text-4xl sm:text-5xl font-bold text-emerald-900">
-              Fresh from Farm to Your Table
-            </h1>
-            <p className="mt-4 text-lg text-emerald-900/80 max-w-2xl mx-auto">
-              Connect directly with Maharashtra's farmers. Get fresh, quality produce at fair prices while supporting local agriculture.
-            </p>
-            <div className="mt-8">
-              <ChronicleButton
-                text={"Shop Fresh Now"}
-                onClick={() => navigate('/products')}
-                borderRadius={'999px'}
-                customBackground={'#065f46'}
-                customForeground={'#ffffff'}
-                hoverColor={'#047857'}
-                className={'text-lg'}
-                width={'220px'}
-              />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mt-10 lg:mt-0">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
+            
+            {/* Left Content / Text */}
+            <div className="w-full lg:w-[45%] flex flex-col items-start text-left">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              >
+                <div className="inline-flex items-center rounded-full border border-farmer-500/30 bg-farmer-500/10 px-3 py-1 text-sm text-farmer-400 mb-6">
+                  <span className="flex h-2 w-2 rounded-full bg-farmer-500 mr-2 animate-pulse"></span>
+                  Farm to Table 2.0
+                </div>
+                
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.1]">
+                  Fresh farm produce <br className="hidden sm:block" />
+                  <span className="text-farmer-400">starts here</span>
+                </h1>
+                
+                <p className="mt-6 text-lg tracking-wide text-zinc-400 max-w-lg leading-relaxed">
+                  A beautiful platform connecting you directly with Maharashtra's farmers. Get fresh, quality produce at fair prices, making your meals stand out.
+                </p>
+                
+                <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <ChronicleButton
+                    text={"Get Started"}
+                    onClick={() => navigate('/products')}
+                    borderRadius={'8px'}
+                    customBackground={'#d4a373'} 
+                    customForeground={'#18181b'}
+                    hoverColor={'#e6ccb2'}
+                    hoverForeground={'#18181b'}
+                    className={'text-base font-semibold px-8 py-3 w-full sm:w-auto'}
+                    width={'auto'}
+                  />
+                  <Button 
+                    variant="ghost" 
+                    className="text-white/70 hover:text-white hover:bg-white/5 px-6 py-6"
+                    onClick={() => navigate('/about')}
+                  >
+                    Learn more <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
-          
+
+            {/* Right Content / Generative Tree */}
+            <div className="w-full lg:w-[55%] h-[400px] sm:h-[500px] lg:h-[650px] relative flex items-center justify-center lg:justify-end mt-8 lg:mt-0">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+                className="w-full h-full relative flex items-center justify-center"
+              >
+                {/* Dark circular container resembling the reference image */}
+                <div className="relative w-full max-w-[500px] aspect-square rounded-[2.5rem] bg-[#050505] overflow-hidden border border-white/5 shadow-2xl flex items-center justify-center">
+                  
+                  {/* Subtle inner glow */}
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-farmer-500/5 to-transparent pointer-events-none"></div>
+                  
+                  <GenerativeTreeBackground />
+                  
+                  <div className="absolute top-6 right-6 text-[10px] font-mono text-farmer-400/40 uppercase tracking-widest pointer-events-none select-none">
+                    60 fps
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+          </div>
         </div>
       </section>
 
       {/* Categories Section */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -208,7 +245,7 @@ const Home = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -277,7 +314,7 @@ const Home = () => {
       </section>
 
       {/* Featured Products Section */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12">
             <motion.div
@@ -368,7 +405,7 @@ const Home = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

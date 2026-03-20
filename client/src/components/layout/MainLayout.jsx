@@ -4,7 +4,7 @@ import { FlickeringFooter } from './FlickeringFooter'
 
 const MainLayout = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <div className="min-h-screen flex flex-col bg-transparent text-foreground">
       <Navbar />
       <main className="flex-grow">
         <Outlet />
