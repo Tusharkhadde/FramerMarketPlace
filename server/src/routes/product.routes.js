@@ -108,6 +108,7 @@ import express from 'express'
 import Product from '../models/Product.js'
 import { protect, authorize } from '../middleware/auth.middleware.js'
 import { upload } from '../middleware/upload.middleware.js'
+import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary.js'
 
 const router = express.Router()
 
@@ -203,10 +204,14 @@ router.post('/', protect, authorize('farmer'), upload.array('images', 5), async 
 
     let images = []
     if (req.files && req.files.length > 0) {
-      images = req.files.map(file => ({
-        url: `/uploads/${file.filename}`,
-        publicId: file.filename,
-      }))
+      const uploadPromises = req.files.map(async (file) => {
+        const result = await uploadToCloudinary(file.path, 'products');
+        return {
+          url: result.secure_url,
+          publicId: result.public_id,
+        };
+      });
+      images = await Promise.all(uploadPromises);
     } else {
       images = [{ url: 'https://placehold.co/400x400?text=Product', publicId: null }]
     }
@@ -260,6 +265,15 @@ router.delete('/:id', protect, authorize('farmer', 'admin'), async (req, res) =>
     if (req.user.userType === 'farmer' && product.farmer.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: 'Not authorized' })
     }
+
+    if (product.images && product.images.length > 0) {
+      product.images.forEach(img => {
+        if (img.publicId && !img.url.includes('placehold.co')) {
+          deleteFromCloudinary(img.publicId).catch(console.error)
+        }
+      })
+    }
+
     await product.deleteOne()
     res.json({ success: true, message: 'Product deleted' })
   } catch (error) {

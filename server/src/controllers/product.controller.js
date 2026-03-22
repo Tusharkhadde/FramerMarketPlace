@@ -2,6 +2,7 @@ import Product from '../models/Product.js'
 import { ApiError } from '../utils/apiError.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { sendResponse } from '../utils/apiResponse.js'
+import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -120,15 +121,19 @@ export const createProduct = asyncHandler(async (req, res, next) => {
   console.log('Files:', req.files?.length || 0, 'files')
 
   try {
-    // Handle images - store locally
+    // Handle images - upload to Cloudinary
     let uploadedImages = []
 
     if (req.files && req.files.length > 0) {
-      uploadedImages = req.files.map(file => ({
-        url: `/uploads/${file.filename}`,
-        publicId: file.filename,
-      }))
-      console.log('Images uploaded:', uploadedImages)
+      const uploadPromises = req.files.map(async (file) => {
+        const result = await uploadToCloudinary(file.path, 'products')
+        return {
+          url: result.secure_url,
+          publicId: result.public_id,
+        }
+      })
+      uploadedImages = await Promise.all(uploadPromises)
+      console.log('Images uploaded to Cloudinary:', uploadedImages)
     } else {
       // Default placeholder image
       uploadedImages = [{
@@ -247,10 +252,25 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
   let uploadedImages = product.images
 
   if (req.files && req.files.length > 0) {
-    uploadedImages = req.files.map(file => ({
-      url: `/uploads/${file.filename}`,
-      publicId: file.filename,
-    }))
+    const uploadPromises = req.files.map(async (file) => {
+      const result = await uploadToCloudinary(file.path, 'products')
+      return {
+        url: result.secure_url,
+        publicId: result.public_id,
+      }
+    })
+    const newImages = await Promise.all(uploadPromises)
+    
+    // Delete old images from Cloudinary
+    if (product.images && product.images.length > 0) {
+      product.images.forEach(img => {
+        if (img.publicId && !img.url.includes('placehold.co')) {
+          deleteFromCloudinary(img.publicId).catch(console.error)
+        }
+      })
+    }
+    
+    uploadedImages = newImages
   }
 
   // Parse JSON fields
@@ -323,6 +343,15 @@ export const deleteProduct = asyncHandler(async (req, res, next) => {
   // Check ownership
   if (req.user.userType === 'farmer' && product.farmer.toString() !== req.user.id) {
     return next(new ApiError('Not authorized to delete this product', 403))
+  }
+
+  // Delete images from Cloudinary
+  if (product.images && product.images.length > 0) {
+    product.images.forEach(img => {
+      if (img.publicId && !img.url.includes('placehold.co')) {
+        deleteFromCloudinary(img.publicId).catch(console.error)
+      }
+    })
   }
 
   await product.deleteOne()
