@@ -203,7 +203,9 @@ const AddProduct = () => {
       })
 
       // Let the browser set the Content-Type (including multipart boundary)
-      const response = await api.post('/products', submitData)
+      const response = await api.post('/products', submitData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
 
       toast.success('Product added successfully!')
       navigate('/farmer/products')
