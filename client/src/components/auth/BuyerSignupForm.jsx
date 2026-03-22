@@ -132,7 +132,7 @@ const BuyerSignupForm = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Full Name */}
         <div className="space-y-1.5">
-          <Label htmlFor="fullName">Full Name *</Label>
+          <Label htmlFor="fullName" className="text-gray-200">Full Name *</Label>
           <div className="relative group">
             <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
             <Input
@@ -152,7 +152,7 @@ const BuyerSignupForm = () => {
 
         {/* Email */}
         <div className="space-y-1.5">
-          <Label htmlFor="email">Email Address *</Label>
+          <Label htmlFor="email" className="text-gray-200">Email Address *</Label>
           <div className="relative group">
             <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
             <Input
@@ -173,7 +173,7 @@ const BuyerSignupForm = () => {
 
         {/* Phone */}
         <div className="space-y-1.5">
-          <Label htmlFor="phone">Phone Number *</Label>
+          <Label htmlFor="phone" className="text-gray-200">Phone Number *</Label>
           <div className="relative group">
             <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
             <div className="absolute left-11 top-1/2 -translate-y-1/2 text-sm text-gray-400 border-r border-gray-300 pr-2">
@@ -197,7 +197,7 @@ const BuyerSignupForm = () => {
 
         {/* Password */}
         <div className="space-y-1.5">
-          <Label htmlFor="password">Password *</Label>
+          <Label htmlFor="password" className="text-gray-200">Password *</Label>
           <div className="relative group">
             <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
             <Input
@@ -241,7 +241,7 @@ const BuyerSignupForm = () => {
 
         {/* Confirm Password */}
         <div className="space-y-1.5">
-          <Label htmlFor="confirmPassword">Confirm Password *</Label>
+          <Label htmlFor="confirmPassword" className="text-gray-200">Confirm Password *</Label>
           <div className="relative group">
             <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
             <Input
