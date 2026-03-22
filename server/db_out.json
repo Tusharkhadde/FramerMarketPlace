@@ -1,0 +1,66 @@
+[
+  {
+    "_id": "69b2c9d8d897a9d0ca84b945",
+    "cropName": "bringal",
+    "images": [
+      {
+        "url": "/uploads/product-1773324760201-780774452.jpg",
+        "publicId": "product-1773324760201-780774452.jpg",
+        "_id": "69b2c9d8d897a9d0ca84b946"
+      },
+      {
+        "url": "/uploads/product-1773324760227-792378132.jpg",
+        "publicId": "product-1773324760227-792378132.jpg",
+        "_id": "69b2c9d8d897a9d0ca84b947"
+      },
+      {
+        "url": "/uploads/product-1773324760228-119126448.jpg",
+        "publicId": "product-1773324760228-119126448.jpg",
+        "_id": "69b2c9d8d897a9d0ca84b948"
+      },
+      {
+        "url": "/uploads/product-1773324760229-860563640.jpg",
+        "publicId": "product-1773324760229-860563640.jpg",
+        "_id": "69b2c9d8d897a9d0ca84b949"
+      },
+      {
+        "url": "/uploads/product-1773324760230-665904094.jpg",
+        "publicId": "product-1773324760230-665904094.jpg",
+        "_id": "69b2c9d8d897a9d0ca84b94a"
+      }
+    ]
+  },
+  {
+    "_id": "69b64624ad28c7ef4ab80137",
+    "cropName": "Potatos",
+    "images": [
+      {
+        "url": "https://placehold.co/400x400?text=Product",
+        "publicId": null,
+        "_id": "69b64624ad28c7ef4ab80138"
+      }
+    ]
+  },
+  {
+    "_id": "69bb92e4aee6d54d89241c75",
+    "cropName": "banana",
+    "images": [
+      {
+        "url": "https://placehold.co/400x400?text=Product",
+        "publicId": null,
+        "_id": "69bb92e4aee6d54d89241c76"
+      }
+    ]
+  },
+  {
+    "_id": "69beadf32383868cca6a53a0",
+    "cropName": "Mirchi",
+    "images": [
+      {
+        "url": "https://placehold.co/400x400?text=Product",
+        "publicId": null,
+        "_id": "69beadf32383868cca6a53a1"
+      }
+    ]
+  }
+]
