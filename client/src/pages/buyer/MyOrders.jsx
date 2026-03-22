@@ -33,7 +33,8 @@ import api from '@/config/api'
 import { formatPrice } from '@/lib/utils'
 import Loading from '@/components/shared/Loading'
 import { toast } from 'sonner'
-
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 const MyOrders = () => {
   const navigate = useNavigate()
   const [orders, setOrders] = useState([])
@@ -113,11 +114,10 @@ const MyOrders = () => {
                 <button
                   key={tab.key}
                   onClick={() => setFilter(tab.key)}
-                  className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                    filter === tab.key
-                      ? 'bg-farmer-500 text-white'
-                      : 'bg-white text-gray-700 border hover:bg-gray-100'
-                  }`}
+                  className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${filter === tab.key
+                    ? 'bg-farmer-500 text-white'
+                    : 'bg-white text-gray-700 border hover:bg-gray-100'
+                    }`}
                 >
                   {tab.label} ({tab.count})
                 </button>
