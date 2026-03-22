@@ -235,7 +235,7 @@ const FarmerSignupForm = () => {
             >
               {/* Full Name */}
               <div className="space-y-1.5">
-                <Label htmlFor="fullName">Full Name *</Label>
+                <Label htmlFor="fullName" className="text-gray-200">Full Name *</Label>
                 <div className="relative group">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
                   <Input
@@ -255,7 +255,7 @@ const FarmerSignupForm = () => {
 
               {/* Email */}
               <div className="space-y-1.5">
-                <Label htmlFor="email">Email Address *</Label>
+                <Label htmlFor="email" className="text-gray-200">Email Address *</Label>
                 <div className="relative group">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
                   <Input
@@ -276,7 +276,7 @@ const FarmerSignupForm = () => {
 
               {/* Phone */}
               <div className="space-y-1.5">
-                <Label htmlFor="phone">Phone Number *</Label>
+                <Label htmlFor="phone" className="text-gray-200">Phone Number *</Label>
                 <div className="relative group">
                   <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
                   <div className="absolute left-11 top-1/2 -translate-y-1/2 text-sm text-muted-foreground border-r border-gray-300 pr-2">
@@ -316,7 +316,7 @@ const FarmerSignupForm = () => {
             >
               {/* Password */}
               <div className="space-y-1.5">
-                <Label htmlFor="password">Password *</Label>
+                <Label htmlFor="password" className="text-gray-200">Password *</Label>
                 <div className="relative group">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
                   <Input
@@ -362,7 +362,7 @@ const FarmerSignupForm = () => {
 
               {/* Confirm Password */}
               <div className="space-y-1.5">
-                <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                <Label htmlFor="confirmPassword" className="text-gray-200">Confirm Password *</Label>
                 <div className="relative group">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
                   <Input
@@ -416,7 +416,7 @@ const FarmerSignupForm = () => {
             >
               {/* District */}
               <div className="space-y-1.5">
-                <Label>District *</Label>
+                <Label className="text-gray-200">District *</Label>
                 <Select
                   onValueChange={(value) => setValue('district', value)}
                   value={district}
@@ -446,14 +446,14 @@ const FarmerSignupForm = () => {
               {/* Taluka & Village */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="taluka">Taluka</Label>
+                  <Label htmlFor="taluka" className="text-gray-200">Taluka</Label>
                   <div className="relative group">
                     <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-farmer-500" />
                     <Input id="taluka" placeholder="Your taluka" className="pl-10 h-11" {...register('taluka')} />
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="village">Village</Label>
+                  <Label htmlFor="village" className="text-gray-200">Village</Label>
                   <div className="relative group">
                     <Home className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-farmer-500" />
                     <Input id="village" placeholder="Your village" className="pl-10 h-11" {...register('village')} />
@@ -463,7 +463,7 @@ const FarmerSignupForm = () => {
 
               {/* Farm Size */}
               <div className="space-y-1.5">
-                <Label htmlFor="farmSize">Farm Size (Acres)</Label>
+                <Label htmlFor="farmSize" className="text-gray-200">Farm Size (Acres)</Label>
                 <div className="relative group">
                   <Ruler className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-farmer-500" />
                   <Input id="farmSize" type="number" step="0.1" min="0" placeholder="e.g., 5" className="pl-10 h-11" {...register('farmSize')} />
@@ -472,7 +472,7 @@ const FarmerSignupForm = () => {
 
               {/* Quick Crop Selection */}
               <div className="space-y-2">
-                <Label>Main Crops (Optional)</Label>
+                <Label className="text-gray-200">Main Crops (Optional)</Label>
                 <div className="flex flex-wrap gap-2">
                   {['Tomato', 'Onion', 'Potato', 'Grapes', 'Sugarcane', 'Wheat', 'Rice', 'Cotton', 'Soybean', 'Mango', 'Orange', 'Pomegranate'].map(
                     (crop) => (
