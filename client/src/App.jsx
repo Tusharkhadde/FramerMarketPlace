@@ -20,12 +20,14 @@ import ProductDetail from '@/pages/public/ProductDetail'
 import Login from '@/pages/auth/Login'
 import Register from '@/pages/auth/Register'
 import ForgotPassword from '@/pages/auth/ForgotPassword'
+import OAuthCallback from '@/pages/auth/OAuthCallback'
 
 // Buyer Pages
 import Cart from '@/pages/buyer/Cart'
 import Checkout from '@/pages/buyer/Checkout'
 import MyOrders from '@/pages/buyer/MyOrders'
 import BuyerProfile from '@/pages/buyer/Profile'
+import BuyerSettings from '@/pages/buyer/Settings'
 
 // Farmer Pages
 import FarmerDashboard from '@/pages/farmer/Dashboard'
@@ -82,6 +84,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/auth/callback" element={<OAuthCallback />} />
 
               {/* Buyer Routes */}
               <Route element={<MainLayout />}>
@@ -117,6 +120,14 @@ function App() {
                     </PrivateRoute>
                   }
                 />
+                <Route
+                  path="/settings"
+                  element={
+                    <PrivateRoute allowedRoles={['buyer']}>
+                      <BuyerSettings />
+                    </PrivateRoute>
+                  }
+                />
               </Route>
 
               {/* Farmer Routes */}
@@ -136,7 +147,9 @@ function App() {
                 {/* EditProduct and FarmerAnalytics routes removed (files not present) */}
                 <Route path="market-prices" element={<MarketPrices />} />
                 <Route path="profile" element={<FarmerProfile />} />
+                <Route path="settings" element={<FarmerSettings />} />
               </Route>
+
 
               {/* Admin Routes */}
               <Route
