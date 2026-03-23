@@ -15,6 +15,7 @@ import {
   Search,
   Leaf,
   TrendingUp,
+  MapPin,
   Home,
   Store,
   LayoutDashboard,
@@ -71,6 +72,7 @@ const Navbar = () => {
     { name: 'Home', href: '/', icon: Home },
     { name: 'Products', href: '/products', icon: Store },
     { name: 'Market Prices', href: '/market-prices', icon: TrendingUp },
+    { name: 'Farms', href: '/farms', icon: MapPin },
   ]
 
   const getDashboardLink = () => {
@@ -81,9 +83,9 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-          ? 'bg-card/95 backdrop-blur-md shadow-md'
-          : 'bg-card/80 backdrop-blur-sm'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${isScrolled
+          ? 'bg-background/70 backdrop-blur-xl border-border/50 shadow-sm'
+          : 'bg-background/40 backdrop-blur-md border-border/20'
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -107,9 +109,9 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   to={link.href}
-                  className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
-                      ? 'bg-farmer-100 text-farmer-700'
-                      : 'text-zinc-900 hover:bg-zinc-100'
+                  className={`flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${isActive
+                      ? 'bg-farmer-500/10 text-farmer-600'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                     }`}
                 >
                   <Icon className="w-4 h-4 mr-2" />
@@ -128,7 +130,7 @@ const Navbar = () => {
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 w-full"
+                className="pl-10 pr-4 w-full bg-muted/40 border-border/50 focus:bg-background/80 transition-all duration-200 rounded-full"
               />
             </div>
           </form>
@@ -163,17 +165,17 @@ const Navbar = () => {
                 {/* User Menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center space-x-2">
-                      <Avatar className="w-8 h-8">
+                    <Button variant="ghost" className="flex items-center space-x-2 hover:bg-accent/50 rounded-full pl-1 pr-3">
+                      <Avatar className="w-8 h-8 border border-border/50">
                         <AvatarImage src={user?.avatar?.url} />
-                        <AvatarFallback className="bg-farmer-500 text-white">
+                        <AvatarFallback className="bg-farmer-500 text-white text-xs">
                           {user?.fullName?.charAt(0) || 'U'}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="max-w-[100px] truncate text-sm font-medium">
+                      <span className="max-w-[100px] truncate text-sm font-medium text-foreground">
                         {user?.fullName?.split(' ')[0]}
                       </span>
-                      <ChevronDown className="w-4 h-4" />
+                      <ChevronDown className="w-4 h-4 text-muted-foreground" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
