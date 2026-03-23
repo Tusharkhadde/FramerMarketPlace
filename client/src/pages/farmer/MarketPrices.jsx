@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   TrendingUp, TrendingDown, Search, MapPin, Calendar,
   BarChart3, ArrowUpRight, ArrowDownRight, RefreshCw,
-  Brain, Sparkles, Info,
+  Brain, Sparkles, Info, ArrowRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
-  LineChart, Line, BarChart, Bar, XAxis, YAxis,
+  LineChart, Line, AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
 import { useAuth } from '@/context/AuthContext'
@@ -30,7 +30,6 @@ const commodities = [
   'Turmeric', 'Red Chilli', 'Banana', 'Orange', 'Mango',
 ]
 
-// Generate dummy price data
 const generatePriceHistory = (basePrice) => {
   return Array.from({ length: 30 }, (_, i) => {
     const date = new Date()
@@ -81,13 +80,12 @@ const MarketPrices = () => {
 
   const handlePredictPrice = async () => {
     setPredicting(true)
-    // Simulate AI prediction
     await new Promise(resolve => setTimeout(resolve, 2000))
 
     const currentPrice = currentPrices.find(p => p.commodity === selectedCommodity)?.modalPrice || 2000
-    const prediction7 = Math.round(currentPrice * (1 + (Math.random() - 0.3) * 0.15))
-    const prediction15 = Math.round(currentPrice * (1 + (Math.random() - 0.3) * 0.25))
-    const prediction30 = Math.round(currentPrice * (1 + (Math.random() - 0.3) * 0.35))
+    const prediction7 = Math.round(currentPrice * (1 + (Math.random() - 0.2) * 0.15))
+    const prediction15 = Math.round(currentPrice * (1 + (Math.random() - 0.2) * 0.25))
+    const prediction30 = Math.round(currentPrice * (1 + (Math.random() - 0.2) * 0.35))
 
     setAiPrediction({
       commodity: selectedCommodity,
@@ -114,172 +112,214 @@ const MarketPrices = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {/* Premium Header Bar */}
+      <div className="bg-background/40 backdrop-blur-md border border-border/50 p-6 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Market Prices 📈</h1>
-          <p className="text-gray-500 mt-1">Real-time APMC prices and AI predictions</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            Market Prices <span className="text-farmer-600">📈</span>
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm font-medium">Real-time APMC insights & AI-powered forecasts</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
-            <SelectTrigger className="w-[180px]">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                <SelectValue />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {districts.map(d => (
-                <SelectItem key={d} value={d}>{d}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button variant="outline" size="icon">
+        
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-full border border-border/30">
+            <MapPin className="w-4 h-4 ml-2 text-farmer-600" />
+            <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
+              <SelectTrigger className="w-[140px] border-none bg-transparent focus:ring-0 shadow-none h-8">
+                <SelectValue placeholder="District" />
+              </SelectTrigger>
+              <SelectContent>
+                {districts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button variant="outline" size="icon" className="rounded-full w-10 h-10 border-border/50 hover:bg-background/80">
             <RefreshCw className="w-4 h-4" />
           </Button>
         </div>
       </div>
 
-      <Tabs defaultValue="prices" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="prices">
-            <BarChart3 className="w-4 h-4 mr-2" />
-            Current Prices
-          </TabsTrigger>
-          <TabsTrigger value="trends">
-            <TrendingUp className="w-4 h-4 mr-2" />
-            Price Trends
-          </TabsTrigger>
-          <TabsTrigger value="predictions">
-            <Brain className="w-4 h-4 mr-2" />
-            AI Predictions
-          </TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="prices" className="w-full">
+        <div className="flex justify-center mb-8">
+          <TabsList className="bg-muted/40 p-1 rounded-full border border-border/50 h-12">
+            <TabsTrigger value="prices" className="rounded-full px-6 transition-all duration-300">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Real-time
+            </TabsTrigger>
+            <TabsTrigger value="trends" className="rounded-full px-6 transition-all duration-300">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Trends
+            </TabsTrigger>
+            <TabsTrigger value="predictions" className="rounded-full px-6 transition-all duration-300">
+              <Brain className="w-4 h-4 mr-2" />
+              AI Insights
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        {/* Current Prices Tab */}
-        <TabsContent value="prices" className="space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search commodity..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="pl-10 max-w-sm"
-            />
+        {/* Current Prices Content */}
+        <TabsContent value="prices" className="space-y-6">
+          <div className="flex items-center justify-between gap-4 px-2">
+            <div className="relative group max-w-sm w-full">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-farmer-600" />
+              <Input
+                placeholder="Search commodity (e.g. Tomato, Onion)..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="pl-11 rounded-full bg-muted/30 border-border/50 focus:bg-background/80 focus:border-farmer-500/50 transition-all h-11"
+              />
+            </div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest hidden sm:block">
+              Filtered by: {selectedDistrict}
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredPrices.map((price, index) => (
-              <motion.div
-                key={price.commodity}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Card
-                  className={cn(
-                    'cursor-pointer hover:shadow-md transition-all',
-                    selectedCommodity === price.commodity && 'ring-2 ring-farmer-500'
-                  )}
-                  onClick={() => handleCommoditySelect(price.commodity)}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <AnimatePresence>
+              {filteredPrices.map((price, index) => (
+                <motion.div
+                  key={price.commodity}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.05 }}
+                  layout
                 >
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{price.commodity}</h3>
-                        <p className="text-xs text-gray-500">{price.market}</p>
+                  <Card
+                    className={cn(
+                      'group cursor-pointer rounded-2xl border-border/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1',
+                      selectedCommodity === price.commodity ? 'ring-2 ring-farmer-500 bg-farmer-500/5' : 'hover:bg-accent/30'
+                    )}
+                    onClick={() => handleCommoditySelect(price.commodity)}
+                  >
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="font-bold text-foreground group-hover:text-farmer-600 transition-colors">{price.commodity}</h3>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-tighter mt-1">{price.market}</p>
+                        </div>
+                        <Badge variant="outline" className={cn(
+                          'rounded-full px-2 py-0 border-none flex items-center gap-1',
+                          price.trend === 'up' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'
+                        )}>
+                          {price.trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                          {Math.abs(price.change)}%
+                        </Badge>
                       </div>
-                      <div className={cn(
-                        'flex items-center gap-1 text-sm font-medium px-2 py-1 rounded-full',
-                        price.trend === 'up' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      )}>
-                        {price.trend === 'up' ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
-                        {Math.abs(price.change)}%
+
+                      <div className="flex items-baseline gap-1 mb-4">
+                        <span className="text-3xl font-black text-foreground">₹{price.modalPrice.toLocaleString()}</span>
+                        <span className="text-xs font-medium text-muted-foreground">/ quintal</span>
                       </div>
-                    </div>
 
-                    <div className="text-2xl font-bold text-farmer-600 mb-2">
-                      ₹{price.modalPrice.toLocaleString()}<span className="text-sm font-normal text-gray-500">/quintal</span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>Min: ₹{price.minPrice}</span>
-                      <span>Max: ₹{price.maxPrice}</span>
-                      <span>{price.arrival} quintals</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                      <div className="grid grid-cols-2 gap-2 mt-auto">
+                        <div className="bg-muted/30 p-2 rounded-xl text-center">
+                          <p className="text-[10px] text-muted-foreground uppercase">Min</p>
+                          <p className="text-xs font-bold text-foreground">₹{price.minPrice}</p>
+                        </div>
+                        <div className="bg-muted/30 p-2 rounded-xl text-center">
+                          <p className="text-[10px] text-muted-foreground uppercase">Max</p>
+                          <p className="text-xs font-bold text-foreground">₹{price.maxPrice}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </TabsContent>
 
-        {/* Price Trends Tab */}
-        <TabsContent value="trends" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>{selectedCommodity} - Price Trend</CardTitle>
-                  <CardDescription>Last 30 days in {selectedDistrict} APMC</CardDescription>
-                </div>
-                <Select value={selectedCommodity} onValueChange={handleCommoditySelect}>
-                  <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {commodities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+        {/* Trends Content */}
+        <TabsContent value="trends" className="space-y-6">
+          <Card className="rounded-3xl border-border/50 overflow-hidden shadow-lg bg-background/50 backdrop-blur-sm">
+            <CardHeader className="border-b border-border/30 bg-muted/10 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <CardTitle className="text-xl font-bold flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-farmer-500" />
+                  {selectedCommodity} Analysis
+                </CardTitle>
+                <CardDescription>Price fluctions over the last 30 days in {selectedDistrict}</CardDescription>
               </div>
+              <Select value={selectedCommodity} onValueChange={handleCommoditySelect}>
+                <SelectTrigger className="w-[180px] rounded-full border-border/50 bg-background/80 shadow-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {commodities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </CardHeader>
-            <CardContent>
-              <div className="h-[400px]">
+            <CardContent className="p-6 md:p-8">
+              <div className="h-[450px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={priceHistory}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `₹${v}`} />
-                    <Tooltip formatter={(v, n) => [n === 'price' ? `₹${v}/quintal` : `${v} quintals`, n === 'price' ? 'Price' : 'Volume']} />
-                    <Legend />
-                    <Line type="monotone" dataKey="price" stroke="#22c55e" strokeWidth={2.5} dot={false} name="Price" />
-                    <Line type="monotone" dataKey="volume" stroke="#3b82f6" strokeWidth={1.5} dot={false} name="Volume" strokeDasharray="5 5" />
-                  </LineChart>
+                  <AreaChart data={priceHistory}>
+                    <defs>
+                      <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.1}/>
+                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground))" opacity={0.1} />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fontSize: 11, fontWeight: 500 }} 
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 11, fontWeight: 500 }} 
+                      tickFormatter={v => `₹${v}`}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: 'hsl(var(--background))', borderRadius: '16px', border: '1px solid hsl(var(--border))', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                      formatter={(v, n) => [n === 'price' ? `₹${v}/quintal` : `${v} quintals`, n === 'price' ? 'Price' : 'Volume']} 
+                    />
+                    <Legend iconType="circle" />
+                    <Area type="monotone" dataKey="price" stroke="#22c55e" strokeWidth={3} fillOpacity={1} fill="url(#colorPrice)" name="Price" activeDot={{ r: 6, strokeWidth: 0, fill: '#22c55e' }} />
+                    <Area type="monotone" dataKey="volume" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorVolume)" name="Volume" strokeDasharray="5 5" />
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* AI Predictions Tab */}
-        <TabsContent value="predictions" className="space-y-6">
-          <Card className="bg-gradient-to-r from-farmer-50 to-blue-50 border-farmer-200">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-farmer-500 to-blue-500 rounded-xl flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-white" />
+        {/* AI Insights Content */}
+        <TabsContent value="predictions" className="space-y-8 max-w-5xl mx-auto">
+          <Card className="bg-gradient-to-br from-farmer-600/10 via-blue-500/10 to-transparent border-farmer-500/20 rounded-3xl overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-8 text-farmer-500/5 rotate-12 -mr-10 -mt-10">
+              <Brain className="w-64 h-64" />
+            </div>
+            
+            <CardContent className="p-8 relative z-10">
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-farmer-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-farmer-500/20">
+                  <Sparkles className="w-10 h-10 text-white" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">AI Price Prediction</h3>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Get AI-powered price forecasts based on historical APMC data, weather patterns, and market trends.
+                <div className="flex-1 text-center md:text-left">
+                  <Badge className="bg-farmer-500 text-white mb-2 uppercase text-[10px] tracking-widest px-3 py-1 border-none">Beta: AI Engine 2.0</Badge>
+                  <h3 className="text-2xl font-black text-gray-900 leading-none">Smart Price Prediction</h3>
+                  <p className="text-muted-foreground mt-2 text-sm font-medium">
+                    Our AI cross-references weather data with multi-market APMC trends to help you time your sales perfectly.
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center md:justify-start">
                     <Select value={selectedCommodity} onValueChange={setSelectedCommodity}>
-                      <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="w-full sm:w-[200px] rounded-full border-border/50 bg-background/80 shadow-sm"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {commodities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                       </SelectContent>
                     </Select>
-                    <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
-                      <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {districts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <Button variant="farmer" onClick={handlePredictPrice} disabled={predicting}>
+                    <Button variant="farmer" size="lg" className="rounded-full px-10 shadow-lg shadow-farmer-500/25" onClick={handlePredictPrice} disabled={predicting}>
                       {predicting ? (
-                        <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />Analyzing...</>
+                        <><RefreshCw className="w-5 h-5 mr-3 animate-spin" />Analyzing Trends...</>
                       ) : (
-                        <><Brain className="w-4 h-4 mr-2" />Predict Price</>
+                        <><Brain className="w-5 h-5 mr-3" />Generate Forecast</>
                       )}
                     </Button>
                   </div>
@@ -290,57 +330,69 @@ const MarketPrices = () => {
 
           {aiPrediction && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-4"
+              className="space-y-6"
             >
-              {/* Prediction Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {aiPrediction.predictions.map(pred => {
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {aiPrediction.predictions.map((pred, i) => {
                   const isUp = pred.price > aiPrediction.currentPrice
                   const changePercent = ((pred.price - aiPrediction.currentPrice) / aiPrediction.currentPrice * 100).toFixed(1)
                   return (
-                    <Card key={pred.days}>
-                      <CardContent className="p-5">
-                        <p className="text-sm text-gray-500 mb-1">Next {pred.days} days</p>
-                        <div className="text-3xl font-bold text-gray-900 mb-2">
-                          ₹{pred.price.toLocaleString()}
-                          <span className="text-sm font-normal text-gray-500">/quintal</span>
-                        </div>
-                        <div className="flex items-center justify-between">
+                    <motion.div
+                      key={pred.days}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                    >
+                      <Card className="rounded-3xl border-border/40 hover:border-farmer-500/50 transition-all hover:bg-accent/5 overflow-hidden group">
+                        <div className={cn("h-1.5 w-full", isUp ? "bg-green-500" : "bg-red-500")} />
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Next {pred.days} Days</span>
+                            <Badge variant="outline" className="rounded-full bg-muted/30 border-none text-[10px]">{pred.confidence}% Acc</Badge>
+                          </div>
+                          <div className="mb-4">
+                            <p className="text-3xl font-black text-foreground">₹{pred.price.toLocaleString()}</p>
+                            <p className="text-xs font-medium text-muted-foreground mt-1">Predicted Modal Price</p>
+                          </div>
                           <div className={cn(
-                            'flex items-center gap-1 text-sm font-medium',
-                            isUp ? 'text-green-600' : 'text-red-600'
+                            'inline-flex items-center gap-1.5 text-sm font-black px-3 py-1 rounded-full',
+                            isUp ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'
                           )}>
                             {isUp ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-                            {isUp ? '+' : ''}{changePercent}%
+                            {isUp ? 'UP' : 'DOWN'} {Math.abs(changePercent)}%
                           </div>
-                          <Badge variant="outline">{pred.confidence}% confidence</Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
                   )
                 })}
               </div>
 
-              {/* Recommendation */}
               <Card className={cn(
-                'border-2',
-                aiPrediction.recommendation.startsWith('HOLD') ? 'border-blue-300 bg-blue-50' : 'border-orange-300 bg-orange-50'
+                'rounded-3xl border-none shadow-2xl relative overflow-hidden',
+                aiPrediction.recommendation.startsWith('HOLD') ? 'bg-farmer-600 text-white' : 'bg-orange-600 text-white'
               )}>
-                <CardContent className="p-5">
-                  <div className="flex items-start gap-3">
-                    <Info className={cn('w-5 h-5 flex-shrink-0 mt-0.5',
-                      aiPrediction.recommendation.startsWith('HOLD') ? 'text-blue-600' : 'text-orange-600'
-                    )} />
-                    <div>
-                      <h4 className="font-semibold text-gray-900">AI Recommendation</h4>
-                      <p className="text-sm text-gray-700 mt-1">{aiPrediction.recommendation}</p>
-                      <div className="mt-3">
-                        <p className="text-xs font-medium text-gray-500 mb-2">Based on:</p>
+                <div className="absolute top-0 right-0 p-10 opacity-10 rotate-12">
+                  <Brain className="w-40 h-40" />
+                </div>
+                <CardContent className="p-8 relative z-10">
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                      <Info className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-lg font-bold uppercase tracking-widest opacity-80 flex items-center gap-2">
+                        AI Recommendation <ArrowRight className="w-4 h-4" />
+                      </h4>
+                      <p className="text-2xl md:text-3xl font-black mt-2 leading-tight">{aiPrediction.recommendation}</p>
+                      
+                      <div className="mt-8">
+                        <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-4">Primary Factors Analyzed:</p>
                         <div className="flex flex-wrap gap-2">
                           {aiPrediction.factors.map((factor, i) => (
-                            <Badge key={i} variant="outline" className="text-xs">{factor}</Badge>
+                            <Badge key={i} className="bg-black/20 text-white border-white/20 px-3 py-1 rounded-full font-medium">{factor}</Badge>
                           ))}
                         </div>
                       </div>
