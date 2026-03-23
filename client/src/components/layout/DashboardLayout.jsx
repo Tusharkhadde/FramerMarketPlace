@@ -178,7 +178,7 @@ const DashboardLayout = () => {
       {/* Main Content */}
       <div className="lg:pl-64">
         {/* Top Header */}
-        <header className="sticky top-0 z-30 bg-card border-b border-border">
+        <header className="sticky top-0 z-30 bg-background/60 backdrop-blur-lg border-b border-border/50 shadow-sm">
           <div className="flex items-center justify-between h-16 px-4 lg:px-8">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -187,7 +187,7 @@ const DashboardLayout = () => {
               <Menu className="w-6 h-6" />
             </button>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 ml-auto">
               {/* Notifications */}
               <button className="relative p-2 hover:bg-card rounded-lg">
                 <Bell className="w-5 h-5 text-muted-foreground" />
