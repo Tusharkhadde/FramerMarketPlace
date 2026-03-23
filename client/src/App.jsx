@@ -28,6 +28,7 @@ import Checkout from '@/pages/buyer/Checkout'
 import MyOrders from '@/pages/buyer/MyOrders'
 import BuyerProfile from '@/pages/buyer/Profile'
 import BuyerSettings from '@/pages/buyer/Settings'
+import FarmMap from '@/pages/buyer/FarmMap'
 
 // Farmer Pages
 import FarmerDashboard from '@/pages/farmer/Dashboard'
@@ -128,7 +129,15 @@ function App() {
                     </PrivateRoute>
                   }
                 />
-              </Route>
+              <Route
+                path="/farms"
+                element={
+                  <PrivateRoute allowedRoles={['buyer']}>
+                    <FarmMap />
+                  </PrivateRoute>
+                }
+              />
+            </Route>
 
               {/* Farmer Routes */}
               <Route
