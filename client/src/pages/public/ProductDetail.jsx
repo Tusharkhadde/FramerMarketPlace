@@ -273,8 +273,16 @@ const ProductDetail = () => {
                 {product.cropName}
               </h1>
               <p className="text-muted-foreground flex items-center">
-                <MapPin className="w-4 h-4 mr-1" />
+                <MapPin className="w-4 h-4 mr-1 text-farmer-600" />
                 {product.district}, Maharashtra
+                <Button 
+                  variant="link" 
+                  size="sm" 
+                  className="text-farmer-600 p-0 ml-2 h-auto font-bold"
+                  onClick={() => navigate('/farms?id=' + product.farmer?._id)}
+                >
+                  View on Map
+                </Button>
               </p>
             </div>
 
