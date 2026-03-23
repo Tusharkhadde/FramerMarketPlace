@@ -158,7 +158,7 @@ const AdminLayout = () => {
       {/* Main Content */}
       <div className="lg:pl-72">
         {/* Header */}
-        <header className="sticky top-0 z-30 bg-card border-b shadow-sm">
+        <header className="sticky top-0 z-30 bg-background/60 backdrop-blur-lg border-b border-border/50 shadow-sm">
           <div className="flex items-center justify-between h-16 px-4 lg:px-8">
             <div className="flex items-center gap-4">
               <button
@@ -172,7 +172,7 @@ const AdminLayout = () => {
               </h2>
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 ml-auto">
               <button className="relative p-2 hover:bg-card rounded-lg">
                 <Bell className="w-5 h-5 text-gray-600" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
