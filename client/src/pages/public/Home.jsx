@@ -25,18 +25,14 @@ import GenerativeTreeBackground from '@/components/ui/generative-tree-background
 import { getProductImageUrl } from '@/lib/utils'
 import api from '@/config/api'
 import { formatPrice } from '@/lib/utils'
+import { MAHARASHTRA_DISTRICTS_COORDINATES, DEFAULT_MAHARASHTRA_CENTER } from '@/constants/locationConstants'
 
-// Sample farm data for the home page map
-const HOME_FARMS = [
-  { id: 1, name: "Patil Organic Farm", district: "Nashik", coordinates: [20.0050, 73.7898] },
-  { id: 2, name: "Sahyadri Agro", district: "Pune", coordinates: [18.5204, 73.8567] },
-  { id: 3, name: "Aurangabad Fresh", district: "Aurangabad", coordinates: [19.8762, 75.3433] },
-  { id: 4, name: "Nagpur Oranges", district: "Nagpur", coordinates: [21.1458, 79.0882] },
-];
+// Removing static HOME_FARMS as we fetch from DB now
 
 const Home = () => {
   const navigate = useNavigate()
   const [featuredProducts, setFeaturedProducts] = useState([])
+  const [mapProducts, setMapProducts] = useState([])
   const [stats, setStats] = useState({
     farmers: 500,
     products: 2000,
@@ -48,12 +44,30 @@ const Home = () => {
 
   useEffect(() => {
     fetchFeaturedProducts()
+    fetchMapProducts()
   }, [])
+
+  const fetchMapProducts = async () => {
+    try {
+      const response = await api.get('/products?limit=50')
+      setMapProducts(response.data.data.products || [])
+    } catch (error) {
+      console.error('Error fetching map products:', error)
+    }
+  }
 
   const fetchFeaturedProducts = async () => {
     try {
       const response = await api.get('/products?featured=true&limit=8')
-      setFeaturedProducts(response.data.data.products || [])
+      let products = response.data.data.products || []
+      
+      // Fallback to latest products if no featured products found
+      if (products.length === 0) {
+        const latestResponse = await api.get('/products?limit=8')
+        products = latestResponse.data.data.products || []
+      }
+      
+      setFeaturedProducts(products)
     } catch (error) {
       console.error('Error fetching products:', error)
       // Use dummy data for demo
@@ -339,27 +353,37 @@ const Home = () => {
           <div className="h-[500px] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl relative group bg-zinc-900/5 backdrop-blur-sm">
             <Map center={[19.7507, 75.7139]} zoom={7} className="h-full w-full">
               <MapTileLayer />
-              {HOME_FARMS.map(farm => (
-                <Marker 
-                  key={farm.id} 
-                  position={farm.coordinates}
-                >
-                  <Popup>
-                    <div className="p-1 min-w-[150px]">
-                      <h4 className="font-bold text-sm text-zinc-900">{farm.name}</h4>
-                      <p className="text-xs text-zinc-600 mb-2">{farm.district}</p>
-                      <Button 
-                        size="sm" 
-                        variant="farmer" 
-                        className="w-full h-8 text-xs rounded-full"
-                        onClick={() => navigate('/farms')}
-                      >
-                        Visit Farm
-                      </Button>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
+              {mapProducts.map((product, index) => {
+                const baseCoords = MAHARASHTRA_DISTRICTS_COORDINATES[product.district] || DEFAULT_MAHARASHTRA_CENTER
+                // Add a small random offset if there are multiple products in the same district
+                const coordinates = [
+                  baseCoords[0] + (Math.random() - 0.5) * 0.1,
+                  baseCoords[1] + (Math.random() - 0.5) * 0.1
+                ]
+                
+                return (
+                  <Marker 
+                    key={product._id} 
+                    position={coordinates}
+                  >
+                    <Popup>
+                      <div className="p-1 min-w-[150px]">
+                        <h4 className="font-bold text-sm text-zinc-900">{product.cropName}</h4>
+                        <p className="text-xs text-zinc-600 mb-1">{product.district}</p>
+                        <p className="text-xs font-semibold text-farmer-600 mb-2">₹{product.pricePerKg}/kg</p>
+                        <Button 
+                          size="sm" 
+                          variant="farmer" 
+                          className="w-full h-8 text-xs rounded-full"
+                          onClick={() => navigate(`/products/${product._id}`)}
+                        >
+                          View Product
+                        </Button>
+                      </div>
+                    </Popup>
+                  </Marker>
+                )
+              })}
               <MapZoomControl position="bottom-6 right-6" />
               <MapLocateControl position="top-6 right-6" />
             </Map>
