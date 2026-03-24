@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -13,6 +14,8 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import api from '@/config/api'
+import { MAHARASHTRA_DISTRICTS_COORDINATES, DEFAULT_MAHARASHTRA_CENTER } from '@/constants/locationConstants'
 
 // Fix for default marker icons in Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -28,45 +31,7 @@ const STATUS_CLASS_NAME = {
   warning: "text-yellow-500 fill-yellow-500",
 }
 
-// Dummy farm data
-const FARMS = [
-  {
-    id: 1,
-    name: "Patil Organic Farm",
-    farmer: "Rajesh Patil",
-    coordinates: [20.0050, 73.7898], // Nashik
-    status: "active",
-    speciality: "Grapes & Tomatoes",
-    rating: 4.8,
-  },
-  {
-    id: 2,
-    name: "Sahyadri Agro",
-    farmer: "Sanjay Deshmukh",
-    coordinates: [18.5204, 73.8567], // Pune
-    status: "active",
-    speciality: "Strawberries",
-    rating: 4.9,
-  },
-  {
-    id: 3,
-    name: "Aurangabad Fresh",
-    farmer: "Amit Shahane",
-    coordinates: [19.8762, 75.3433], // Aurangabad
-    status: "warning",
-    speciality: "Wheat & Pomegranate",
-    rating: 4.5,
-  },
-  {
-    id: 4,
-    name: "Nagpur Oranges Direct",
-    farmer: "Vijay Gadkari",
-    coordinates: [21.1458, 79.0882], // Nagpur
-    status: "active",
-    speciality: "Oranges",
-    rating: 4.7,
-  },
-]
+// Dummy data removed — fetching from DB now
 
 // Haversine formula to calculate distance
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -82,12 +47,48 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 }
 
 const FarmMap = () => {
+  const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState([19.0760, 72.8777]); // Default Mumbai
-  const [selectedFarm, setSelectedFarm] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("map"); // 'map' or 'list'
 
   useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await api.get('/products?limit=100');
+        // Map real product data to the format expected by FarmMap
+        const realProducts = (response.data.data.products || []).map(p => {
+          const baseCoords = MAHARASHTRA_DISTRICTS_COORDINATES[p.district] || DEFAULT_MAHARASHTRA_CENTER;
+          return {
+            id: p._id,
+            name: p.cropName,
+            farmer: p.farmer?.fullName || 'Unknown Farmer',
+            district: p.district,
+            village: p.village || '',
+            // Add a small random offset if there are multiple products in the same district
+            coordinates: [
+              baseCoords[0] + (Math.random() - 0.5) * 0.05,
+              baseCoords[1] + (Math.random() - 0.5) * 0.05
+            ],
+            status: p.isAvailable ? 'active' : 'inactive',
+            speciality: p.category,
+            price: p.pricePerKg,
+            rating: p.ratings?.average || 4.5,
+          };
+        });
+        setProducts(realProducts);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -100,9 +101,10 @@ const FarmMap = () => {
     }
   }, []);
 
-  const filteredFarms = FARMS.filter(f => 
-    f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    f.speciality.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.speciality.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.district?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -169,15 +171,15 @@ const FarmMap = () => {
             />
 
             {/* Farm Markers */}
-            {filteredFarms.map((farm) => (
+            {filteredProducts.map((product) => (
               <Marker
-                key={farm.id}
-                position={farm.coordinates}
+                key={product.id}
+                position={product.coordinates}
                 icon={L.divIcon({
                   html: renderToStaticMarkup(
                     <CircleIcon
                       size={10}
-                      className={STATUS_CLASS_NAME[farm.status]}
+                      className={STATUS_CLASS_NAME[product.status]}
                     />
                   ),
                   className: 'custom-farm-icon',
@@ -185,16 +187,17 @@ const FarmMap = () => {
                   iconAnchor: [10, 10],
                 })}
                 eventHandlers={{
-                  click: () => setSelectedFarm(farm)
+                  click: () => setSelectedProduct(product)
                 }}
               >
                 <Popup>
                   <div className="p-1 min-w-[120px]">
-                    <h4 className="font-bold text-sm text-foreground">{farm.name}</h4>
-                    <p className="text-[10px] text-muted-foreground">Farmer: {farm.farmer}</p>
+                    <h4 className="font-bold text-sm text-foreground">{product.name}</h4>
+                    <p className="text-[10px] text-muted-foreground">Farmer: {product.farmer}</p>
+                    <p className="text-[10px] font-bold text-farmer-600 mt-1">₹{product.price}/kg</p>
                     <div className="flex items-center gap-1 mt-1">
                       <Navigation className="w-3 h-3 text-farmer-500" />
-                      <span className="text-xs font-bold text-farmer-600">{calculateDistance(userLocation[0], userLocation[1], farm.coordinates[0], farm.coordinates[1])} km away</span>
+                      <span className="text-xs font-bold text-farmer-600">{calculateDistance(userLocation[0], userLocation[1], product.coordinates[0], product.coordinates[1])} km away</span>
                     </div>
                   </div>
                 </Popup>
@@ -216,9 +219,9 @@ const FarmMap = () => {
             ))}
           </MapControlContainer>
 
-          {/* Selected Farm Detail Overlay (Outside MapContainer) */}
+          {/* Selected Product Detail Overlay (Outside MapContainer) */}
           <AnimatePresence>
-            {selectedFarm && (
+            {selectedProduct && (
               <motion.div 
                 initial={{ opacity: 0, y: 100 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -229,11 +232,12 @@ const FarmMap = () => {
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between">
                       <div>
-                        <Badge className="bg-green-500/10 text-green-600 border-none mb-2 rounded-full uppercase text-[10px] tracking-widest">Premium Farm</Badge>
-                        <h3 className="text-lg font-black text-foreground">{selectedFarm.name}</h3>
-                        <p className="text-xs text-muted-foreground font-medium">{selectedFarm.speciality}</p>
+                        <Badge className="bg-green-500/10 text-green-600 border-none mb-2 rounded-full uppercase text-[10px] tracking-widest">Premium Product</Badge>
+                        <h3 className="text-lg font-black text-foreground">{selectedProduct.name}</h3>
+                        <p className="text-xs text-muted-foreground font-medium">{selectedProduct.district}, {selectedProduct.village}</p>
+                        <p className="text-sm font-bold text-farmer-600 mt-2">₹{selectedProduct.price}/kg</p>
                       </div>
-                      <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setSelectedFarm(null)}>
+                      <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setSelectedProduct(null)}>
                         <Info className="w-4 h-4" />
                       </Button>
                     </div>
@@ -241,10 +245,10 @@ const FarmMap = () => {
                     <div className="flex items-center justify-between mt-6">
                       <div className="flex items-center gap-1.5 text-farmer-600 font-bold">
                         <Navigation className="w-4 h-4" />
-                        <span className="text-sm">{calculateDistance(userLocation[0], userLocation[1], selectedFarm.coordinates[0], selectedFarm.coordinates[1])} km</span>
+                        <span className="text-sm">{calculateDistance(userLocation[0], userLocation[1], selectedProduct.coordinates[0], selectedProduct.coordinates[1])} km</span>
                       </div>
-                      <Button variant="farmer" className="rounded-full px-6 shadow-lg shadow-farmer-500/20">
-                        Visit Shop
+                      <Button variant="farmer" className="rounded-full px-6 shadow-lg shadow-farmer-500/20" onClick={() => navigate(`/products/${selectedProduct.id}`)}>
+                        View Details
                       </Button>
                     </div>
                   </CardContent>
@@ -256,19 +260,20 @@ const FarmMap = () => {
       ) : (
         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredFarms.map(farm => (
-              <Card key={farm.id} className="rounded-3xl border-border/50 hover:shadow-lg transition-all">
+            {filteredProducts.map(product => (
+              <Card key={product.id} className="rounded-3xl border-border/50 hover:shadow-lg transition-all">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-lg">{farm.name}</h3>
-                    <Badge className={cn("rounded-full", farm.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700')}>
-                      {farm.status}
+                    <h3 className="font-bold text-lg">{product.name}</h3>
+                    <Badge className={cn("rounded-full", product.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700')}>
+                      {product.status}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-4">Farmer: {farm.farmer}</p>
+                  <p className="text-sm text-muted-foreground mb-1">Farmer: {product.farmer}</p>
+                  <p className="text-sm font-bold text-farmer-600 mb-4">₹{product.price}/kg</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-farmer-600">{calculateDistance(userLocation[0], userLocation[1], farm.coordinates[0], farm.coordinates[1])} km away</span>
-                    <Button variant="outline" size="sm" className="rounded-full">View Details</Button>
+                    <span className="text-sm font-bold text-zinc-500">{calculateDistance(userLocation[0], userLocation[1], product.coordinates[0], product.coordinates[1])} km away</span>
+                    <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate(`/products/${product.id}`)}>View Details</Button>
                   </div>
                 </CardContent>
               </Card>
