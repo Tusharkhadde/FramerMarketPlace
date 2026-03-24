@@ -6,6 +6,14 @@ import { sendResponse } from '../utils/apiResponse.js'
 
 const router = express.Router()
 
+// @desc    Get all farmers (Public)
+// @route   GET /api/users/public/farmers
+router.get('/public/farmers', asyncHandler(async (req, res) => {
+  const farmers = await User.find({ userType: 'farmer', isActive: true })
+    .select('fullName district taluka village avatar')
+  sendResponse(res, 200, { farmers }, 'Farmers fetched successfully')
+}))
+
 router.use(protect)
 
 // Update profile
