@@ -80,8 +80,12 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
-        display: ["Cal Sans", "Inter", "sans-serif"],
+        display: ['var(--font-display)', 'serif'],
+        body: ['var(--font-body)', 'sans-serif'],
+        sans: ['var(--font-body)', 'sans-serif'],
+      },
+      boxShadow: {
+        dashboard: 'var(--shadow-dashboard)',
       },
       keyframes: {
         "accordion-down": {
