@@ -103,6 +103,23 @@ const Hero = () => {
           </Button>
         </motion.div>
 
+        {/* 5. Scroll Down Hint */}
+        <motion.div
+          variants={itemVariants}
+          className="mt-12 md:mt-20 flex flex-col items-center gap-4"
+        >
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="w-6 h-10 rounded-full border-2 border-primary/30 flex justify-center p-1.5"
+          >
+            <motion.div className="w-1.5 h-1.5 rounded-full bg-primary" />
+          </motion.div>
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
+            Scroll to Explore
+          </span>
+        </motion.div>
+
       </motion.div>
     </div>
   );
