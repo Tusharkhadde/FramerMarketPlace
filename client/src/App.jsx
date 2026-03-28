@@ -29,6 +29,7 @@ import MyOrders from '@/pages/buyer/MyOrders'
 import BuyerProfile from '@/pages/buyer/Profile'
 import BuyerSettings from '@/pages/buyer/Settings'
 import FarmMap from '@/pages/buyer/FarmMap'
+import NotificationsPage from '@/pages/shared/Notifications'
 
 // Farmer Pages
 import FarmerDashboard from '@/pages/farmer/Dashboard'
@@ -134,6 +135,14 @@ function App() {
                 element={
                   <PrivateRoute allowedRoles={['buyer']}>
                     <FarmMap />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <PrivateRoute allowedRoles={['buyer', 'farmer', 'admin']}>
+                    <NotificationsPage />
                   </PrivateRoute>
                 }
               />
