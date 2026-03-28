@@ -61,7 +61,11 @@ const Navbar = () => {
   // Socket.io integration
   useEffect(() => {
     if (isAuthenticated && user) {
-      const socketInstance = io(import.meta.env.VITE_API_URL || 'http://localhost:5000')
+      const SOCKET_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000'
+      const socketInstance = io(SOCKET_URL, {
+        transports: ['websocket'], // Forces websocket to avoid polling 400 Bad Request errors in dev
+        withCredentials: true,
+      })
       
       socketInstance.on('connect', () => {
         console.log('🔌 Connected to notification server')
