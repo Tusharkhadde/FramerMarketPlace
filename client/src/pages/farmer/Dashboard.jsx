@@ -27,6 +27,8 @@ import { Badge } from '@/components/ui/badge'
 import {
   LineChart,
   Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -63,20 +65,25 @@ const FarmerDashboard = () => {
     setLoading(true)
     try {
       // Fetch all dashboard data in parallel
-      const [statsRes, ordersRes, productsRes, apmcRes] = await Promise.all([
+      const [statsRes, ordersRes, productsRes, apmcRes, analyticsRes] = await Promise.all([
         api.get('/users/farmer/stats'),
         api.get('/orders/farmer/recent?limit=5'),
         api.get('/products/my/products?limit=5'),
         api.get(`/apmc/district/${user?.district}?limit=5`),
+        api.get('/users/farmer/analytics?range=30days'),
       ])
 
       setStats(statsRes.data.data)
       setRecentOrders(ordersRes.data.data.orders || [])
       setTopProducts(productsRes.data.data.products || [])
       setApmcPrices(apmcRes.data.data.prices || [])
-
-      // Generate sample sales data for chart
-      setSalesData(generateSalesData())
+      
+      const sales = analyticsRes.data.data.salesOverTime || []
+      setSalesData(sales.map(s => ({
+        date: new Date(s._id).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }),
+        sales: s.revenue,
+        orders: s.orders
+      })))
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
       // Set dummy data for demo
@@ -152,48 +159,53 @@ const FarmerDashboard = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 pb-10 animate-in fade-in duration-700">
       {/* Welcome Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Welcome back, {user?.fullName?.split(' ')[0]}! 👋
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 bg-gradient-to-r from-farmer-600/10 to-transparent p-6 md:p-8 rounded-[2rem] border border-farmer-500/20 relative overflow-hidden">
+        <div className="absolute right-0 top-0 -mr-20 -mt-20 w-64 h-64 bg-farmer-500/10 rounded-full blur-3xl mix-blend-multiply" />
+        <div className="relative z-10">
+          <Badge className="bg-white shadow-sm text-farmer-700 hover:bg-white px-3 py-1 mb-4 border-none uppercase tracking-widest text-[10px] font-bold">
+            Farmer Dashboard
+          </Badge>
+          <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
+            Welcome back, <span className="text-farmer-600">{user?.fullName?.split(' ')[0]}</span>! 👋
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-muted-foreground mt-2 font-medium">
             Here's what's happening with your farm today.
           </p>
         </div>
-        <Button variant="farmer" onClick={() => navigate('/farmer/products/add')}>
-          <Plus className="w-4 h-4 mr-2" />
+        <Button variant="farmer" className="rounded-full shadow-lg shadow-farmer-500/25 px-8 h-12 relative z-10" onClick={() => navigate('/farmer/products/add')}>
+          <Plus className="w-5 h-5 mr-2" />
           Add New Product
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((stat, index) => (
           <motion.div
             key={stat.title}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.1, type: 'spring', bounce: 0.4 }}
           >
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+            <Card className="rounded-[2rem] border-border/50 bg-background/50 backdrop-blur-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden group">
+              <div className="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 rounded-full mix-blend-multiply opacity-10 group-hover:opacity-20 transition-opacity blur-2xl" style={{ backgroundColor: stat.color.replace('bg-', '') }} />
+              <CardContent className="p-6 relative z-10">
+                <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
                       {stat.title}
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-3xl font-black text-gray-900 mt-2 tracking-tighter">
                       {stat.value}
                     </p>
                     <p
                       className={cn(
-                        'text-xs mt-1 flex items-center',
-                        stat.positive === true && 'text-green-600',
-                        stat.positive === false && 'text-red-600',
-                        stat.positive === null && 'text-gray-500'
+                        'text-xs mt-3 flex items-center font-bold px-2 py-1 rounded-full w-fit',
+                        stat.positive === true && 'bg-green-500/10 text-green-700',
+                        stat.positive === false && 'bg-red-500/10 text-red-700',
+                        stat.positive === null && 'bg-gray-500/10 text-gray-700'
                       )}
                     >
                       {stat.positive === true && <TrendingUp className="w-3 h-3 mr-1" />}
@@ -203,11 +215,11 @@ const FarmerDashboard = () => {
                   </div>
                   <div
                     className={cn(
-                      'w-12 h-12 rounded-xl flex items-center justify-center',
+                      'w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner',
                       stat.color
                     )}
                   >
-                    <stat.icon className="w-6 h-6 text-white" />
+                    <stat.icon className="w-7 h-7 text-white" />
                   </div>
                 </div>
               </CardContent>
@@ -219,80 +231,102 @@ const FarmerDashboard = () => {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Sales Overview</CardTitle>
-            <CardDescription>Last 30 days revenue</CardDescription>
+        <Card className="rounded-[2rem] border-none shadow-xl bg-gradient-to-br from-white to-gray-50 overflow-hidden">
+          <CardHeader className="bg-white/50 backdrop-blur-sm border-b border-gray-100 p-6">
+            <CardTitle className="text-xl font-bold flex items-center gap-2">
+              <IndianRupee className="w-5 h-5 text-green-500" />
+              Sales Overview
+            </CardTitle>
+            <CardDescription>Revenue trajectory over the last 30 days</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
+          <CardContent className="p-6">
+            <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={salesData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <AreaChart data={salesData.length > 0 ? salesData : [{date: 'Today', sales: 0}]}>
+                  <defs>
+                    <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 11, fontWeight: 500 }}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 11, fontWeight: 500 }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => `₹${value}`}
                   />
                   <Tooltip
-                    formatter={(value) => [`₹${value}`, 'Sales']}
+                    formatter={(value) => [`₹${value}`, 'Revenue']}
                     contentStyle={{
-                      borderRadius: '8px',
-                      border: 'none',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      borderRadius: '16px',
+                      border: '1px solid #e2e8f0',
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                      fontWeight: 'bold'
                     }}
                   />
-                  <Line
+                  <Area
                     type="monotone"
                     dataKey="sales"
                     stroke="#22c55e"
-                    strokeWidth={2}
-                    dot={false}
-                    activeDot={{ r: 6 }}
+                    strokeWidth={3}
+                    fillOpacity={1}
+                    fill="url(#colorSales)"
+                    activeDot={{ r: 6, strokeWidth: 0 }}
                   />
-                </LineChart>
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
         {/* Orders Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Orders Overview</CardTitle>
-            <CardDescription>Daily order count</CardDescription>
+        <Card className="rounded-[2rem] border-none shadow-xl bg-gradient-to-br from-white to-gray-50 overflow-hidden">
+          <CardHeader className="bg-white/50 backdrop-blur-sm border-b border-gray-100 p-6">
+            <CardTitle className="text-xl font-bold flex items-center gap-2">
+              <Package className="w-5 h-5 text-blue-500" />
+              Orders Overview
+            </CardTitle>
+            <CardDescription>Daily order volume count</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
+          <CardContent className="p-6">
+            <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={salesData.slice(-14)}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <BarChart data={salesData.length > 0 ? salesData.slice(-14) : [{date: 'Today', orders: 0}]}>
+                  <defs>
+                    <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#2563eb" stopOpacity={0.8}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 11, fontWeight: 500 }}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 11, fontWeight: 500, tickCount: 5 }}
                     tickLine={false}
                     axisLine={false}
                   />
                   <Tooltip
                     contentStyle={{
-                      borderRadius: '8px',
-                      border: 'none',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      borderRadius: '16px',
+                      border: '1px solid #e2e8f0',
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                      fontWeight: 'bold'
                     }}
+                    cursor={{ fill: 'transparent' }}
                   />
-                  <Bar dataKey="orders" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="orders" fill="url(#colorOrders)" radius={[6, 6, 0, 0]} barSize={40} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -303,24 +337,24 @@ const FarmerDashboard = () => {
       {/* Recent Orders & APMC Prices */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Orders */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+        <Card className="rounded-[2rem] border-border/50 bg-background/50 backdrop-blur-xl shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border/30 pb-4">
             <div>
-              <CardTitle>Recent Orders</CardTitle>
-              <CardDescription>Latest orders from buyers</CardDescription>
+              <CardTitle className="text-xl">Recent Orders</CardTitle>
+              <CardDescription>Latest orders from your buyers</CardDescription>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/farmer/orders')}>
+            <Button variant="ghost" size="sm" className="rounded-full" onClick={() => navigate('/farmer/orders')}>
               View All
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="space-y-4">
               {recentOrders.length > 0 ? (
                 recentOrders.map((order) => (
                   <div
                     key={order._id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-4 bg-muted/40 rounded-2xl hover:bg-muted/80 transition-colors border border-transparent hover:border-border/50"
                   >
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-farmer-100 rounded-full flex items-center justify-center">
@@ -361,15 +395,16 @@ const FarmerDashboard = () => {
         </Card>
 
         {/* APMC Prices */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+        <Card className="rounded-[2rem] border-border/50 bg-background/50 backdrop-blur-xl shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border/30 pb-4">
             <div>
-              <CardTitle>APMC Market Prices</CardTitle>
-              <CardDescription>Current prices in {user?.district || 'your district'}</CardDescription>
+              <CardTitle className="text-xl">APMC Market</CardTitle>
+              <CardDescription>Live prices in {user?.district || 'your district'}</CardDescription>
             </div>
             <Button
               variant="ghost"
               size="sm"
+              className="rounded-full"
               onClick={() => navigate('/farmer/market-prices')}
             >
               View All
@@ -382,7 +417,7 @@ const FarmerDashboard = () => {
                 apmcPrices.map((price, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-3 border rounded-lg"
+                    className="flex items-center justify-between p-4 bg-muted/40 rounded-2xl hover:bg-muted/80 transition-colors border border-transparent hover:border-border/50"
                   >
                     <div>
                       <p className="font-medium text-gray-900">{price.commodity}</p>
@@ -410,13 +445,13 @@ const FarmerDashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common tasks and shortcuts</CardDescription>
+      <Card className="rounded-[2rem] border-border/50 bg-background/50 backdrop-blur-xl shadow-lg overflow-hidden">
+        <CardHeader className="bg-muted/10 border-b border-border/30">
+          <CardTitle className="text-xl">Quick Actions</CardTitle>
+          <CardDescription>Frequent management tools</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               {
                 name: 'Add Product',
@@ -446,11 +481,11 @@ const FarmerDashboard = () => {
               <Link
                 key={action.name}
                 to={action.href}
-                className="flex flex-col items-center p-4 border rounded-xl hover:bg-gray-50 transition-colors"
+                className="group flex flex-col items-center p-6 bg-background rounded-2xl border border-border/50 hover:border-primary/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               >
                 <div
                   className={cn(
-                    'w-12 h-12 rounded-xl flex items-center justify-center mb-3',
+                    'w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:scale-110 transition-transform duration-300',
                     action.color
                   )}
                 >
