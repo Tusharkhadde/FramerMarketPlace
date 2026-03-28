@@ -39,6 +39,7 @@ import FarmerOrdersPage from '@/pages/farmer/Orders'
 import MarketPrices from '@/pages/farmer/MarketPrices'
 import FarmerProfile from '@/pages/farmer/Profile'
 import FarmerSettings from '@/pages/farmer/Settings'
+import FarmerAnalytics from '@/pages/farmer/Analytics'
 
 // Admin Pages
 import AdminDashboard from '@/pages/admin/Dashboard'
@@ -162,8 +163,8 @@ function App() {
                 <Route path="products" element={<FarmerProducts />} />
                 <Route path="products/add" element={<AddProduct />} />
                 <Route path="orders" element={<FarmerOrdersPage />} />
-                {/* EditProduct and FarmerAnalytics routes removed (files not present) */}
                 <Route path="market-prices" element={<MarketPrices />} />
+                <Route path="analytics" element={<FarmerAnalytics />} />
                 <Route path="profile" element={<FarmerProfile />} />
                 <Route path="settings" element={<FarmerSettings />} />
               </Route>
