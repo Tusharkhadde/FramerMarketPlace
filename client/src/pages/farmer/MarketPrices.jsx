@@ -18,6 +18,7 @@ import {
 import { useAuth } from '@/context/AuthContext'
 import { formatPrice, cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import aiService from '@/services/ai.service'
 
 const districts = [
   'Nashik', 'Pune', 'Nagpur', 'Aurangabad', 'Kolhapur',
@@ -63,6 +64,7 @@ const MarketPrices = () => {
   const [priceHistory, setPriceHistory] = useState(generatePriceHistory(2500))
   const [aiPrediction, setAiPrediction] = useState(null)
   const [predicting, setPredicting] = useState(false)
+  const [combinedData, setCombinedData] = useState([])
 
   const filteredPrices = currentPrices.filter(p =>
     p.commodity.toLowerCase().includes(searchTerm.toLowerCase())
@@ -76,73 +78,78 @@ const MarketPrices = () => {
     }
     setPriceHistory(generatePriceHistory(basePrices[commodity] || 2000))
     setAiPrediction(null)
+    setCombinedData([])
   }
 
   const handlePredictPrice = async () => {
     setPredicting(true)
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    const currentPrice = currentPrices.find(p => p.commodity === selectedCommodity)?.modalPrice || 2000
-    const prediction7 = Math.round(currentPrice * (1 + (Math.random() - 0.2) * 0.15))
-    const prediction15 = Math.round(currentPrice * (1 + (Math.random() - 0.2) * 0.25))
-    const prediction30 = Math.round(currentPrice * (1 + (Math.random() - 0.2) * 0.35))
-
-    setAiPrediction({
-      commodity: selectedCommodity,
-      district: selectedDistrict,
-      currentPrice,
-      predictions: [
-        { days: 7, price: prediction7, confidence: 85 },
-        { days: 15, price: prediction15, confidence: 72 },
-        { days: 30, price: prediction30, confidence: 60 },
-      ],
-      recommendation: prediction7 > currentPrice
-        ? 'HOLD - Prices expected to rise. Consider selling after 7 days.'
-        : 'SELL - Prices may decrease. Consider selling now for best returns.',
-      factors: [
-        'Seasonal demand patterns',
-        'Current market supply levels',
-        'Weather forecast impact',
-        'Historical price trends',
-      ],
-    })
-
-    setPredicting(false)
-    toast.success('Price prediction generated!')
+    try {
+      const response = await aiService.predictPrice(selectedCommodity, selectedDistrict)
+      if (response.success) {
+        setAiPrediction(response.data)
+        
+        // Prepare combined data for the chart (historical + predicted)
+        const historical = priceHistory.map(d => ({ ...d, type: 'historical' }))
+        const predicted = response.data.priceSeries.map(p => ({
+          date: new Date(p.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }),
+          price: p.price,
+          type: 'predicted'
+        }))
+        
+        setCombinedData([...historical, ...predicted])
+        toast.success('AI Forecast generated successfully!')
+      }
+    } catch (error) {
+      console.error('Prediction error:', error)
+      toast.error('Failed to generate prediction. Please try again.')
+    } finally {
+      setPredicting(false)
+    }
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Premium Header Bar */}
-      <div className="bg-background/40 backdrop-blur-md border border-border/50 p-6 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            Market Prices <span className="text-farmer-600">📈</span>
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm font-medium">Real-time APMC insights & AI-powered forecasts</p>
-        </div>
+    <div className="space-y-10 animate-in fade-in duration-700 w-full pb-10">
+      {/* Dynamic Header */}
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 p-8 md:p-12 shadow-2xl border border-white/10 isolate">
+        {/* Abstract Glowing Orbs */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-72 h-72 bg-farmer-500 rounded-full mix-blend-multiply filter blur-[80px] opacity-40 animate-blob" />
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-[80px] opacity-40 animate-blob animation-delay-2000" />
         
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-full border border-border/30">
-            <MapPin className="w-4 h-4 ml-2 text-farmer-600" />
-            <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
-              <SelectTrigger className="w-[140px] border-none bg-transparent focus:ring-0 shadow-none h-8">
-                <SelectValue placeholder="District" />
-              </SelectTrigger>
-              <SelectContent>
-                {districts.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-              </SelectContent>
-            </Select>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div className="max-w-2xl">
+            <Badge className="bg-white/10 text-white hover:bg-white/20 border-none px-3 py-1 mb-6 backdrop-blur-md">
+              <Sparkles className="w-3 h-3 mr-2 text-farmer-400" /> Live APMC Data
+            </Badge>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-white mb-4">
+              Market <span className="text-transparent bg-clip-text bg-gradient-to-r from-farmer-400 to-green-300">Intelligence</span>
+            </h1>
+            <p className="text-zinc-400 text-lg font-medium leading-relaxed max-w-xl">
+              Real-time agricultural commodity prices, trends, and AI-powered market forecasts tailored to your district.
+            </p>
           </div>
-          <Button variant="outline" size="icon" className="rounded-full w-10 h-10 border-border/50 hover:bg-background/80">
-            <RefreshCw className="w-4 h-4" />
-          </Button>
+          
+          <div className="flex flex-col sm:flex-row items-center gap-4 bg-black/20 p-2 rounded-3xl backdrop-blur-xl border border-white/5">
+            <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-2xl">
+              <MapPin className="w-4 h-4 text-farmer-400" />
+              <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
+                <SelectTrigger className="w-[140px] border-none bg-transparent focus:ring-0 shadow-none h-8 text-white">
+                  <SelectValue placeholder="District" />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                  {districts.map(d => <SelectItem key={d} value={d} className="focus:bg-white/10 focus:text-white">{d}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button variant="ghost" size="icon" className="rounded-2xl w-12 h-12 text-zinc-300 hover:text-white hover:bg-white/10 transition-all">
+              <RefreshCw className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </div>
 
       <Tabs defaultValue="prices" className="w-full">
-        <div className="flex justify-center mb-8">
-          <TabsList className="bg-muted/40 p-1 rounded-full border border-border/50 h-12">
+        <div className="flex justify-center mb-10">
+          <TabsList className="bg-muted/50 p-1.5 rounded-full border border-border/50 h-14 shadow-sm backdrop-blur-md">
             <TabsTrigger value="prices" className="rounded-full px-6 transition-all duration-300">
               <BarChart3 className="w-4 h-4 mr-2" />
               Real-time
@@ -159,67 +166,94 @@ const MarketPrices = () => {
         </div>
 
         {/* Current Prices Content */}
-        <TabsContent value="prices" className="space-y-6">
-          <div className="flex items-center justify-between gap-4 px-2">
-            <div className="relative group max-w-sm w-full">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-farmer-600" />
-              <Input
-                placeholder="Search commodity (e.g. Tomato, Onion)..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                className="pl-11 rounded-full bg-muted/30 border-border/50 focus:bg-background/80 focus:border-farmer-500/50 transition-all h-11"
-              />
+        <TabsContent value="prices" className="space-y-8 outline-none">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="relative group w-full md:max-w-md">
+              <div className="absolute inset-0 bg-gradient-to-r from-farmer-500/20 to-blue-500/20 rounded-full blur-md opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+              <div className="relative bg-background/60 backdrop-blur-xl border border-border/60 rounded-full flex items-center shadow-sm">
+                <Search className="w-5 h-5 ml-5 text-muted-foreground group-focus-within:text-farmer-600 transition-colors" />
+                <Input
+                  placeholder="Search specific commodity..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className="border-none bg-transparent focus-visible:ring-0 px-4 h-14 text-base"
+                />
+              </div>
             </div>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest hidden sm:block">
-              Filtered by: {selectedDistrict}
-            </p>
+            
+            <div className="flex items-center gap-2 px-4 py-2 bg-muted/30 rounded-full border border-border/40">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                Showing {filteredPrices.length} Items
+              </p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            <AnimatePresence>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <AnimatePresence mode="popLayout">
               {filteredPrices.map((price, index) => (
                 <motion.div
                   key={price.commodity}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.05 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ delay: index * 0.05, duration: 0.4, type: 'spring', bounce: 0.4 }}
                   layout
                 >
                   <Card
                     className={cn(
-                      'group cursor-pointer rounded-2xl border-border/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1',
-                      selectedCommodity === price.commodity ? 'ring-2 ring-farmer-500 bg-farmer-500/5' : 'hover:bg-accent/30'
+                      'group cursor-pointer rounded-3xl border-border/40 bg-background/40 backdrop-blur-xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-farmer-500/10 hover:-translate-y-2',
+                      selectedCommodity === price.commodity ? 'ring-2 ring-farmer-500 bg-farmer-500/5' : ''
                     )}
                     onClick={() => handleCommoditySelect(price.commodity)}
                   >
-                    <CardContent className="p-5">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <h3 className="font-bold text-foreground group-hover:text-farmer-600 transition-colors">{price.commodity}</h3>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-tighter mt-1">{price.market}</p>
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    
+                    <CardContent className="p-6 relative z-10">
+                      <div className="flex items-start justify-between mb-8">
+                        <div className="flex items-center gap-4">
+                          <div className={cn(
+                            "w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-inner",
+                            price.trend === 'up' ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"
+                          )}>
+                            {price.trend === 'up' ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-lg text-foreground tracking-tight">{price.commodity}</h3>
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase mt-0.5">{price.market}</p>
+                          </div>
                         </div>
-                        <Badge variant="outline" className={cn(
-                          'rounded-full px-2 py-0 border-none flex items-center gap-1',
-                          price.trend === 'up' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'
+                        
+                        <div className={cn(
+                          'flex items-center gap-1 font-bold text-sm px-2.5 py-1 rounded-full',
+                          price.trend === 'up' ? 'text-green-600 bg-green-500/10' : 'text-red-600 bg-red-500/10'
                         )}>
-                          {price.trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                           {Math.abs(price.change)}%
-                        </Badge>
-                      </div>
-
-                      <div className="flex items-baseline gap-1 mb-4">
-                        <span className="text-3xl font-black text-foreground">₹{price.modalPrice.toLocaleString()}</span>
-                        <span className="text-xs font-medium text-muted-foreground">/ quintal</span>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 mt-auto">
-                        <div className="bg-muted/30 p-2 rounded-xl text-center">
-                          <p className="text-[10px] text-muted-foreground uppercase">Min</p>
-                          <p className="text-xs font-bold text-foreground">₹{price.minPrice}</p>
                         </div>
-                        <div className="bg-muted/30 p-2 rounded-xl text-center">
-                          <p className="text-[10px] text-muted-foreground uppercase">Max</p>
-                          <p className="text-xs font-bold text-foreground">₹{price.maxPrice}</p>
+                      </div>
+
+                      <div className="mb-8">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-4xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-foreground to-foreground/60">
+                            ₹{price.modalPrice.toLocaleString()}
+                          </span>
+                          <span className="text-sm font-semibold text-muted-foreground">/ qtl</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                          <span>Range</span>
+                          <span>Arrivals: {price.arrival}T</span>
+                        </div>
+                        
+                        <div className="relative h-2 w-full bg-muted/50 rounded-full overflow-hidden">
+                          <div className="absolute inset-y-0 left-[20%] right-[30%] bg-gradient-to-r from-farmer-400 to-farmer-500 rounded-full" />
+                        </div>
+                        
+                        <div className="flex justify-between items-center text-xs font-bold text-foreground">
+                          <span>₹{price.minPrice}</span>
+                          <span>₹{price.maxPrice}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -227,6 +261,16 @@ const MarketPrices = () => {
                 </motion.div>
               ))}
             </AnimatePresence>
+            
+            {filteredPrices.length === 0 && (
+              <div className="col-span-full py-20 text-center">
+                <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">No commodities found</h3>
+                <p className="text-muted-foreground mt-2">Try adjusting your search term</p>
+              </div>
+            )}
           </div>
         </TabsContent>
 
@@ -400,6 +444,72 @@ const MarketPrices = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {combinedData.length > 0 && (
+                <Card className="rounded-3xl border-border/50 overflow-hidden shadow-lg bg-background/50 backdrop-blur-sm">
+                  <CardHeader className="border-b border-border/30 bg-muted/10 p-6">
+                    <CardTitle className="text-xl font-bold flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-farmer-500" />
+                      30-Day Price Forecast: {selectedCommodity}
+                    </CardTitle>
+                    <CardDescription>Continuous trend line combining historical data and AI predictions</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6 md:p-8">
+                    <div className="h-[400px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={combinedData}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground))" opacity={0.1} />
+                          <XAxis 
+                            dataKey="date" 
+                            tick={{ fontSize: 10, fontWeight: 500 }} 
+                            axisLine={false}
+                            tickLine={false}
+                            interval={5}
+                          />
+                          <YAxis 
+                            tick={{ fontSize: 11, fontWeight: 500 }} 
+                            tickFormatter={v => `₹${v}`}
+                            axisLine={false}
+                            tickLine={false}
+                            domain={['auto', 'auto']}
+                          />
+                          <Tooltip 
+                            contentStyle={{ backgroundColor: 'hsl(var(--background))', borderRadius: '16px', border: '1px solid hsl(var(--border))', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                            formatter={(v, n, p) => [
+                              `₹${v}/quintal`, 
+                              p.payload.type === 'historical' ? 'Historical Price' : 'Predicted Price'
+                            ]} 
+                          />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="price" 
+                            stroke="#22c55e" 
+                            strokeWidth={3} 
+                            dot={(props) => {
+                              const { payload } = props;
+                              return payload.type === 'predicted' ? <circle cx={props.cx} cy={props.cy} r={3} fill="#3b82f6" stroke="none" /> : null;
+                            }}
+                            activeDot={{ r: 6 }}
+                            strokeDasharray={(props) => props.payload?.type === 'predicted' ? "5 5" : "0"}
+                            name="Price Trend"
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-4 justify-center">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-0.5 bg-green-500" />
+                        <span className="text-xs font-medium text-muted-foreground">Historical Data</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-0.5 bg-blue-500 border-t border-dashed" />
+                        <span className="text-xs font-medium text-muted-foreground">AI Prediction (30 Days)</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </motion.div>
           )}
         </TabsContent>
