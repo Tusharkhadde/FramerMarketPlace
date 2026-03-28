@@ -57,6 +57,7 @@
     "react-router-dom": "^6.20.1",
     "recharts": "^2.15.4",
     "shadcn": "^4.0.8",
+    "socket.io-client": "^4.8.3",
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.6.1",
     "tailwindcss-animate": "^1.0.7",
