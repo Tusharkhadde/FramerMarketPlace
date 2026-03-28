@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { io } from 'socket.io-client'
+import { formatDistanceToNow } from 'date-fns'
+import { toast } from 'sonner'
+import api from '@/config/api'
 import {
   Menu,
   X,
@@ -42,6 +46,9 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [socket, setSocket] = useState(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,6 +57,70 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Socket.io integration
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const socketInstance = io(import.meta.env.VITE_API_URL || 'http://localhost:5000')
+      
+      socketInstance.on('connect', () => {
+        console.log('🔌 Connected to notification server')
+        socketInstance.emit('join', user._id)
+      })
+
+      socketInstance.on('new-notification', (data) => {
+        setNotifications(prev => [data.notification, ...prev])
+        setUnreadCount(data.unreadCount)
+        
+        // Show toast for new notification
+        toast.info(data.notification.title, {
+          description: data.notification.content,
+          action: {
+            label: 'View',
+            onClick: () => navigate(data.notification.link || '/notifications')
+          }
+        })
+      })
+
+      setSocket(socketInstance)
+      fetchNotifications()
+
+      return () => {
+        socketInstance.disconnect()
+      }
+    }
+  }, [isAuthenticated, user])
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await api.get('/notifications')
+      setNotifications(response.data.data.notifications)
+      setUnreadCount(response.data.data.unreadCount)
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error)
+    }
+  }
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await api.patch(`/notifications/${id}/read`)
+      setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n))
+      setUnreadCount(prev => Math.max(0, prev - 1))
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error)
+    }
+  }
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await api.patch('/notifications/mark-all-read')
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+      setUnreadCount(0)
+      toast.success('All notifications marked as read')
+    } catch (error) {
+      console.error('Failed to mark all as read:', error)
+    }
+  }
 
   useEffect(() => {
     setIsOpen(false)
@@ -157,10 +228,77 @@ const Navbar = () => {
                 )}
 
                 {/* Notifications */}
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="relative hover:bg-zinc-100 transition-colors rounded-full">
+                      <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'text-farmer-600 animate-pulse' : 'text-zinc-600'}`} />
+                      {unreadCount > 0 && (
+                        <span className="absolute top-1.5 right-1.5 w-4.5 h-4.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                          {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-80 p-0 overflow-hidden">
+                    <div className="p-4 border-b bg-zinc-50/50 flex items-center justify-between">
+                      <h3 className="font-bold text-zinc-900">Notifications</h3>
+                      {unreadCount > 0 && (
+                        <button 
+                          onClick={handleMarkAllAsRead}
+                          className="text-xs font-semibold text-farmer-600 hover:text-farmer-700 transition-colors"
+                        >
+                          Mark all as read
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-[400px] overflow-y-auto">
+                      {notifications.length > 0 ? (
+                        notifications.map((notification) => (
+                          <div 
+                            key={notification._id}
+                            onClick={() => {
+                              handleMarkAsRead(notification._id)
+                              if (notification.link) navigate(notification.link)
+                            }}
+                            className={`p-4 border-b last:border-0 cursor-pointer transition-colors hover:bg-zinc-50 ${!notification.isRead ? 'bg-farmer-50/30' : ''}`}
+                          >
+                            <div className="flex gap-3">
+                              <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${!notification.isRead ? 'bg-farmer-500' : 'bg-transparent'}`} />
+                              <div className="flex-1">
+                                <p className={`text-sm ${!notification.isRead ? 'font-bold text-zinc-900' : 'text-zinc-600'}`}>
+                                  {notification.title}
+                                </p>
+                                <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">
+                                  {notification.content}
+                                </p>
+                                <p className="text-[10px] text-zinc-400 mt-2 font-medium">
+                                  {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-12 text-center">
+                          <div className="w-12 h-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Bell className="w-6 h-6 text-zinc-300" />
+                          </div>
+                          <p className="text-sm text-zinc-500 font-medium">No notifications yet</p>
+                        </div>
+                      )}
+                    </div>
+                    {notifications.length > 0 && (
+                      <div className="p-3 bg-zinc-50/50 border-t text-center">
+                        <button 
+                          onClick={() => navigate('/notifications')}
+                          className="text-xs font-bold text-zinc-500 hover:text-zinc-900 transition-colors"
+                        >
+                          View all notifications
+                        </button>
+                      </div>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
                 {/* User Menu */}
                 <DropdownMenu>
