@@ -5,6 +5,8 @@ import { ApiError } from '../utils/apiError.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { sendResponse } from '../utils/apiResponse.js'
 import { sendEmail } from '../services/email.service.js'
+import notificationService from '../services/notification.service.js'
+import smsService from '../services/sms.service.js'
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -134,11 +136,27 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     console.error('Order confirmation email failed:', error)
   }
 
+  // Send real-time notification to buyer
+  try {
+    await notificationService.createNotification({
+      recipient: req.user.id,
+      type: 'order',
+      title: 'Order Confirmed!',
+      content: `Your order #${order.orderNumber} has been placed successfully.`,
+      link: `/orders/${order._id}`,
+      sendSMS: true,
+      phone: req.user.phone
+    })
+  } catch (error) {
+    console.error('Buyer notification failed:', error)
+  }
+
   // Notify farmers about new order
   const farmerIds = [...new Set(orderItems.map((item) => item.farmer.toString()))]
   for (const farmerId of farmerIds) {
     const farmer = await User.findById(farmerId)
     if (farmer) {
+      // Email
       try {
         await sendEmail({
           email: farmer.email,
@@ -158,6 +176,21 @@ export const createOrder = asyncHandler(async (req, res, next) => {
         })
       } catch (error) {
         console.error('Farmer notification email failed:', error)
+      }
+
+      // Real-time Notification
+      try {
+        await notificationService.createNotification({
+          recipient: farmerId,
+          type: 'order',
+          title: 'New Order Received!',
+          content: `You have a new order #${order.orderNumber}.`,
+          link: `/farmer/orders`,
+          sendSMS: true,
+          phone: farmer.phone
+        })
+      } catch (error) {
+        console.error('Farmer socket notification failed:', error)
       }
     }
   }
@@ -381,6 +414,21 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
     })
   } catch (error) {
     console.error('Status update email failed:', error)
+  }
+
+  // Real-time Notification to buyer
+  try {
+    await notificationService.createNotification({
+      recipient: order.buyer._id,
+      type: 'order',
+      title: 'Order Status Updated',
+      content: `Your order #${order.orderNumber} is now ${status}.`,
+      link: `/orders/${order._id}`,
+      sendSMS: true,
+      phone: order.buyer.phone
+    })
+  } catch (error) {
+    console.error('Buyer status update notification failed:', error)
   }
 
   sendResponse(res, 200, { order }, 'Order status updated')
