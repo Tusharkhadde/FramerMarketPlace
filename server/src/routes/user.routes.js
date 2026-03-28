@@ -1,4 +1,5 @@
 import express from 'express'
+import mongoose from 'mongoose'
 import { protect, authorize } from '../middleware/auth.middleware.js'
 import User from '../models/User.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
@@ -87,12 +88,122 @@ router.get('/farmer/stats', authorize('farmer'), asyncHandler(async (req, res) =
   const Product = (await import('../models/Product.js')).default
   const Order = (await import('../models/Order.js')).default
 
-  const [totalProducts, activeOrders] = await Promise.all([
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+  const [totalProducts, activeOrders, pendingOrders, revenueData] = await Promise.all([
     Product.countDocuments({ farmer: req.user.id }),
-    Order.countDocuments({ 'items.farmer': req.user.id, orderStatus: { $nin: ['delivered', 'cancelled'] } }),
+    Order.countDocuments({ 
+      'items.farmer': req.user.id, 
+      orderStatus: { $nin: ['delivered', 'cancelled'] } 
+    }),
+    Order.countDocuments({ 
+      'items.farmer': req.user.id, 
+      orderStatus: 'pending' 
+    }),
+    Order.aggregate([
+      {
+        $match: {
+          'items.farmer': new mongoose.Types.ObjectId(req.user.id),
+          orderStatus: { $ne: 'cancelled' },
+          createdAt: { $gte: thirtyDaysAgo }
+        }
+      },
+      { $unwind: '$items' },
+      {
+        $match: {
+          'items.farmer': new mongoose.Types.ObjectId(req.user.id)
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$items.subtotal' }
+        }
+      }
+    ])
   ])
 
-  sendResponse(res, 200, { totalProducts, activeOrders, monthlyRevenue: 0, pendingOrders: 0 }, 'Stats fetched')
+  sendResponse(res, 200, { 
+    totalProducts, 
+    activeOrders, 
+    monthlyRevenue: revenueData[0]?.totalRevenue || 0, 
+    pendingOrders 
+  }, 'Stats fetched successfully')
+}))
+
+// Get detailed farmer analytics
+router.get('/farmer/analytics', authorize('farmer'), asyncHandler(async (req, res) => {
+  const Order = (await import('../models/Order.js')).default
+  const Product = (await import('../models/Product.js')).default
+  const farmerId = new mongoose.Types.ObjectId(req.user.id)
+
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+  const [salesOverTime, topProducts, statusDistribution] = await Promise.all([
+    // Sales over time (last 30 days)
+    Order.aggregate([
+      {
+        $match: {
+          'items.farmer': farmerId,
+          orderStatus: { $ne: 'cancelled' },
+          createdAt: { $gte: thirtyDaysAgo }
+        }
+      },
+      { $unwind: '$items' },
+      { $match: { 'items.farmer': farmerId } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          revenue: { $sum: "$items.subtotal" },
+          orders: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]),
+
+    // Top 5 products by revenue
+    Order.aggregate([
+      {
+        $match: {
+          'items.farmer': farmerId,
+          orderStatus: { $ne: 'cancelled' }
+        }
+      },
+      { $unwind: '$items' },
+      { $match: { 'items.farmer': farmerId } },
+      {
+        $group: {
+          _id: "$items.product",
+          revenue: { $sum: "$items.subtotal" },
+          quantity: { $sum: "$items.quantity" },
+          name: { $first: "$items.productSnapshot.cropName" }
+        }
+      },
+      { $sort: { revenue: -1 } },
+      { $limit: 5 }
+    ]),
+
+    // Order status distribution
+    Order.aggregate([
+      {
+        $match: { 'items.farmer': farmerId }
+      },
+      {
+        $group: {
+          _id: "$orderStatus",
+          count: { $sum: 1 }
+        }
+      }
+    ])
+  ])
+
+  sendResponse(res, 200, {
+    salesOverTime,
+    topProducts,
+    statusDistribution
+  }, 'Analytics data fetched successfully')
 }))
 
 // Admin: Get all users
