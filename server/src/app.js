@@ -20,6 +20,7 @@ import paymentRoutes from './routes/payment.routes.js'
 import apmcRoutes from './routes/apmc.routes.js'
 import aiRoutes from './routes/ai.routes.js'
 import adminRoutes from './routes/admin.routes.js'
+import notificationRoutes from './routes/notification.routes.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -90,6 +91,7 @@ app.use('/api/payment', paymentRoutes)
 app.use('/api/apmc', apmcRoutes)
 app.use('/api/ai', aiRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/notifications', notificationRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => {
