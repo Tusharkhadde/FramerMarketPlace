@@ -85,80 +85,107 @@ const FarmerProfile = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Profile Header Card */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            <div className="relative">
-              <Avatar className="w-24 h-24">
+    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500 pb-10">
+      {/* Profile Header with Cover Photo */}
+      <div className="relative rounded-[2rem] overflow-hidden shadow-xl border border-border/50 bg-card mb-12">
+        {/* Cover Photo Background */}
+        <div 
+          className="h-48 md:h-64 w-full bg-cover bg-center relative" 
+          style={{ backgroundImage: 'url("/images/profile-cover.png")' }}
+        >
+          <div className="absolute inset-0 bg-black/20" />
+          <button className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white backdrop-blur-md px-4 py-2 rounded-full text-xs font-semibold flex items-center transition-colors border border-white/20">
+            <Camera className="w-4 h-4 mr-2" /> Update Cover
+          </button>
+        </div>
+
+        {/* Profile Content Overlay (Below the image) */}
+        <div className="px-6 md:px-10 pb-8 relative z-10 bg-card border-t border-border/50">
+          <div className="flex flex-col md:flex-row items-center md:items-end gap-6 -mt-16 mb-4 md:mb-0">
+            {/* Avatar over the line */}
+            <div className="relative group shrink-0">
+              <Avatar className="w-32 h-32 border-4 border-card ring-1 ring-border shadow-2xl bg-muted">
                 <AvatarImage src={user?.avatar?.url} />
-                <AvatarFallback className="bg-farmer-100 text-farmer-700 text-3xl">
+                <AvatarFallback className="bg-gradient-to-br from-farmer-400 to-farmer-600 text-white text-4xl font-black">
                   {getInitials(user?.fullName || 'F')}
                 </AvatarFallback>
               </Avatar>
-              <button className="absolute bottom-0 right-0 w-8 h-8 bg-farmer-500 text-white rounded-full flex items-center justify-center hover:bg-farmer-600 transition-colors shadow-lg">
-                <Camera className="w-4 h-4" />
+              <button className="absolute bottom-1 right-1 w-10 h-10 bg-farmer-500 text-white rounded-full flex items-center justify-center hover:bg-farmer-600 transition-all shadow-xl hover:scale-110 border-2 border-background">
+                <Camera className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex-1 text-center sm:text-left">
-              <div className="flex items-center justify-center sm:justify-start gap-3 mb-1">
-                <h2 className="text-2xl font-bold text-gray-900">{user?.fullName}</h2>
+            
+            {/* User Info Text */}
+            <div className="flex-1 text-center md:text-left pt-2 md:pt-0">
+              <div className="flex flex-col md:flex-row items-center md:justify-start gap-3 mb-2">
+                <h2 className="text-3xl font-black text-foreground tracking-tight">{user?.fullName}</h2>
                 {user?.isVerified ? (
-                  <Badge className="bg-green-100 text-green-700">
-                    <Shield className="w-3 h-3 mr-1" />
-                    Verified
+                  <Badge className="bg-green-500/10 text-green-600 border-none px-3 py-1 font-bold text-xs">
+                    <Shield className="w-3.5 h-3.5 mr-1.5" /> Verified Farmer
                   </Badge>
                 ) : (
-                  <Badge className="bg-yellow-100 text-yellow-700">
+                  <Badge className="bg-yellow-500/10 text-yellow-600 border-none px-3 py-1 font-bold text-xs">
                     Pending Verification
                   </Badge>
                 )}
               </div>
-              <p className="text-gray-500">{user?.email}</p>
-              <p className="text-sm text-gray-400 mt-1">
-                {user?.village && `${user.village}, `}
-                {user?.taluka && `${user.taluka}, `}
-                {user?.district}, Maharashtra
-              </p>
+              <div className="flex flex-col sm:flex-row items-center sm:justify-center md:justify-start gap-4 text-sm font-medium text-muted-foreground">
+                <span className="flex items-center"><Mail className="w-4 h-4 mr-1.5" /> {user?.email}</span>
+                <span className="hidden sm:inline text-border">•</span>
+                <span className="flex items-center"><MapPin className="w-4 h-4 mr-1.5" /> 
+                  {user?.village && `${user.village}, `}
+                  {user?.taluka && `${user.taluka}, `}
+                  {user?.district}
+                </span>
+              </div>
             </div>
-            <Button
-              variant={isEditing ? 'outline' : 'farmer'}
-              onClick={() => setIsEditing(!isEditing)}
-            >
-              <Edit2 className="w-4 h-4 mr-2" />
-              {isEditing ? 'Cancel' : 'Edit Profile'}
-            </Button>
+            
+            {/* Actions */}
+            <div className="shrink-0 mt-4 md:mt-0 pb-2">
+              <Button
+                variant={isEditing ? 'outline' : 'farmer'}
+                onClick={() => setIsEditing(!isEditing)}
+                className="rounded-full shadow-lg px-6 font-semibold"
+              >
+                <Edit2 className="w-4 h-4 mr-2" />
+                {isEditing ? 'Cancel Edit' : 'Edit Profile'}
+              </Button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Profile Form */}
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="personal">
-              <User className="w-4 h-4 mr-2" />
-              Personal Info
-            </TabsTrigger>
-            <TabsTrigger value="farm">
-              <Home className="w-4 h-4 mr-2" />
-              Farm Details
-            </TabsTrigger>
-            <TabsTrigger value="bank">
-              <CreditCard className="w-4 h-4 mr-2" />
-              Bank Details
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex justify-center md:justify-start mb-8">
+            <TabsList className="bg-muted/50 p-1.5 rounded-full border border-border/50 inline-flex shadow-sm">
+              <TabsTrigger value="personal" className="rounded-full px-6 py-2.5 data-[state=active]:bg-farmer-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-medium">
+                <User className="w-4 h-4 mr-2" />
+                Personal Info
+              </TabsTrigger>
+              <TabsTrigger value="farm" className="rounded-full px-6 py-2.5 data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-medium">
+                <Home className="w-4 h-4 mr-2" />
+                Farm Details
+              </TabsTrigger>
+              <TabsTrigger value="bank" className="rounded-full px-6 py-2.5 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-medium">
+                <CreditCard className="w-4 h-4 mr-2" />
+                Bank Details
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Personal Info */}
-          <TabsContent value="personal">
-            <Card>
-              <CardHeader>
-                <CardTitle>Personal Information</CardTitle>
-                <CardDescription>Your basic contact details</CardDescription>
+          <TabsContent value="personal" className="focus-visible:ring-0 focus-visible:outline-none">
+            <Card className="rounded-[2rem] border-border/50 shadow-xl bg-background/50 backdrop-blur-xl overflow-hidden">
+              <div className="h-2 w-full bg-gradient-to-r from-farmer-400 to-farmer-600" />
+              <CardHeader className="border-b border-border/30 bg-muted/10 p-6 md:p-8">
+                <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                  <User className="w-6 h-6 text-farmer-500" /> Personal Information
+                </CardTitle>
+                <CardDescription className="text-base">Your basic contact details and identity</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6 p-6 md:p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Full Name</Label>
@@ -190,13 +217,16 @@ const FarmerProfile = () => {
           </TabsContent>
 
           {/* Farm Details */}
-          <TabsContent value="farm">
-            <Card>
-              <CardHeader>
-                <CardTitle>Farm Details</CardTitle>
-                <CardDescription>Your farm location and details</CardDescription>
+          <TabsContent value="farm" className="focus-visible:ring-0 focus-visible:outline-none">
+            <Card className="rounded-[2rem] border-border/50 shadow-xl bg-background/50 backdrop-blur-xl overflow-hidden">
+              <div className="h-2 w-full bg-gradient-to-r from-green-400 to-green-600" />
+              <CardHeader className="border-b border-border/30 bg-muted/10 p-6 md:p-8">
+                <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                  <Home className="w-6 h-6 text-green-500" /> Farm Details
+                </CardTitle>
+                <CardDescription className="text-base">Your farm location, size, and specifics</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6 p-6 md:p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>District</Label>
@@ -235,13 +265,16 @@ const FarmerProfile = () => {
           </TabsContent>
 
           {/* Bank Details */}
-          <TabsContent value="bank">
-            <Card>
-              <CardHeader>
-                <CardTitle>Bank Details</CardTitle>
-                <CardDescription>For receiving payments (kept secure & private)</CardDescription>
+          <TabsContent value="bank" className="focus-visible:ring-0 focus-visible:outline-none">
+            <Card className="rounded-[2rem] border-border/50 shadow-xl bg-background/50 backdrop-blur-xl overflow-hidden">
+              <div className="h-2 w-full bg-gradient-to-r from-blue-400 to-blue-600" />
+              <CardHeader className="border-b border-border/30 bg-muted/10 p-6 md:p-8">
+                <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                  <CreditCard className="w-6 h-6 text-blue-500" /> Bank Details
+                </CardTitle>
+                <CardDescription className="text-base">Private routing information for your payouts</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6 p-6 md:p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Account Holder Name</Label>
