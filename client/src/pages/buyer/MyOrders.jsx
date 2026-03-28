@@ -10,6 +10,7 @@ import {
   Eye,
   Download,
   Star,
+  MapPin,
 } from 'lucide-react'
 import {
   Dialog,
@@ -254,63 +255,121 @@ const OrderCard = ({ order, onCancel }) => {
           <div className="flex gap-3">
             <Drawer>
               <DrawerTrigger asChild>
-                <Button variant="outline" className="flex-1">
+                <Button variant="outline" className="flex-1 rounded-xl hover:bg-zinc-50 transition-colors">
                   <Eye className="w-4 h-4 mr-2" />
                   Quick View
                 </Button>
               </DrawerTrigger>
               <DrawerContent>
-                <div className="mx-auto w-full max-w-lg">
-                  <DrawerHeader>
-                    <DrawerTitle>Order Summary</DrawerTitle>
-                    <DrawerDescription>
+                <div className="mx-auto w-full max-w-xl">
+                  <DrawerHeader className="text-center pb-2">
+                    <div className="flex justify-center mb-2">
+                      <div className="w-12 h-12 bg-farmer-50 rounded-2xl flex items-center justify-center">
+                        <Package className="w-6 h-6 text-farmer-600" />
+                      </div>
+                    </div>
+                    <DrawerTitle className="text-2xl font-bold">Order Summary</DrawerTitle>
+                    <DrawerDescription className="text-sm font-medium text-zinc-500">
                       Order #{order.orderNumber || order._id.slice(-8)}
                     </DrawerDescription>
                   </DrawerHeader>
-                  <div className="p-4 pb-12 overflow-y-auto max-h-[60vh]">
+
+                  <div className="p-6 pb-10 overflow-y-auto max-h-[70vh]">
+                    {/* Status Badge */}
+                    <div className="flex justify-center mb-8">
+                      <span
+                        className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-${status.color}-50 text-${status.color}-700 border border-${status.color}-100`}
+                      >
+                        <StatusIcon className="w-4 h-4" />
+                        {status.label}
+                      </span>
+                    </div>
+
                     {/* Order Items */}
-                    <div className="space-y-4 mb-6">
+                    <div className="space-y-4 mb-8">
+                      <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider px-1">Items</p>
                       {order.items.map((item, index) => (
-                        <div key={index} className="flex gap-4 p-2 rounded-lg border">
+                        <div key={index} className="flex gap-4 p-3 rounded-2xl border border-zinc-100 bg-white shadow-sm hover:shadow-md transition-shadow">
                           <img
-                            src={item.product.images?.[0]?.url || '/placeholder.jpg'}
-                            alt={item.product.cropName}
-                            className="w-20 h-20 object-cover rounded-md"
+                            src={item.product?.images?.[0]?.url || item.productSnapshot?.image || '/placeholder.jpg'}
+                            alt={item.product?.cropName || item.productSnapshot?.cropName}
+                            className="w-20 h-20 object-cover rounded-xl"
                           />
-                          <div className="flex-1">
-                            <h4 className="font-semibold">{item.product.cropName}</h4>
-                            <p className="text-sm text-gray-600">
-                              {item.quantity} kg × {formatPrice(item.price)}
-                            </p>
-                            <p className="text-sm font-bold text-farmer-600">
-                              {formatPrice(item.price * item.quantity)}
-                            </p>
+                          <div className="flex-1 flex flex-col justify-center">
+                            <h4 className="font-bold text-zinc-900">{item.product?.cropName || item.productSnapshot?.cropName}</h4>
+                            <div className="flex items-center justify-between mt-1">
+                              <p className="text-sm text-zinc-500">
+                                {item.quantity} kg × {formatPrice(item.pricePerKg || item.productSnapshot?.pricePerKg)}
+                              </p>
+                              <p className="text-base font-bold text-farmer-600">
+                                {formatPrice(item.subtotal || (item.quantity * (item.pricePerKg || item.productSnapshot?.pricePerKg)))}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       ))}
                     </div>
 
-                    {/* Delivery Address */}
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="font-semibold mb-2">Delivery Details</p>
-                      <p className="text-sm text-gray-900 font-medium">
-                        {order.deliveryAddress.fullName}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {order.deliveryAddress.addressLine1}
-                        {order.deliveryAddress.addressLine2 &&
-                          `, ${order.deliveryAddress.addressLine2}`}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {order.deliveryAddress.city},{' '}
-                        {order.deliveryAddress.district} -{' '}
-                        {order.deliveryAddress.pincode}
-                      </p>
+                    {/* Delivery & Pricing Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 mt-4 pt-6 border-t border-zinc-100">
+                      {/* Delivery Address */}
+                      <div className="bg-zinc-50/50 p-4 rounded-2xl border border-zinc-100">
+                        <div className="flex items-center gap-2 mb-3">
+                          <MapPin className="w-4 h-4 text-zinc-400" />
+                          <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Delivery Details</p>
+                        </div>
+                        <p className="text-sm text-zinc-900 font-bold mb-1">
+                          {order.deliveryAddress.fullName}
+                        </p>
+                        <p className="text-xs text-zinc-600 leading-relaxed">
+                          {order.deliveryAddress.addressLine1}
+                          {order.deliveryAddress.addressLine2 &&
+                            `, ${order.deliveryAddress.addressLine2}`}<br />
+                          {order.deliveryAddress.city}, {order.deliveryAddress.district} - {order.deliveryAddress.pincode}
+                        </p>
+                      </div>
+
+                      {/* Price Summary */}
+                      <div className="bg-white p-4 rounded-2xl border border-zinc-100 shadow-sm">
+                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-4 px-1">Pricing Breakdown</p>
+                        <div className="space-y-3">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-zinc-500">Subtotal</span>
+                            <span className="font-medium">{formatPrice(order.pricing?.subtotal || order.totalAmount)}</span>
+                          </div>
+                          {order.pricing?.deliveryCharges > 0 && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-zinc-500">Delivery</span>
+                              <span className="font-medium">{formatPrice(order.pricing.deliveryCharges)}</span>
+                            </div>
+                          )}
+                          {order.pricing?.tax > 0 && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-zinc-500">Tax</span>
+                              <span className="font-medium">{formatPrice(order.pricing.tax)}</span>
+                            </div>
+                          )}
+                          <div className="h-px bg-zinc-100 my-2" />
+                          <div className="flex justify-between items-center">
+                            <span className="text-base font-bold text-zinc-900">Total</span>
+                            <span className="text-xl font-black text-farmer-600">
+                              {formatPrice(order.pricing?.total || order.totalAmount)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="mt-6 flex gap-3">
+                    <div className="flex gap-3 mt-8">
                       <Button
-                        className="flex-1"
+                        variant="ghost"
+                        className="flex-1 rounded-xl h-12 font-semibold text-zinc-500 hover:text-zinc-900"
+                        onClick={() => navigate(`/orders/${order._id}`)}
+                      >
+                        Close
+                      </Button>
+                      <Button
+                        className="flex-[2] rounded-xl h-12 font-bold shadow-lg shadow-farmer-200 bg-farmer-600 hover:bg-farmer-700 transition-all hover:-translate-y-0.5"
                         onClick={() => navigate(`/orders/${order._id}`)}
                       >
                         Go to Detailed View
