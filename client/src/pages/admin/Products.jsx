@@ -154,8 +154,8 @@ const AdminProducts = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Product Management</h1>
-          <p className="text-gray-500 mt-1">Review and manage all products</p>
+          <h1 className="text-2xl font-bold text-foreground">Product Management</h1>
+          <p className="text-muted-foreground mt-1">Review and manage all products</p>
         </div>
         <Button variant="outline">
           <Download className="w-4 h-4 mr-2" />
@@ -174,7 +174,7 @@ const AdminProducts = () => {
         ].map(stat => (
           <Card key={stat.label} className={stat.bg}>
             <CardContent className="p-4">
-              <p className="text-sm text-gray-600">{stat.label}</p>
+              <p className="text-sm text-muted-foreground">{stat.label}</p>
               <p className={cn('text-2xl font-bold', stat.color)}>{stat.value}</p>
             </CardContent>
           </Card>
@@ -186,7 +186,7 @@ const AdminProducts = () => {
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search products or farmers..."
                 value={searchTerm}
@@ -252,13 +252,13 @@ const AdminProducts = () => {
                           className="w-10 h-10 rounded-lg object-cover"
                         />
                         <div>
-                          <p className="font-medium text-gray-900 flex items-center gap-1">
+                          <p className="font-medium text-foreground flex items-center gap-1">
                             {product.cropName}
                             {product.isFeatured && (
                               <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
                             )}
                           </p>
-                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <MapPin className="w-3 h-3" />
                             {product.district}
                             {product.isOrganic && (
@@ -303,7 +303,7 @@ const AdminProducts = () => {
                         </Badge>
                       )}
                     </TableCell>
-                    <TableCell className="text-sm text-gray-500">{product.views}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{product.views}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -356,7 +356,7 @@ const AdminProducts = () => {
             </Table>
           </div>
           {filteredProducts.length === 0 && (
-            <div className="py-16 text-center text-gray-500">
+            <div className="py-16 text-center text-muted-foreground">
               <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>No products found</p>
             </div>
@@ -381,35 +381,35 @@ const AdminProducts = () => {
                 />
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-500">Category</p>
+                    <p className="text-muted-foreground">Category</p>
                     <p className="font-medium capitalize">{selectedProduct.category}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Price</p>
+                    <p className="text-muted-foreground">Price</p>
                     <p className="font-medium">{formatPrice(selectedProduct.pricePerKg)}/kg</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Quality</p>
+                    <p className="text-muted-foreground">Quality</p>
                     <p className="font-medium">Grade {selectedProduct.qualityGrade}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Stock</p>
+                    <p className="text-muted-foreground">Stock</p>
                     <p className="font-medium">{selectedProduct.quantityAvailable} kg</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">District</p>
+                    <p className="text-muted-foreground">District</p>
                     <p className="font-medium">{selectedProduct.district}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Farmer</p>
+                    <p className="text-muted-foreground">Farmer</p>
                     <p className="font-medium">{selectedProduct.farmer.fullName}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Listed On</p>
+                    <p className="text-muted-foreground">Listed On</p>
                     <p className="font-medium">{formatDate(selectedProduct.createdAt)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Rating</p>
+                    <p className="text-muted-foreground">Rating</p>
                     <p className="font-medium flex items-center gap-1">
                       <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                       {selectedProduct.ratings.average || 'N/A'} ({selectedProduct.ratings.count})

@@ -60,7 +60,7 @@ const OAuthCallback = () => {
         <Leaf className="w-9 h-9 text-white" />
       </div>
       <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
-      <p className="text-gray-400 text-sm">Completing sign-in…</p>
+      <p className="text-muted-foreground text-sm">Completing sign-in…</p>
     </div>
   )
 }

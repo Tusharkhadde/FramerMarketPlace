@@ -191,7 +191,7 @@ const Settings = () => {
                 </div>
               </div>
               <div className="flex gap-2">
-                <Badge variant="outline" className="capitalize text-farmer-700 border-farmer-200 bg-white">
+                <Badge variant="outline" className="capitalize text-farmer-700 border-farmer-200 bg-card">
                   {user?.userType}
                 </Badge>
                 {user?.isVerified && (

@@ -170,7 +170,7 @@ const Navbar = () => {
             <div className="w-10 h-10 bg-gradient-to-br from-farmer-500 to-farmer-600 rounded-xl flex items-center justify-center">
               <Leaf className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-zinc-900">
+            <span className="text-xl font-bold text-foreground">
               Farm<span className="text-farmer-600">Market</span>
             </span>
           </Link>
@@ -235,7 +235,7 @@ const Navbar = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="relative hover:bg-zinc-100 transition-colors rounded-full">
-                      <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'text-farmer-600 animate-pulse' : 'text-zinc-600'}`} />
+                      <Bell className={`w-5 h-5 ${unreadCount > 0 ? 'text-farmer-600 animate-pulse' : 'text-muted-foreground'}`} />
                       {unreadCount > 0 && (
                         <span className="absolute top-1.5 right-1.5 w-4.5 h-4.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
                           {unreadCount > 9 ? '9+' : unreadCount}
@@ -245,7 +245,7 @@ const Navbar = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-80 p-0 overflow-hidden">
                     <div className="p-4 border-b bg-zinc-50/50 flex items-center justify-between">
-                      <h3 className="font-bold text-zinc-900">Notifications</h3>
+                      <h3 className="font-bold text-foreground">Notifications</h3>
                       {unreadCount > 0 && (
                         <button 
                           onClick={handleMarkAllAsRead}
@@ -269,7 +269,7 @@ const Navbar = () => {
                             <div className="flex gap-3">
                               <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${!notification.isRead ? 'bg-farmer-500' : 'bg-transparent'}`} />
                               <div className="flex-1">
-                                <p className={`text-sm ${!notification.isRead ? 'font-bold text-zinc-900' : 'text-zinc-600'}`}>
+                                <p className={`text-sm ${!notification.isRead ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
                                   {notification.title}
                                 </p>
                                 <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">
@@ -295,7 +295,7 @@ const Navbar = () => {
                       <div className="p-3 bg-zinc-50/50 border-t text-center">
                         <button 
                           onClick={() => navigate('/notifications')}
-                          className="text-xs font-bold text-zinc-500 hover:text-zinc-900 transition-colors"
+                          className="text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
                         >
                           View all notifications
                         </button>
@@ -323,7 +323,7 @@ const Navbar = () => {
                   <DropdownMenuContent align="end" className="w-56">
                     <div className="px-3 py-2 border-b">
                       <p className="font-medium">{user?.fullName}</p>
-                      <p className="text-sm text-gray-500">{user?.email}</p>
+                      <p className="text-sm text-muted-foreground">{user?.email}</p>
                       <span className="inline-block mt-1 text-xs bg-farmer-100 text-farmer-700 px-2 py-0.5 rounded capitalize">
                         {user?.userType}
                       </span>
@@ -381,7 +381,7 @@ const Navbar = () => {
               </>
             ) : (
               <div className="flex items-center space-x-3">
-                <Button variant="ghost" onClick={() => navigate('/login')} className="text-zinc-900">
+                <Button variant="ghost" onClick={() => navigate('/login')} className="text-foreground">
                   Sign In
                 </Button>
                 <Button onClick={() => navigate('/register')}>
@@ -432,7 +432,7 @@ const Navbar = () => {
               {/* Mobile Search */}
               <form onSubmit={handleSearch}>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
                     type="text"
                     placeholder="Search products..."

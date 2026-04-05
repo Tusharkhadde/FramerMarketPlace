@@ -127,17 +127,17 @@ const Footer = () => {
       <div className="border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               © {currentYear} FarmMarket. All rights reserved.
             </p>
             <div className="flex space-x-6">
-              <Link to="/privacy" className="text-sm text-gray-400 hover:text-white transition-colors">
+              <Link to="/privacy" className="text-sm text-muted-foreground hover:text-white transition-colors">
                 Privacy Policy
               </Link>
-              <Link to="/terms" className="text-sm text-gray-400 hover:text-white transition-colors">
+              <Link to="/terms" className="text-sm text-muted-foreground hover:text-white transition-colors">
                 Terms of Service
               </Link>
-              <Link to="/cookies" className="text-sm text-gray-400 hover:text-white transition-colors">
+              <Link to="/cookies" className="text-sm text-muted-foreground hover:text-white transition-colors">
                 Cookies
               </Link>
             </div>

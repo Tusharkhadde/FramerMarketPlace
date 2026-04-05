@@ -221,10 +221,10 @@ const AddProduct = () => {
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-foreground mb-2">
           Add New Product
         </h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           List your fresh produce to reach buyers across Maharashtra
         </p>
       </div>
@@ -287,7 +287,7 @@ const AddProduct = () => {
                 className="w-full border rounded-md p-2"
                 maxLength={1000}
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {formData.description.length}/1000 characters
               </p>
             </div>
@@ -461,7 +461,7 @@ const AddProduct = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
                 <input
                   type="file"
                   accept="image/*"
@@ -475,11 +475,11 @@ const AddProduct = () => {
                   htmlFor="image-upload"
                   className={`cursor-pointer ${images.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <Upload className="w-12 h-12 mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">
+                  <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">
                     Click to upload images (Max 5)
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     JPG, PNG or WEBP (Max 5MB each)
                   </p>
                 </label>
@@ -651,13 +651,13 @@ const AddProduct = () => {
                 {formData.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+                    className="inline-flex items-center gap-1 bg-muted/10 text-gray-700 px-3 py-1 rounded-full text-sm"
                   >
                     {tag}
                     <button
                       type="button"
                       onClick={() => removeTag(tag)}
-                      className="hover:bg-gray-200 rounded-full p-0.5"
+                      className="hover:bg-muted/20 rounded-full p-0.5"
                     >
                       <X className="w-3 h-3" />
                     </button>

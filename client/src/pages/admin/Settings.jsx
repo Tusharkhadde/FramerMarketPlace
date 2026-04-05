@@ -8,7 +8,7 @@ import { Save } from 'lucide-react'
 
 const AdminSettings = () => (
   <div className="max-w-3xl mx-auto space-y-6">
-    <h1 className="text-2xl font-bold text-gray-900">Platform Settings</h1>
+    <h1 className="text-2xl font-bold text-foreground">Platform Settings</h1>
 
     <Card>
       <CardHeader>
@@ -46,7 +46,7 @@ const AdminSettings = () => (
           <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
             <div>
               <p className="font-medium">{setting.label}</p>
-              <p className="text-sm text-gray-500">{setting.desc}</p>
+              <p className="text-sm text-muted-foreground">{setting.desc}</p>
             </div>
             <Switch defaultChecked={setting.default} />
           </div>

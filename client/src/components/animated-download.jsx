@@ -169,7 +169,7 @@ export function DownloadAnimation({
           </svg>
           <div className="relative px-4 py-1.5 font-mono font-bold text-sm text-emerald-900">
             <div className="flex items-center">
-              <div className="flex font-mono font-bold text-black">
+              <div className="flex font-mono font-bold text-foreground">
                 {displayText.map((letter, i) => (
                   <motion.span
                       key={`${targetText}-${i}`}
@@ -186,7 +186,7 @@ export function DownloadAnimation({
               </div>
               {isAnimating && (
                 <motion.div
-                  className="ml-1 flex text-white dark:text-black"
+                  className="ml-1 flex text-white dark:text-foreground"
                   variants={dotsVariants}
                   initial="hidden"
                   animate="visible">

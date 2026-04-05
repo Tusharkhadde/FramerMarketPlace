@@ -92,18 +92,18 @@ const MyOrders = () => {
   if (loading) return <Loading />
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Orders</h1>
-          <p className="text-gray-600">Track and manage your orders</p>
+          <h1 className="text-3xl font-bold text-white mb-2">My Orders</h1>
+          <p className="text-white/70">Track and manage your orders</p>
         </div>
 
         {/* Filters Section */}
         <div className="flex flex-col md:flex-row gap-6 mb-8 items-end">
           <div className="flex-1">
-            <Label className="mb-2 block">Filter by Status</Label>
+            <Label className="mb-2 block text-white/90">Filter by Status</Label>
             <div className="flex gap-2 overflow-x-auto pb-2">
               {[
                 { key: 'all', label: 'All', count: stats.all },
@@ -117,7 +117,7 @@ const MyOrders = () => {
                   onClick={() => setFilter(tab.key)}
                   className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${filter === tab.key
                     ? 'bg-farmer-500 text-white'
-                    : 'bg-white text-gray-700 border hover:bg-gray-100'
+                    : 'bg-card text-gray-300 border border-white/10 hover:bg-white/10'
                     }`}
                 >
                   {tab.label} ({tab.count})
@@ -126,7 +126,7 @@ const MyOrders = () => {
             </div>
           </div>
           <div className="w-full md:w-auto">
-            <Label className="mb-2 block">Filter by Date</Label>
+            <Label className="mb-2 block text-white/90">Filter by Date</Label>
             <div className="flex gap-2">
               <DatePicker
                 date={dateFilter}
@@ -146,11 +146,11 @@ const MyOrders = () => {
         {filteredOrders.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
-              <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
                 No orders found
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-muted-foreground mb-4">
                 {filter === 'all'
                   ? "You haven't placed any orders yet"
                   : `No ${filter} orders`}
@@ -234,7 +234,7 @@ const OrderCard = ({ order, onCancel }) => {
                   {status.label}
                 </span>
               </div>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-white/70">
                 Placed on{' '}
                 {new Date(order.createdAt).toLocaleDateString('en-IN', {
                   day: 'numeric',
@@ -245,9 +245,9 @@ const OrderCard = ({ order, onCancel }) => {
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-farmer-600">
-                {formatPrice(order.totalAmount)}
+                {formatPrice(order.pricing?.total || order.totalAmount || 0)}
               </p>
-              <p className="text-sm text-gray-500">{order.items.length} item(s)</p>
+              <p className="text-sm text-white/70">{order.items.length} item(s)</p>
             </div>
           </div>
 
@@ -289,7 +289,7 @@ const OrderCard = ({ order, onCancel }) => {
                     <div className="space-y-4 mb-8">
                       <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider px-1">Items</p>
                       {order.items.map((item, index) => (
-                        <div key={index} className="flex gap-4 p-3 rounded-2xl border border-zinc-100 bg-white shadow-sm hover:shadow-md transition-shadow">
+                        <div key={index} className="flex gap-4 p-3 rounded-2xl border border-zinc-100 bg-card shadow-sm hover:shadow-md transition-shadow">
                           <img
                             src={item.product?.images?.[0]?.url || item.productSnapshot?.image || '/placeholder.jpg'}
                             alt={item.product?.cropName || item.productSnapshot?.cropName}
@@ -330,7 +330,7 @@ const OrderCard = ({ order, onCancel }) => {
                       </div>
 
                       {/* Price Summary */}
-                      <div className="bg-white p-4 rounded-2xl border border-zinc-100 shadow-sm">
+                      <div className="bg-card p-4 rounded-2xl border border-zinc-100 shadow-sm">
                         <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-4 px-1">Pricing Breakdown</p>
                         <div className="space-y-3">
                           <div className="flex justify-between text-sm">

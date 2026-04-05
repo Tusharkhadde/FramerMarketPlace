@@ -21,26 +21,26 @@ const AdminAPMC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">APMC Data Management</h1>
+      <h1 className="text-2xl font-bold text-foreground">APMC Data Management</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-6 text-center">
             <Database className="w-10 h-10 text-blue-500 mx-auto mb-3" />
             <p className="text-2xl font-bold">63,000+</p>
-            <p className="text-sm text-gray-500">Price Records</p>
+            <p className="text-sm text-muted-foreground">Price Records</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-2xl font-bold">10</p>
-            <p className="text-sm text-gray-500">Commodities Tracked</p>
+            <p className="text-sm text-muted-foreground">Commodities Tracked</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-2xl font-bold">7</p>
-            <p className="text-sm text-gray-500">Districts Covered</p>
+            <p className="text-sm text-muted-foreground">Districts Covered</p>
           </CardContent>
         </Card>
       </div>
@@ -52,11 +52,11 @@ const AdminAPMC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="border-2 border-dashed rounded-xl p-8 text-center">
-            <Upload className="w-10 h-10 text-gray-400 mx-auto mb-4" />
+            <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-4" />
             <Label htmlFor="csv-upload" className="cursor-pointer">
               <span className="text-farmer-600 font-medium hover:underline">Click to upload</span>
-              <span className="text-gray-500"> or drag and drop</span>
-              <p className="text-xs text-gray-400 mt-1">CSV files only</p>
+              <span className="text-muted-foreground"> or drag and drop</span>
+              <p className="text-xs text-muted-foreground mt-1">CSV files only</p>
             </Label>
             <Input id="csv-upload" type="file" accept=".csv" className="hidden" onChange={handleUpload} />
           </div>

@@ -45,7 +45,7 @@ const Hero = () => {
           />
         </video>
         {/* Advanced overlays */}
-        <div className="absolute inset-0 bg-white/20 backdrop-brightness-90"></div>
+        <div className="absolute inset-0 bg-card/20 backdrop-brightness-90"></div>
         <div className="absolute inset-x-0 bottom-0 h-96 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
       </div>
       
@@ -79,7 +79,7 @@ const Hero = () => {
         {/* 3. Subheadline */}
         <motion.p
           variants={itemVariants}
-          className="mt-6 text-center text-lg md:text-xl text-muted-foreground max-w-[600px] leading-relaxed font-body text-balance"
+          className="mt-6 text-center text-lg md:text-xl text-white font-medium drop-shadow-md max-w-[600px] leading-relaxed font-body text-balance"
         >
           Connect directly with local farmers. Buy fresh, organic produce at fair prices while supporting sustainable agriculture in your community.
         </motion.p>

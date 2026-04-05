@@ -114,8 +114,8 @@ const FarmerProducts = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Products</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-foreground">My Products</h1>
+          <p className="text-muted-foreground mt-1">
             Manage your product listings
           </p>
         </div>
@@ -158,7 +158,7 @@ const FarmerProducts = () => {
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 type="text"
                 placeholder="Search products..."
@@ -195,11 +195,11 @@ const FarmerProducts = () => {
       {filteredProducts.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
-            <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">
               No products found
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               {products.length === 0
                 ? "You haven't added any products yet"
                 : 'Try adjusting your filters'}
@@ -234,7 +234,7 @@ const StatCard = ({ label, value, icon: Icon, color }) => {
   const colorClasses = {
     blue: 'bg-blue-100 text-blue-600',
     green: 'bg-green-100 text-green-600',
-    gray: 'bg-gray-100 text-gray-600',
+    gray: 'bg-muted/10 text-muted-foreground',
     red: 'bg-red-100 text-red-600',
   }
 
@@ -243,8 +243,8 @@ const StatCard = ({ label, value, icon: Icon, color }) => {
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-gray-600 mb-1">{label}</p>
-            <p className="text-3xl font-bold text-gray-900">{value}</p>
+            <p className="text-sm text-muted-foreground mb-1">{label}</p>
+            <p className="text-3xl font-bold text-foreground">{value}</p>
           </div>
           <div className={`w-12 h-12 rounded-lg ${colorClasses[color]} flex items-center justify-center`}>
             <Icon className="w-6 h-6" />
@@ -298,10 +298,10 @@ const ProductCard = ({ product, onToggleAvailability, onDelete, onEdit }) => {
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">
             <div className="flex-1">
-              <h3 className="font-semibold text-lg text-gray-900 truncate">
+              <h3 className="font-semibold text-lg text-foreground truncate">
                 {product.cropName}
               </h3>
-              <p className="text-sm text-gray-500 capitalize">{product.category}</p>
+              <p className="text-sm text-muted-foreground capitalize">{product.category}</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -342,21 +342,21 @@ const ProductCard = ({ product, onToggleAvailability, onDelete, onEdit }) => {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Price:</span>
+              <span className="text-sm text-muted-foreground">Price:</span>
               <span className="font-semibold text-farmer-600">
                 {formatPrice(product.pricePerKg)}/kg
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Stock:</span>
-              <span className={`font-semibold ${product.quantityAvailable < 10 ? 'text-red-600' : 'text-gray-900'
+              <span className="text-sm text-muted-foreground">Stock:</span>
+              <span className={`font-semibold ${product.quantityAvailable < 10 ? 'text-red-600' : 'text-foreground'
                 }`}>
                 {product.quantityAvailable} {product.unit}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Views:</span>
-              <span className="text-sm text-gray-900">{product.views || 0}</span>
+              <span className="text-sm text-muted-foreground">Views:</span>
+              <span className="text-sm text-foreground">{product.views || 0}</span>
             </div>
           </div>
 

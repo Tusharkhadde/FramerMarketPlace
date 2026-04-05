@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import api from '@/config/api'
+import authService from '@/services/auth.service'
+import userService from '@/services/user.service'
 
 const AuthContext = createContext(null)
 
@@ -20,7 +21,7 @@ export function AuthProvider({ children }) {
         return
       }
 
-      const response = await api.get('/auth/me')
+      const response = await authService.getMe()
       setUser(response.data.data.user)
     } catch (err) {
       localStorage.removeItem('token')
@@ -34,7 +35,7 @@ export function AuthProvider({ children }) {
   const signUp = async (userData) => {
     try {
       setError(null)
-      const response = await api.post('/auth/register', userData)
+      const response = await authService.register(userData)
       const { token, user } = response.data.data
       
       localStorage.setItem('token', token)
@@ -52,7 +53,7 @@ export function AuthProvider({ children }) {
   const signIn = async (email, password) => {
     try {
       setError(null)
-      const response = await api.post('/auth/login', { email, password })
+      const response = await authService.login({ email, password })
       const { token, user } = response.data.data
       
       localStorage.setItem('token', token)
@@ -69,7 +70,7 @@ export function AuthProvider({ children }) {
 
   const signOut = async () => {
     try {
-      await api.post('/auth/logout')
+      await authService.logout()
     } catch (err) {
       console.error('Logout error:', err)
     } finally {
@@ -82,7 +83,7 @@ export function AuthProvider({ children }) {
   const updateProfile = async (profileData) => {
     try {
       setError(null)
-      const response = await api.put('/users/profile', profileData)
+      const response = await userService.updateProfile(profileData)
       const updatedUser = response.data.data.user
       
       localStorage.setItem('user', JSON.stringify(updatedUser))

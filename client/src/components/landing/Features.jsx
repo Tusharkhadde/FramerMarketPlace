@@ -38,16 +38,16 @@ const Features = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-zinc-900 mb-6"
+            className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-white mb-6"
           >
-            Why Choose <span className="text-emerald-600">FarmMarket</span>?
+            Why Choose <span className="text-emerald-400">FarmMarket</span>?
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-lg text-zinc-600 font-body leading-relaxed"
+            className="text-lg text-white/80 font-body leading-relaxed"
           >
             We're building a more transparent, sustainable, and rewarding food system for everyone involved.
           </motion.p>
@@ -61,13 +61,13 @@ const Features = () => {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="p-8 rounded-3xl bg-white border border-zinc-100 hover:border-emerald-200 transition-all hover:shadow-xl hover:shadow-emerald-500/5 group"
+              className="p-8 rounded-3xl bg-card border border-white/10 hover:border-emerald-500/50 transition-all hover:shadow-xl hover:shadow-emerald-500/5 group"
             >
-              <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors duration-300">
-                <feature.icon className="w-6 h-6 text-emerald-600 group-hover:text-white transition-colors duration-300" />
+              <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors duration-300">
+                <feature.icon className="w-6 h-6 text-emerald-400 group-hover:text-white transition-colors duration-300" />
               </div>
-              <h3 className="text-xl font-bold text-zinc-900 mb-4 font-display">{feature.title}</h3>
-              <p className="text-zinc-600 font-body leading-relaxed text-sm">
+              <h3 className="text-xl font-bold text-white mb-4 font-display">{feature.title}</h3>
+              <p className="text-white/80 font-body leading-relaxed text-sm">
                 {feature.description}
               </p>
             </motion.div>

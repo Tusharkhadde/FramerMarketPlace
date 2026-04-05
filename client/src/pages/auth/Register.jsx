@@ -73,7 +73,7 @@ const Register = () => {
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 Which best describes you?
               </h1>
-              <p className="text-gray-400 text-lg">
+              <p className="text-muted-foreground text-lg">
                 Select your role to get started
               </p>
             </div>
@@ -106,11 +106,11 @@ const Register = () => {
                         <h3 className="text-2xl font-bold text-white mb-1">
                           {role.id === 'buyer' ? "I'm a Buyer" : "I'm a Farmer"}
                         </h3>
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-muted-foreground text-sm">
                           {role.id === 'buyer' ? "Shop fresh from the farm" : "Trade your produce directly"}
                         </p>
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-black transition-colors">
+                      <div className="w-10 h-10 rounded-full bg-card/5 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-foreground transition-colors">
                         <ArrowRight className="w-5 h-5" />
                       </div>
                     </div>
@@ -120,7 +120,7 @@ const Register = () => {
             </div>
 
             {/* Login Link */}
-            <div className="text-center mt-8 text-gray-400">
+            <div className="text-center mt-8 text-muted-foreground">
               Already have an account?{' '}
               <Link to="/login" className="text-emerald-500 font-semibold hover:underline">
                 Sign In
@@ -134,12 +134,12 @@ const Register = () => {
                   <div className="w-full border-t border-white/10" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-black text-gray-500">or sign up faster</span>
+                  <span className="px-4 bg-black text-muted-foreground">or sign up faster</span>
                 </div>
               </div>
               <a
                 href={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}/api/auth/google`}
-                className="w-full flex items-center justify-center gap-3 h-12 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-white font-medium text-sm"
+                className="w-full flex items-center justify-center gap-3 h-12 rounded-xl bg-card/5 border border-white/10 hover:bg-card/10 hover:border-white/20 transition-all text-white font-medium text-sm"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -149,7 +149,7 @@ const Register = () => {
                 </svg>
                 Continue with Google
               </a>
-              <p className="text-xs text-gray-600 text-center">
+              <p className="text-xs text-muted-foreground text-center">
                 Google sign-in creates a Buyer account by default.
               </p>
             </div>
@@ -166,7 +166,7 @@ const Register = () => {
           >
             <button
               onClick={() => setSelectedRole('')}
-              className="flex items-center gap-2 text-sm text-gray-500 hover:text-white mb-6 transition-colors"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-white mb-6 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Back

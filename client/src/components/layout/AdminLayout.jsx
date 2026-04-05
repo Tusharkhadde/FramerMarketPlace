@@ -73,7 +73,7 @@ const AdminLayout = () => {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-72 bg-gray-900 text-white transform transition-transform duration-300 lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 w-72 bg-background text-foreground transform transition-transform duration-300 lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
@@ -101,7 +101,7 @@ const AdminLayout = () => {
 
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-            <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
+            <p className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
               Main Menu
             </p>
             {adminLinks.map((link) => {
@@ -133,7 +133,7 @@ const AdminLayout = () => {
 
           {/* Admin Profile */}
           <div className="p-4 border-t border-gray-800">
-            <div className="flex items-center space-x-3 p-3 bg-gray-800 rounded-xl">
+            <div className="flex items-center space-x-3 p-3 bg-card rounded-xl">
               <Avatar className="w-10 h-10">
                 <AvatarImage src={user?.avatar?.url} />
                 <AvatarFallback className="bg-farmer-600 text-white">
@@ -142,13 +142,13 @@ const AdminLayout = () => {
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{user?.fullName}</p>
-                <p className="text-xs text-gray-400 truncate">Administrator</p>
+                <p className="text-xs text-muted-foreground truncate">Administrator</p>
               </div>
               <button
                 onClick={handleLogout}
-                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-muted rounded-lg transition-colors"
               >
-                <LogOut className="w-4 h-4 text-gray-400" />
+                <LogOut className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
           </div>
@@ -167,14 +167,14 @@ const AdminLayout = () => {
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-foreground">
                 {adminLinks.find((l) => l.href === location.pathname)?.name || 'Admin'}
               </h2>
             </div>
 
             <div className="flex items-center space-x-3 ml-auto">
               <button className="relative p-2 hover:bg-card rounded-lg">
-                <Bell className="w-5 h-5 text-gray-600" />
+                <Bell className="w-5 h-5 text-muted-foreground" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
               </button>
 
