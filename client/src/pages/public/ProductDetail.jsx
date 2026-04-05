@@ -145,10 +145,10 @@ const ProductDetail = () => {
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-600">
             <Package className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-foreground">
             {error === 'Product not found' ? 'Product Not Found' : 'Oops! Something went wrong'}
           </h2>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {error === 'Product not found'
               ? "The product you're looking for doesn't exist or is currently unavailable."
               : "We couldn't load the product details. Please try again later."}
@@ -198,8 +198,8 @@ const ProductDetail = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                    <Package className="w-16 h-16 text-gray-400" />
+                  <div className="w-full h-full bg-muted/10 flex items-center justify-center">
+                    <Package className="w-16 h-16 text-muted-foreground" />
                   </div>
                 )}
 
@@ -521,13 +521,13 @@ const ProductDetail = () => {
 
 // Feature Card Component
 const FeatureCard = ({ icon: Icon, title, description }) => (
-  <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+  <div className="flex items-start gap-3 p-4 bg-background rounded-lg">
     <div className="w-10 h-10 bg-farmer-100 rounded-lg flex items-center justify-center flex-shrink-0">
       <Icon className="w-5 h-5 text-farmer-600" />
     </div>
     <div>
       <h4 className="font-medium text-sm">{title}</h4>
-      <p className="text-xs text-gray-600">{description}</p>
+      <p className="text-xs text-muted-foreground">{description}</p>
     </div>
   </div>
 )
