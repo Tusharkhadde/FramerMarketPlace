@@ -174,7 +174,7 @@ const Products = () => {
                 placeholder="Search products..."
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="pl-10 bg-white border-zinc-200"
+                className="pl-10 bg-card border-zinc-200"
               />
             </div>
 
@@ -307,7 +307,7 @@ const Products = () => {
                         value={filters.category}
                         onValueChange={(value) => handleFilterChange('category', value)}
                       >
-                        <SelectTrigger className="w-full bg-white border-zinc-200">
+                        <SelectTrigger className="w-full bg-card border-zinc-200">
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
@@ -329,7 +329,7 @@ const Products = () => {
                         value={filters.district}
                         onValueChange={(value) => handleFilterChange('district', value === 'all' ? '' : value)}
                       >
-                        <SelectTrigger className="w-full bg-white border-zinc-200">
+                        <SelectTrigger className="w-full bg-card border-zinc-200">
                           <SelectValue placeholder="All Districts" />
                         </SelectTrigger>
                         <SelectContent>
@@ -352,14 +352,14 @@ const Products = () => {
                           placeholder="Min"
                           value={filters.minPrice}
                           onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                          className="bg-white border-zinc-200"
+                          className="bg-card border-zinc-200"
                         />
                         <Input
                           type="number"
                           placeholder="Max"
                           value={filters.maxPrice}
                           onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-                          className="bg-white border-zinc-200"
+                          className="bg-card border-zinc-200"
                         />
                       </div>
                     </div>
@@ -485,7 +485,7 @@ const ProductCard = ({ product, viewMode }) => {
               <div className="text-right">
                 <div className="text-2xl font-bold text-farmer-600">
                   {formatPrice(product.pricePerKg)}
-                  <span className="text-sm font-normal text-gray-500">/kg</span>
+                  <span className="text-sm font-normal text-muted-foreground">/kg</span>
                 </div>
               </div>
             </div>
@@ -545,7 +545,7 @@ const ProductCard = ({ product, viewMode }) => {
             <span className="text-2xl font-bold text-farmer-600">
               {formatPrice(product.pricePerKg)}
             </span>
-            <span className="text-sm text-gray-500">/kg</span>
+            <span className="text-sm text-muted-foreground">/kg</span>
           </div>
           {product.ratings.average > 0 && (
             <div className="flex items-center">

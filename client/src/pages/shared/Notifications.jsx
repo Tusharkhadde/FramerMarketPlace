@@ -79,7 +79,7 @@ const NotificationsPage = () => {
       case 'order': return <Package className="w-5 h-5 text-blue-500" />
       case 'payment': return <CheckCircle className="w-5 h-5 text-green-500" />
       case 'alert': return <AlertCircle className="w-5 h-5 text-red-500" />
-      default: return <Bell className="w-5 h-5 text-gray-500" />
+      default: return <Bell className="w-5 h-5 text-muted-foreground" />
     }
   }
 
@@ -136,7 +136,7 @@ const NotificationsPage = () => {
                     exit={{ opacity: 0, x: 20 }}
                     className={`p-6 flex items-start gap-4 transition-colors group ${!notification.isRead ? 'bg-farmer-50/20' : ''}`}
                   >
-                    <div className={`p-3 rounded-xl flex-shrink-0 ${!notification.isRead ? 'bg-white shadow-sm ring-1 ring-black/5' : 'bg-zinc-50'}`}>
+                    <div className={`p-3 rounded-xl flex-shrink-0 ${!notification.isRead ? 'bg-card shadow-sm ring-1 ring-black/5' : 'bg-zinc-50'}`}>
                       {getIcon(notification.type)}
                     </div>
                     <div className="flex-1 min-w-0">
