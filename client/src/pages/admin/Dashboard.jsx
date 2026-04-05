@@ -185,10 +185,10 @@ const AdminDashboard = () => {
       {/* Welcome */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-foreground">
             Admin Dashboard 🛡️
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-muted-foreground mt-1">
             Platform overview and management
           </p>
         </div>
@@ -244,10 +244,10 @@ const AdminDashboard = () => {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium text-muted-foreground">
                       {stat.title}
                     </p>
-                    <p className="text-3xl font-bold text-gray-900">
+                    <p className="text-3xl font-bold text-foreground">
                       {stat.value}
                     </p>
                     <div className="flex items-center gap-2">
@@ -264,7 +264,7 @@ const AdminDashboard = () => {
                         )}
                         {stat.change}
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-muted-foreground">
                         {stat.subtext}
                       </span>
                     </div>
@@ -363,7 +363,7 @@ const AdminDashboard = () => {
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: type.color }}
                   />
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-muted-foreground">
                     {type.name} ({type.value})
                   </span>
                 </div>
@@ -395,7 +395,7 @@ const AdminDashboard = () => {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-background transition-colors"
                 >
                   <div
                     className={cn(
@@ -406,16 +406,16 @@ const AdminDashboard = () => {
                     <activity.icon className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-foreground">
                       {activity.action}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-sm text-gray-600">{activity.name}</span>
-                      <span className="text-xs text-gray-400">•</span>
-                      <span className="text-sm text-gray-500">{activity.district}</span>
+                      <span className="text-sm text-muted-foreground">{activity.name}</span>
+                      <span className="text-xs text-muted-foreground">•</span>
+                      <span className="text-sm text-muted-foreground">{activity.district}</span>
                     </div>
                   </div>
-                  <span className="text-xs text-gray-400 flex items-center gap-1 flex-shrink-0">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1 flex-shrink-0">
                     <Clock className="w-3 h-3" />
                     {activity.time}
                   </span>
@@ -449,15 +449,15 @@ const AdminDashboard = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-foreground">
                       {farmer.name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       {farmer.district} • {farmer.crops}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className="text-xs text-gray-400">{farmer.date}</span>
+                    <span className="text-xs text-muted-foreground">{farmer.date}</span>
                     <div className="flex gap-1">
                       <Button
                         variant="outline"
@@ -533,7 +533,7 @@ const AdminDashboard = () => {
               <button
                 key={action.name}
                 onClick={() => navigate(action.href)}
-                className="flex flex-col items-center p-5 border rounded-xl hover:bg-gray-50 hover:shadow-md transition-all group"
+                className="flex flex-col items-center p-5 border rounded-xl hover:bg-background hover:shadow-md transition-all group"
               >
                 <div
                   className={cn(

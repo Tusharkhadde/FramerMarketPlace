@@ -147,8 +147,8 @@ const FarmerOrders = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Orders</h1>
-          <p className="text-gray-500 mt-1">Manage orders from buyers</p>
+          <h1 className="text-2xl font-bold text-foreground">Orders</h1>
+          <p className="text-muted-foreground mt-1">Manage orders from buyers</p>
         </div>
       </div>
 
@@ -170,7 +170,7 @@ const FarmerOrders = () => {
         ].map((stat) => (
           <Card key={stat.label}>
             <CardContent className="p-4">
-              <p className="text-sm text-gray-500">{stat.label}</p>
+              <p className="text-sm text-muted-foreground">{stat.label}</p>
               <p className={cn('text-2xl font-bold', stat.color)}>
                 {stat.value}
               </p>
@@ -183,7 +183,7 @@ const FarmerOrders = () => {
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
-            <Filter className="w-4 h-4 text-gray-400" />
+            <Filter className="w-4 h-4 text-muted-foreground" />
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Filter by status" />
@@ -212,7 +212,7 @@ const FarmerOrders = () => {
           ) : orders.length === 0 ? (
             <div className="p-8 text-center">
               <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No orders found</p>
+              <p className="text-muted-foreground">No orders found</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -237,7 +237,7 @@ const FarmerOrders = () => {
                       <TableCell>
                         <div>
                           <p className="font-medium">{order.buyer?.fullName}</p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             {order.deliveryAddress?.district}
                           </p>
                         </div>
@@ -256,7 +256,7 @@ const FarmerOrders = () => {
                             />
                           ))}
                           {order.items?.length > 2 && (
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-muted-foreground">
                               +{order.items.length - 2}
                             </span>
                           )}
@@ -267,7 +267,7 @@ const FarmerOrders = () => {
                           order.items?.reduce((sum, item) => sum + item.subtotal, 0)
                         )}
                       </TableCell>
-                      <TableCell className="text-gray-500">
+                      <TableCell className="text-muted-foreground">
                         {formatDate(order.createdAt)}
                       </TableCell>
                       <TableCell>
@@ -347,10 +347,10 @@ const FarmerOrders = () => {
 
               <div className="space-y-6">
                 {/* Buyer Info */}
-                <div className="flex items-start justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-start justify-between p-4 bg-background rounded-lg">
                   <div>
                     <h4 className="font-medium">Buyer Details</h4>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       {selectedOrder.buyer?.fullName}
                     </p>
                     <div className="flex items-center gap-4 mt-2">
@@ -374,7 +374,7 @@ const FarmerOrders = () => {
                     <MapPin className="w-4 h-4 mr-2 text-farmer-600" />
                     Delivery Address
                   </h4>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     {selectedOrder.deliveryAddress?.fullName}
                     <br />
                     {selectedOrder.deliveryAddress?.addressLine1}
@@ -410,7 +410,7 @@ const FarmerOrders = () => {
                             <p className="font-medium">
                               {item.productSnapshot?.cropName}
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                               {item.quantity} kg × {formatPrice(item.pricePerKg)}
                             </p>
                           </div>
@@ -425,7 +425,7 @@ const FarmerOrders = () => {
 
                 {/* Delivery Schedule */}
                 {selectedOrder.deliverySchedule?.date && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="w-4 h-4 text-farmer-600" />
                     Scheduled for:{' '}
                     {formatDate(selectedOrder.deliverySchedule.date)} (

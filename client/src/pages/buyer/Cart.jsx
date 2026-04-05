@@ -45,15 +45,15 @@ const Cart = () => {
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
+      <div className="min-h-screen bg-background py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Card className="max-w-md mx-auto">
             <CardContent className="p-12 text-center">
-              <ShoppingBag className="w-20 h-20 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <ShoppingBag className="w-20 h-20 text-muted-foreground mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-foreground mb-2">
                 Your cart is empty
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-muted-foreground mb-6">
                 Add some fresh products to get started!
               </p>
               <Button onClick={() => navigate('/products')}>
@@ -71,13 +71,13 @@ const Cart = () => {
   const totalAmount = cartTotal + deliveryFee + tax
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
-            <p className="text-gray-600 mt-1">{cart.length} items in your cart</p>
+            <h1 className="text-3xl font-bold text-foreground">Shopping Cart</h1>
+            <p className="text-muted-foreground mt-1">{cart.length} items in your cart</p>
           </div>
           {cart.length > 0 && (
             <Button variant="outline" onClick={handleClearCart}>
@@ -108,11 +108,11 @@ const Cart = () => {
                 <h2 className="text-xl font-bold mb-4">Order Summary</h2>
 
                 <div className="space-y-3 mb-4">
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-muted-foreground">
                     <span>Subtotal</span>
                     <span>{formatPrice(cartTotal)}</span>
                   </div>
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-muted-foreground">
                     <span>Delivery Fee</span>
                     <span>
                       {deliveryFee === 0 ? (
@@ -122,12 +122,12 @@ const Cart = () => {
                       )}
                     </span>
                   </div>
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-muted-foreground">
                     <span>Tax (5%)</span>
                     <span>{formatPrice(tax)}</span>
                   </div>
                   {deliveryFee > 0 && (
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       Add {formatPrice(500 - cartTotal)} more for free delivery
                     </p>
                   )}
@@ -212,16 +212,16 @@ const CartItem = ({ item, updating, onUpdateQuantity, onRemove }) => {
                   >
                     {product.cropName}
                   </h3>
-                  <p className="text-sm text-gray-600 capitalize">
+                  <p className="text-sm text-muted-foreground capitalize">
                     {product.category} • Grade {product.qualityGrade}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     {product.farmer?.fullName} • {product.district}
                   </p>
                 </div>
                 <button
                   onClick={() => onRemove(product._id)}
-                  className="text-gray-400 hover:text-red-600 transition-colors"
+                  className="text-muted-foreground hover:text-red-600 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -249,12 +249,12 @@ const CartItem = ({ item, updating, onUpdateQuantity, onRemove }) => {
                   >
                     <Plus className="w-4 h-4" />
                   </Button>
-                  <span className="text-sm text-gray-500 ml-2">kg</span>
+                  <span className="text-sm text-muted-foreground ml-2">kg</span>
                 </div>
 
                 {/* Price */}
                 <div className="text-right">
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-muted-foreground">
                     {formatPrice(price)}/kg
                   </div>
                   <div className="text-lg font-bold text-farmer-600">

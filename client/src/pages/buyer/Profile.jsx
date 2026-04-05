@@ -19,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/context/AuthContext'
 import { getInitials, cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import axios from 'axios'
+import userService from '@/services/user.service'
 
 const BuyerProfile = () => {
   const { user, updateProfile } = useAuth()
@@ -70,7 +70,7 @@ const BuyerProfile = () => {
   const onAddAddress = async (data) => {
     setIsSaving(true)
     try {
-      const response = await axios.post('/api/users/addresses', data)
+      const response = await userService.addAddress(data)
       if (response.data.success) {
         setAddresses(response.data.data.addresses)
         toast.success('Address added successfully!')
@@ -87,7 +87,7 @@ const BuyerProfile = () => {
   const onDeleteAddress = async (addressId) => {
     setIsDeletingAddress(addressId)
     try {
-      const response = await axios.delete(`/api/users/addresses/${addressId}`)
+      const response = await userService.deleteAddress(addressId)
       if (response.data.success) {
         setAddresses(response.data.data.addresses)
         toast.success('Address deleted successfully')
@@ -101,7 +101,7 @@ const BuyerProfile = () => {
 
   const onSetDefaultAddress = async (addressId) => {
     try {
-      const response = await axios.patch(`/api/users/addresses/${addressId}/default`)
+      const response = await userService.setDefaultAddress(addressId)
       if (response.data.success) {
         setAddresses(response.data.data.addresses)
         toast.success('Default address updated')
@@ -124,20 +124,20 @@ const BuyerProfile = () => {
                   {getInitials(user?.fullName || 'B')}
                 </AvatarFallback>
               </Avatar>
-              <button className="absolute bottom-1 right-1 w-10 h-10 bg-white text-emerald-600 rounded-full flex items-center justify-center hover:bg-emerald-50 transition-colors shadow-lg border border-emerald-100">
+              <button className="absolute bottom-1 right-1 w-10 h-10 bg-card text-emerald-600 rounded-full flex items-center justify-center hover:bg-emerald-50 transition-colors shadow-lg border border-emerald-100">
                 <Edit2 className="w-5 h-5" />
               </button>
             </div>
             <div className="flex-1 text-center sm:text-left space-y-2">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                <h2 className="text-3xl font-extrabold text-foreground tracking-tight">
                   {user?.fullName}
                 </h2>
                 <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-none px-3 py-1 text-xs font-semibold self-center sm:self-auto">
                   Buyer Account
                 </Badge>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-gray-600">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-muted-foreground">
                 <div className="flex items-center justify-center sm:justify-start gap-2">
                   <Mail className="w-4 h-4 text-emerald-500" />
                   <span className="text-sm font-medium">{user?.email}</span>
@@ -177,12 +177,12 @@ const BuyerProfile = () => {
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 lg:w-[400px] mb-8 bg-gray-100 p-1 rounded-xl">
-          <TabsTrigger value="personal" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all py-2.5">
+        <TabsList className="grid w-full grid-cols-2 lg:w-[400px] mb-8 bg-muted/10 p-1 rounded-xl">
+          <TabsTrigger value="personal" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all py-2.5">
             <User className="w-4 h-4 mr-2" />
             General
           </TabsTrigger>
-          <TabsTrigger value="addresses" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all py-2.5">
+          <TabsTrigger value="addresses" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all py-2.5">
             <MapPin className="w-4 h-4 mr-2" />
             Addresses
           </TabsTrigger>
@@ -213,7 +213,7 @@ const BuyerProfile = () => {
                           disabled={!isEditing}
                           className={cn(
                             "h-11 transition-all duration-200",
-                            !isEditing && "bg-gray-50 text-gray-500 border-transparent cursor-not-allowed"
+                            !isEditing && "bg-background text-muted-foreground border-transparent cursor-not-allowed"
                           )}
                           placeholder="Your full name"
                         />
@@ -225,7 +225,7 @@ const BuyerProfile = () => {
                           id="email"
                           {...register('email')}
                           disabled
-                          className="h-11 bg-gray-50 text-gray-400 border-transparent cursor-not-allowed"
+                          className="h-11 bg-background text-muted-foreground border-transparent cursor-not-allowed"
                         />
                       </div>
                       <div className="space-y-2">
@@ -239,7 +239,7 @@ const BuyerProfile = () => {
                           disabled={!isEditing}
                           className={cn(
                             "h-11 transition-all duration-200",
-                            !isEditing && "bg-gray-50 text-gray-500 border-transparent cursor-not-allowed"
+                            !isEditing && "bg-background text-muted-foreground border-transparent cursor-not-allowed"
                           )}
                           placeholder="10-digit mobile number"
                         />
@@ -285,8 +285,8 @@ const BuyerProfile = () => {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Delivery Addresses</h3>
-                  <p className="text-sm text-gray-500">Manage where you want your products delivered.</p>
+                  <h3 className="text-xl font-bold text-foreground">Delivery Addresses</h3>
+                  <p className="text-sm text-muted-foreground">Manage where you want your products delivered.</p>
                 </div>
                 {!isAddingAddress && (
                   <Button
@@ -301,17 +301,17 @@ const BuyerProfile = () => {
 
               {isAddingAddress && (
                 <Card className="border-2 border-emerald-100 bg-emerald-50/30 overflow-hidden shadow-md">
-                  <CardHeader className="bg-white/50 backdrop-blur-sm">
+                  <CardHeader className="bg-card/50 backdrop-blur-sm">
                     <CardTitle className="text-lg">Add New Address</CardTitle>
                   </CardHeader>
                   <CardContent className="p-6">
                     <form onSubmit={handleSubmitAddress(onAddAddress)} className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">Label</Label>
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Label</Label>
                           <select
                             {...registerAddress('label', { required: true })}
-                            className="w-full h-11 px-3 rounded-md border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            className="w-full h-11 px-3 rounded-md border border-border bg-card focus:outline-none focus:ring-2 focus:ring-emerald-500"
                           >
                             <option value="home">Home</option>
                             <option value="work">Work</option>
@@ -319,32 +319,32 @@ const BuyerProfile = () => {
                           </select>
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">Recipient Name</Label>
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Recipient Name</Label>
                           <Input {...registerAddress('fullName', { required: true })} placeholder="Full name" className="h-11" />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">Phone Number</Label>
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Phone Number</Label>
                           <Input {...registerAddress('phone', { required: true })} placeholder="10-digit number" className="h-11" />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">City</Label>
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">City</Label>
                           <Input {...registerAddress('city', { required: true })} placeholder="City name" className="h-11" />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">Pincode</Label>
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pincode</Label>
                           <Input {...registerAddress('pincode', { required: true })} placeholder="6-digit pincode" className="h-11" />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">District</Label>
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">District</Label>
                           <Input {...registerAddress('district', { required: true })} placeholder="District" className="h-11" />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">Address Line 1</Label>
+                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Address Line 1</Label>
                         <Input {...registerAddress('addressLine1', { required: true })} placeholder="Flat, House no., Building, Company, Apartment" className="h-11" />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase tracking-wider text-gray-500">Address Line 2 (Optional)</Label>
+                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Address Line 2 (Optional)</Label>
                         <Input {...registerAddress('addressLine2')} placeholder="Area, Colony, Street, Sector, Village" className="h-11" />
                       </div>
                       <div className="flex justify-end gap-3 pt-2">
@@ -378,13 +378,13 @@ const BuyerProfile = () => {
                           <div className="flex items-center gap-3">
                             <div className={cn(
                               "p-2.5 rounded-xl",
-                              address.isDefault ? "bg-emerald-500 text-white shadow-lg" : "bg-gray-100 text-gray-600"
+                              address.isDefault ? "bg-emerald-500 text-white shadow-lg" : "bg-muted/10 text-muted-foreground"
                             )}>
                               {address.label === 'home' && <Home className="w-5 h-5" />}
                               {address.label === 'work' && <Briefcase className="w-5 h-5" />}
                               {address.label === 'other' && <Globe className="w-5 h-5" />}
                             </div>
-                            <h4 className="font-bold text-gray-900 capitalize tracking-tight">{address.label}</h4>
+                            <h4 className="font-bold text-foreground capitalize tracking-tight">{address.label}</h4>
                           </div>
                           {address.isDefault && (
                             <Badge className="bg-emerald-500 text-white border-none px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
@@ -395,12 +395,12 @@ const BuyerProfile = () => {
 
                         <div className="space-y-4">
                           <div>
-                            <p className="text-base font-bold text-gray-900 mb-1">{address.fullName}</p>
-                            <p className="text-sm text-gray-500 font-medium leading-relaxed">
+                            <p className="text-base font-bold text-foreground mb-1">{address.fullName}</p>
+                            <p className="text-sm text-muted-foreground font-medium leading-relaxed">
                               {address.addressLine1}, {address.addressLine2 && `${address.addressLine2}, `}
                               {address.city}, {address.district}, {address.state} - {address.pincode}
                             </p>
-                            <div className="flex items-center gap-2 mt-3 text-sm font-semibold text-gray-600">
+                            <div className="flex items-center gap-2 mt-3 text-sm font-semibold text-muted-foreground">
                               <Phone className="w-3.5 h-3.5 text-emerald-500" />
                               {address.phone}
                             </div>
@@ -429,7 +429,7 @@ const BuyerProfile = () => {
                                 size="sm"
                                 disabled={isDeletingAddress === address._id}
                                 onClick={() => onDeleteAddress(address._id)}
-                                className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                               >
                                 {isDeletingAddress === address._id ? (
                                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -444,12 +444,12 @@ const BuyerProfile = () => {
                     </Card>
                   ))
                 ) : (
-                  <div className="col-span-full py-16 text-center bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-gray-100">
+                  <div className="col-span-full py-16 text-center bg-background rounded-3xl border-2 border-dashed border-border">
+                    <div className="w-20 h-20 bg-card rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-gray-100">
                       <MapPin className="w-10 h-10 text-gray-200" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">No addresses found</h3>
-                    <p className="text-gray-500 mb-8 max-w-xs mx-auto">Please add a delivery address to ensure faster checkout and accurate deliveries.</p>
+                    <h3 className="text-xl font-bold text-foreground mb-2">No addresses found</h3>
+                    <p className="text-muted-foreground mb-8 max-w-xs mx-auto">Please add a delivery address to ensure faster checkout and accurate deliveries.</p>
                     <Button
                       onClick={() => setIsAddingAddress(true)}
                       className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-8 h-12 shadow-lg hover:shadow-xl transition-all"

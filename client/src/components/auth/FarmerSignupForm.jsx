@@ -279,7 +279,7 @@ const FarmerSignupForm = () => {
                 <Label htmlFor="phone" className="text-gray-200">Phone Number *</Label>
                 <div className="relative group">
                   <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-farmer-500 transition-colors" />
-                  <div className="absolute left-11 top-1/2 -translate-y-1/2 text-sm text-muted-foreground border-r border-gray-300 pr-2">
+                  <div className="absolute left-11 top-1/2 -translate-y-1/2 text-sm text-muted-foreground border-r border-border pr-2">
                     +91
                   </div>
                   <Input

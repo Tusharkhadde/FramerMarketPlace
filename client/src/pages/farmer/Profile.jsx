@@ -192,7 +192,7 @@ const FarmerProfile = () => {
                     <Input
                       {...register('fullName')}
                       disabled={!isEditing}
-                      className={!isEditing ? 'bg-gray-50' : ''}
+                      className={!isEditing ? 'bg-background' : ''}
                     />
                   </div>
                   <div className="space-y-2">
@@ -200,7 +200,7 @@ const FarmerProfile = () => {
                     <Input
                       {...register('email')}
                       disabled
-                      className="bg-gray-50"
+                      className="bg-background"
                     />
                   </div>
                   <div className="space-y-2">
@@ -208,7 +208,7 @@ const FarmerProfile = () => {
                     <Input
                       {...register('phone')}
                       disabled={!isEditing}
-                      className={!isEditing ? 'bg-gray-50' : ''}
+                      className={!isEditing ? 'bg-background' : ''}
                     />
                   </div>
                 </div>
@@ -235,7 +235,7 @@ const FarmerProfile = () => {
                       onValueChange={v => setValue('district', v)}
                       disabled={!isEditing}
                     >
-                      <SelectTrigger className={!isEditing ? 'bg-gray-50' : ''}>
+                      <SelectTrigger className={!isEditing ? 'bg-background' : ''}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -245,20 +245,20 @@ const FarmerProfile = () => {
                   </div>
                   <div className="space-y-2">
                     <Label>Taluka</Label>
-                    <Input {...register('taluka')} disabled={!isEditing} className={!isEditing ? 'bg-gray-50' : ''} />
+                    <Input {...register('taluka')} disabled={!isEditing} className={!isEditing ? 'bg-background' : ''} />
                   </div>
                   <div className="space-y-2">
                     <Label>Village</Label>
-                    <Input {...register('village')} disabled={!isEditing} className={!isEditing ? 'bg-gray-50' : ''} />
+                    <Input {...register('village')} disabled={!isEditing} className={!isEditing ? 'bg-background' : ''} />
                   </div>
                   <div className="space-y-2">
                     <Label>Farm Size (Acres)</Label>
-                    <Input type="number" step="0.1" {...register('farmSize')} disabled={!isEditing} className={!isEditing ? 'bg-gray-50' : ''} />
+                    <Input type="number" step="0.1" {...register('farmSize')} disabled={!isEditing} className={!isEditing ? 'bg-background' : ''} />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Farm Address</Label>
-                  <Textarea {...register('farmAddress')} disabled={!isEditing} className={!isEditing ? 'bg-gray-50' : ''} rows={3} />
+                  <Textarea {...register('farmAddress')} disabled={!isEditing} className={!isEditing ? 'bg-background' : ''} rows={3} />
                 </div>
               </CardContent>
             </Card>
@@ -278,19 +278,19 @@ const FarmerProfile = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Account Holder Name</Label>
-                    <Input {...register('accountHolderName')} disabled={!isEditing} className={!isEditing ? 'bg-gray-50' : ''} />
+                    <Input {...register('accountHolderName')} disabled={!isEditing} className={!isEditing ? 'bg-background' : ''} />
                   </div>
                   <div className="space-y-2">
                     <Label>Account Number</Label>
-                    <Input {...register('accountNumber')} disabled={!isEditing} className={!isEditing ? 'bg-gray-50' : ''} />
+                    <Input {...register('accountNumber')} disabled={!isEditing} className={!isEditing ? 'bg-background' : ''} />
                   </div>
                   <div className="space-y-2">
                     <Label>IFSC Code</Label>
-                    <Input {...register('ifscCode')} disabled={!isEditing} className={!isEditing ? 'bg-gray-50' : ''} />
+                    <Input {...register('ifscCode')} disabled={!isEditing} className={!isEditing ? 'bg-background' : ''} />
                   </div>
                   <div className="space-y-2">
                     <Label>Bank Name</Label>
-                    <Input {...register('bankName')} disabled={!isEditing} className={!isEditing ? 'bg-gray-50' : ''} />
+                    <Input {...register('bankName')} disabled={!isEditing} className={!isEditing ? 'bg-background' : ''} />
                   </div>
                 </div>
               </CardContent>

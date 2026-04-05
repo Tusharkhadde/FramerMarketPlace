@@ -1007,7 +1007,7 @@ export const FlickeringFooter = () => {
   };
 
   return (
-    <footer id="footer" className="relative w-full bg-white border-t border-zinc-200 overflow-hidden">
+    <footer id="footer" className="relative w-full bg-card border-t border-zinc-200 overflow-hidden">
       {/* Background Flickering Grid Pattern */}
       <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
         <FlickeringGrid
@@ -1121,7 +1121,7 @@ export const FlickeringFooter = () => {
           
           <button 
             onClick={scrollToTop}
-            className="group flex items-center gap-2 px-4 py-2 bg-white border border-zinc-200 rounded-full text-zinc-500 hover:text-emerald-600 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-50 transition-all duration-300 active:scale-95 shadow-sm"
+            className="group flex items-center gap-2 px-4 py-2 bg-card border border-zinc-200 rounded-full text-zinc-500 hover:text-emerald-600 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-50 transition-all duration-300 active:scale-95 shadow-sm"
           >
             <span className="text-[13px] font-semibold uppercase tracking-wider">Back to top</span>
             <div className="w-6 h-6 rounded-full bg-zinc-50 flex items-center justify-center group-hover:bg-emerald-50 transition-colors">

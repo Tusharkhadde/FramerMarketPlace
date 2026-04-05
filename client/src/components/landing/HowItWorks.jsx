@@ -22,14 +22,14 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <section className="py-24 bg-white relative overflow-hidden">
+    <section className="py-24 bg-card relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-display font-bold text-zinc-900 mb-4"
+            className="text-3xl md:text-4xl font-display font-bold text-white mb-4"
           >
             How it works
           </motion.h2>
@@ -50,16 +50,16 @@ const HowItWorks = () => {
                 transition={{ delay: index * 0.2 }}
                 className="flex flex-col items-center text-center group"
               >
-                <div className="w-20 h-20 bg-white border-4 border-zinc-50 rounded-full flex items-center justify-center mb-8 shadow-xl shadow-zinc-200/50 group-hover:border-emerald-100 transition-all duration-300">
+                <div className="w-20 h-20 bg-card border-4 border-zinc-50 rounded-full flex items-center justify-center mb-8 shadow-xl shadow-zinc-200/50 group-hover:border-emerald-100 transition-all duration-300">
                   <div className="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center text-white">
                     <step.icon className="w-7 h-7" />
                   </div>
                 </div>
-                <div className="bg-emerald-50 text-emerald-600 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4">
+                <div className="bg-white/10 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4">
                   Step {index + 1}
                 </div>
-                <h3 className="text-xl font-bold text-zinc-900 mb-3 font-display">{step.title}</h3>
-                <p className="text-zinc-500 font-body text-sm leading-relaxed max-w-[280px]">
+                <h3 className="text-xl font-bold text-white mb-3 font-display">{step.title}</h3>
+                <p className="text-white/80 font-body text-sm leading-relaxed max-w-[280px]">
                   {step.description}
                 </p>
               </motion.div>

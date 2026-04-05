@@ -131,7 +131,7 @@ const Login = () => {
               <span className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-600 bg-clip-text text-transparent">
                 FarmMarket
               </span>
-              <p className="text-xs text-gray-400 -mt-1">Maharashtra</p>
+              <p className="text-xs text-muted-foreground -mt-1">Maharashtra</p>
             </div>
           </Link>
 
@@ -140,7 +140,7 @@ const Login = () => {
             <h1 className="text-3xl font-bold text-white mb-2">
               Welcome back! 👋
             </h1>
-            <p className="text-gray-400">
+            <p className="text-muted-foreground">
               Sign in to your account to continue
             </p>
           </div>
@@ -173,13 +173,13 @@ const Login = () => {
                 Email Address
               </Label>
               <div className="relative group">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-emerald-500 transition-colors" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="name@example.com"
                   className={cn(
-                    'pl-11 h-12 bg-white/5 border-white/10 focus:bg-white/10 focus:border-emerald-500/50 text-white transition-all',
+                    'pl-11 h-12 bg-card/5 border-white/10 focus:bg-card/10 focus:border-emerald-500/50 text-white transition-all',
                     errors.email && 'border-red-500/50 focus:ring-red-500/50'
                   )}
                   {...register('email')}
@@ -211,13 +211,13 @@ const Login = () => {
                 </Link>
               </div>
               <div className="relative group">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-emerald-500 transition-colors" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
                   className={cn(
-                    'pl-11 pr-11 h-12 bg-white/5 border-white/10 focus:bg-white/10 focus:border-emerald-500/50 text-white transition-all',
+                    'pl-11 pr-11 h-12 bg-card/5 border-white/10 focus:bg-card/10 focus:border-emerald-500/50 text-white transition-all',
                     errors.password && 'border-red-500/50 focus:ring-red-500/50'
                   )}
                   {...register('password')}
@@ -225,7 +225,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white transition-colors"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -250,7 +250,7 @@ const Login = () => {
             <Button
               type="submit"
               variant="default"
-              className="w-full h-12 text-base bg-emerald-600 hover:bg-emerald-700 text-black font-bold shadow-lg shadow-emerald-500/20 transition-all"
+              className="w-full h-12 text-base bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold shadow-lg shadow-emerald-500/20 transition-all"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -273,13 +273,13 @@ const Login = () => {
               <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-[#0a0a0a] text-gray-500">or</span>
+              <span className="px-4 bg-[#0a0a0a] text-muted-foreground">or</span>
             </div>
           </div>
 
           <a
             href={`${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'}/api/auth/google`}
-            className="w-full flex items-center justify-center gap-3 h-12 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-white font-medium text-sm"
+            className="w-full flex items-center justify-center gap-3 h-12 rounded-xl bg-card/5 border border-white/10 hover:bg-card/10 hover:border-white/20 transition-all text-white font-medium text-sm"
           >
             {/* Google G logo */}
             <svg width="20" height="20" viewBox="0 0 24 24">
@@ -297,7 +297,7 @@ const Login = () => {
               <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-[#0a0a0a] text-gray-500">Demo Accounts</span>
+              <span className="px-4 bg-[#0a0a0a] text-muted-foreground">Demo Accounts</span>
             </div>
           </div>
 
@@ -308,10 +308,10 @@ const Login = () => {
                 key={account.type}
                 type="button"
                 onClick={() => fillDemoAccount(account)}
-                className="group p-3 border border-gray-200 rounded-xl hover:border-farmer-300 hover:bg-farmer-50 transition-all text-center"
+                className="group p-3 border border-border rounded-xl hover:border-farmer-300 hover:bg-farmer-50 transition-all text-center"
               >
-                <account.icon className="w-5 h-5 text-gray-400 group-hover:text-farmer-600 mx-auto mb-1.5 transition-colors" />
-                <span className="text-xs font-medium text-gray-600 capitalize group-hover:text-farmer-700">
+                <account.icon className="w-5 h-5 text-muted-foreground group-hover:text-farmer-600 mx-auto mb-1.5 transition-colors" />
+                <span className="text-xs font-medium text-muted-foreground capitalize group-hover:text-farmer-700">
                   {account.type}
                 </span>
               </button>
@@ -319,7 +319,7 @@ const Login = () => {
           </div>
 
           {/* Sign Up Link */}
-          <p className="text-center text-sm text-gray-400 mt-8">
+          <p className="text-center text-sm text-muted-foreground mt-8">
             Don't have an account?{' '}
             <Link
               to="/register"
@@ -381,7 +381,7 @@ const Login = () => {
               finest farmers
             </h2>
 
-            <p className="text-lg text-gray-400 mb-10 leading-relaxed">
+            <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
               Join our growing community of 500+ farmers and 10,000+ buyers
               across 36 districts.
             </p>
@@ -410,14 +410,14 @@ const Login = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 + index * 0.15 }}
-                  className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-2xl p-4 text-left border border-white/5"
+                  className="flex items-center gap-4 bg-card/5 backdrop-blur-sm rounded-2xl p-4 text-left border border-white/5"
                 >
                   <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
                     <feature.icon className="w-5 h-5 text-emerald-500" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-sm text-white">{feature.title}</h3>
-                    <p className="text-xs text-gray-400">{feature.desc}</p>
+                    <p className="text-xs text-muted-foreground">{feature.desc}</p>
                   </div>
                 </motion.div>
               ))}

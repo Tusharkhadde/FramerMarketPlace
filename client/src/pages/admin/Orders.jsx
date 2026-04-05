@@ -57,8 +57,8 @@ const AdminOrders = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Order Management</h1>
-          <p className="text-gray-500 mt-1">Track and manage all platform orders</p>
+          <h1 className="text-2xl font-bold text-foreground">Order Management</h1>
+          <p className="text-muted-foreground mt-1">Track and manage all platform orders</p>
         </div>
         <Button variant="outline">
           <Download className="w-4 h-4 mr-2" />
@@ -76,7 +76,7 @@ const AdminOrders = () => {
         ].map(s => (
           <Card key={s.label} className={s.bg}>
             <CardContent className="p-4">
-              <p className="text-sm text-gray-600">{s.label}</p>
+              <p className="text-sm text-muted-foreground">{s.label}</p>
               <p className={cn('text-2xl font-bold', s.color)}>{s.value}</p>
             </CardContent>
           </Card>
@@ -87,7 +87,7 @@ const AdminOrders = () => {
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Search orders..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -128,7 +128,7 @@ const AdminOrders = () => {
                       <TableCell>
                         <div>
                           <p className="font-medium">{order.buyer.fullName}</p>
-                          <p className="text-xs text-gray-500 flex items-center gap-1"><MapPin className="w-3 h-3" />{order.district}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" />{order.district}</p>
                         </div>
                       </TableCell>
                       <TableCell>{order.itemCount} items</TableCell>
@@ -151,7 +151,7 @@ const AdminOrders = () => {
                           <span className="capitalize">{order.orderStatus}</span>
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm text-gray-500">{formatDate(order.createdAt)}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{formatDate(order.createdAt)}</TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="sm" onClick={() => setSelectedOrder(order)}>
                           <Eye className="w-4 h-4" />
@@ -175,12 +175,12 @@ const AdminOrders = () => {
               </DialogHeader>
               <div className="space-y-4 text-sm">
                 <div className="grid grid-cols-2 gap-4">
-                  <div><p className="text-gray-500">Buyer</p><p className="font-medium">{selectedOrder.buyer.fullName}</p></div>
-                  <div><p className="text-gray-500">District</p><p className="font-medium">{selectedOrder.district}</p></div>
-                  <div><p className="text-gray-500">Amount</p><p className="font-bold text-farmer-600">{formatPrice(selectedOrder.total)}</p></div>
-                  <div><p className="text-gray-500">Status</p><Badge className={statusConfig[selectedOrder.orderStatus]?.color}>{selectedOrder.orderStatus}</Badge></div>
-                  <div><p className="text-gray-500">Payment</p><p className="font-medium capitalize">{selectedOrder.paymentMethod} - {selectedOrder.paymentStatus}</p></div>
-                  <div><p className="text-gray-500">Date</p><p className="font-medium">{formatDate(selectedOrder.createdAt)}</p></div>
+                  <div><p className="text-muted-foreground">Buyer</p><p className="font-medium">{selectedOrder.buyer.fullName}</p></div>
+                  <div><p className="text-muted-foreground">District</p><p className="font-medium">{selectedOrder.district}</p></div>
+                  <div><p className="text-muted-foreground">Amount</p><p className="font-bold text-farmer-600">{formatPrice(selectedOrder.total)}</p></div>
+                  <div><p className="text-muted-foreground">Status</p><Badge className={statusConfig[selectedOrder.orderStatus]?.color}>{selectedOrder.orderStatus}</Badge></div>
+                  <div><p className="text-muted-foreground">Payment</p><p className="font-medium capitalize">{selectedOrder.paymentMethod} - {selectedOrder.paymentStatus}</p></div>
+                  <div><p className="text-muted-foreground">Date</p><p className="font-medium">{formatDate(selectedOrder.createdAt)}</p></div>
                 </div>
               </div>
             </>

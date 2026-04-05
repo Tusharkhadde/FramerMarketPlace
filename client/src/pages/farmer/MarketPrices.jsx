@@ -117,7 +117,7 @@ const MarketPrices = () => {
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div className="max-w-2xl">
-            <Badge className="bg-white/10 text-white hover:bg-white/20 border-none px-3 py-1 mb-6 backdrop-blur-md">
+            <Badge className="bg-card/10 text-white hover:bg-card/20 border-none px-3 py-1 mb-6 backdrop-blur-md">
               <Sparkles className="w-3 h-3 mr-2 text-farmer-400" /> Live APMC Data
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-white mb-4">
@@ -129,18 +129,18 @@ const MarketPrices = () => {
           </div>
           
           <div className="flex flex-col sm:flex-row items-center gap-4 bg-black/20 p-2 rounded-3xl backdrop-blur-xl border border-white/5">
-            <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-2xl">
+            <div className="flex items-center gap-2 bg-card/5 px-4 py-2 rounded-2xl">
               <MapPin className="w-4 h-4 text-farmer-400" />
               <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
                 <SelectTrigger className="w-[140px] border-none bg-transparent focus:ring-0 shadow-none h-8 text-white">
                   <SelectValue placeholder="District" />
                 </SelectTrigger>
                 <SelectContent className="bg-zinc-900 border-white/10 text-white">
-                  {districts.map(d => <SelectItem key={d} value={d} className="focus:bg-white/10 focus:text-white">{d}</SelectItem>)}
+                  {districts.map(d => <SelectItem key={d} value={d} className="focus:bg-card/10 focus:text-white">{d}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <Button variant="ghost" size="icon" className="rounded-2xl w-12 h-12 text-zinc-300 hover:text-white hover:bg-white/10 transition-all">
+            <Button variant="ghost" size="icon" className="rounded-2xl w-12 h-12 text-zinc-300 hover:text-white hover:bg-card/10 transition-all">
               <RefreshCw className="w-5 h-5" />
             </Button>
           </div>
@@ -347,7 +347,7 @@ const MarketPrices = () => {
                 </div>
                 <div className="flex-1 text-center md:text-left">
                   <Badge className="bg-farmer-500 text-white mb-2 uppercase text-[10px] tracking-widest px-3 py-1 border-none">Beta: AI Engine 2.0</Badge>
-                  <h3 className="text-2xl font-black text-gray-900 leading-none">Smart Price Prediction</h3>
+                  <h3 className="text-2xl font-black text-foreground leading-none">Smart Price Prediction</h3>
                   <p className="text-muted-foreground mt-2 text-sm font-medium">
                     Our AI cross-references weather data with multi-market APMC trends to help you time your sales perfectly.
                   </p>
@@ -423,7 +423,7 @@ const MarketPrices = () => {
                 </div>
                 <CardContent className="p-8 relative z-10">
                   <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                    <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                    <div className="w-16 h-16 bg-card/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
                       <Info className="w-8 h-8 text-white" />
                     </div>
                     <div className="flex-1">

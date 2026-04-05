@@ -69,7 +69,7 @@ const ForgotPassword = () => {
                 <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
                 <CardDescription>
                   We've sent a password reset link to{' '}
-                  <span className="font-medium text-gray-900">{getValues('email')}</span>
+                  <span className="font-medium text-foreground">{getValues('email')}</span>
                 </CardDescription>
               </>
             ) : (
@@ -85,7 +85,7 @@ const ForgotPassword = () => {
           <CardContent>
             {isEmailSent ? (
               <div className="space-y-4">
-                <p className="text-sm text-gray-600 text-center">
+                <p className="text-sm text-muted-foreground text-center">
                   Didn't receive the email? Check your spam folder or try again.
                 </p>
                 <Button
@@ -107,7 +107,7 @@ const ForgotPassword = () => {
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <Input
                       id="email"
                       type="email"

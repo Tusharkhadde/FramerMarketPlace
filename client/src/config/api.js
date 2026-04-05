@@ -2,8 +2,10 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest', // Helps prevent CSRF
   },
   withCredentials: true,
 })
@@ -20,15 +22,24 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// Auto-logout on 401 (expired / invalid token)
+// Standardized response/error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // 1. Handle Token Expiry/Unauthorized
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
-      window.location.href = '/login'
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
     }
+    
+    // 2. Handle Network/Timeout errors
+    if (error.code === 'ECONNABORTED') {
+      console.error('Request timed out')
+    }
+
     return Promise.reject(error)
   }
 )

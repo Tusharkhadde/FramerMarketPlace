@@ -188,7 +188,7 @@ const Checkout = () => {
   const totalAmount = cartTotal + deliveryFee + tax
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -200,7 +200,7 @@ const Checkout = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Cart
           </Button>
-          <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
+          <h1 className="text-3xl font-bold text-foreground">Checkout</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -340,7 +340,7 @@ const Checkout = () => {
                       />
                       <div className="flex-1">
                         <p className="font-medium text-sm">{item.product.cropName}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                           {item.quantity} kg × {formatPrice(item.price)}
                         </p>
                         <p className="text-sm font-semibold text-farmer-600">
@@ -353,11 +353,11 @@ const Checkout = () => {
 
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal</span>
+                    <span className="text-muted-foreground">Subtotal</span>
                     <span>{formatPrice(cartTotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Delivery Fee</span>
+                    <span className="text-muted-foreground">Delivery Fee</span>
                     <span>
                       {deliveryFee === 0 ? (
                         <span className="text-green-600">FREE</span>
@@ -367,7 +367,7 @@ const Checkout = () => {
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tax (5%)</span>
+                    <span className="text-muted-foreground">Tax (5%)</span>
                     <span>{formatPrice(tax)}</span>
                   </div>
                 </div>
@@ -390,7 +390,7 @@ const Checkout = () => {
                   </Button>
                 </div>
 
-                <p className="text-xs text-gray-500 text-center">
+                <p className="text-xs text-muted-foreground text-center">
                   By placing this order, you agree to our terms and conditions
                 </p>
               </CardContent>
@@ -405,7 +405,7 @@ const Checkout = () => {
 // Address Card Component
 const AddressCard = ({ address, selected, onSelect }) => (
   <div
-    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${selected ? 'border-farmer-500 bg-farmer-50' : 'border-gray-200 hover:border-gray-300'
+    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${selected ? 'border-farmer-500 bg-farmer-50' : 'border-border hover:border-border'
       }`}
     onClick={onSelect}
   >
@@ -419,14 +419,14 @@ const AddressCard = ({ address, selected, onSelect }) => (
             </span>
           )}
         </div>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           {address.addressLine1}
           {address.addressLine2 && `, ${address.addressLine2}`}
         </p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           {address.city}, {address.district}, {address.state} - {address.pincode}
         </p>
-        <p className="text-sm text-gray-600 mt-1">Phone: {address.phone}</p>
+        <p className="text-sm text-muted-foreground mt-1">Phone: {address.phone}</p>
       </div>
       {selected && (
         <div className="w-6 h-6 bg-farmer-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -440,13 +440,13 @@ const AddressCard = ({ address, selected, onSelect }) => (
 // Payment Option Component
 const PaymentOption = ({ id, label, icon: Icon, selected, onSelect }) => (
   <div
-    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${selected ? 'border-farmer-500 bg-farmer-50' : 'border-gray-200 hover:border-gray-300'
+    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${selected ? 'border-farmer-500 bg-farmer-50' : 'border-border hover:border-border'
       }`}
     onClick={onSelect}
   >
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${selected ? 'bg-farmer-500 text-white' : 'bg-gray-100 text-gray-600'
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${selected ? 'bg-farmer-500 text-white' : 'bg-muted/10 text-muted-foreground'
           }`}>
           <Icon className="w-5 h-5" />
         </div>

@@ -226,8 +226,8 @@ const AdminUsers = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">User Management</h1>
+          <p className="text-muted-foreground mt-1">
             Manage all platform users
           </p>
         </div>
@@ -248,7 +248,7 @@ const AdminUsers = () => {
         ].map((stat) => (
           <Card key={stat.label} className={stat.bg}>
             <CardContent className="p-4">
-              <p className="text-sm text-gray-600">{stat.label}</p>
+              <p className="text-sm text-muted-foreground">{stat.label}</p>
               <p className={cn('text-2xl font-bold', stat.color)}>{stat.value}</p>
             </CardContent>
           </Card>
@@ -260,7 +260,7 @@ const AdminUsers = () => {
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search by name, email, or phone..."
                 value={searchTerm}
@@ -312,7 +312,7 @@ const AdminUsers = () => {
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user) => (
-                  <TableRow key={user._id} className="hover:bg-gray-50">
+                  <TableRow key={user._id} className="hover:bg-background">
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="w-10 h-10">
@@ -331,10 +331,10 @@ const AdminUsers = () => {
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-foreground">
                             {user.fullName}
                           </p>
-                          <p className="text-xs text-gray-500">{user.email}</p>
+                          <p className="text-xs text-muted-foreground">{user.email}</p>
                         </div>
                       </div>
                     </TableCell>
@@ -353,14 +353,14 @@ const AdminUsers = () => {
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        <p className="flex items-center gap-1 text-gray-600">
+                        <p className="flex items-center gap-1 text-muted-foreground">
                           <Phone className="w-3 h-3" />
                           {user.phone}
                         </p>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-muted-foreground">
                         {user.district || '-'}
                       </span>
                     </TableCell>
@@ -391,7 +391,7 @@ const AdminUsers = () => {
                             />
                             <span className={cn(
                               "text-[10px] uppercase tracking-wider font-bold",
-                              user.isVerified ? "text-blue-600" : "text-gray-400"
+                              user.isVerified ? "text-blue-600" : "text-muted-foreground"
                             )}>
                               {user.isVerified ? 'Verified' : 'Pending'}
                             </span>
@@ -399,7 +399,7 @@ const AdminUsers = () => {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-gray-500">
+                    <TableCell className="text-sm text-muted-foreground">
                       {formatDate(user.createdAt)}
                     </TableCell>
                     <TableCell className="text-right">
@@ -468,7 +468,7 @@ const AdminUsers = () => {
           </div>
 
           {filteredUsers.length === 0 && (
-            <div className="py-16 text-center text-gray-500">
+            <div className="py-16 text-center text-muted-foreground">
               <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>No users found matching your criteria</p>
             </div>
@@ -531,21 +531,21 @@ const AdminUsers = () => {
                 {/* Details Grid */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <Mail className="w-3 h-3" />
                       Email
                     </p>
                     <p className="text-sm font-medium">{selectedUser.email}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <Phone className="w-3 h-3" />
                       Phone
                     </p>
                     <p className="text-sm font-medium">+91 {selectedUser.phone}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <MapPin className="w-3 h-3" />
                       District
                     </p>
@@ -554,7 +554,7 @@ const AdminUsers = () => {
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       Joined
                     </p>
@@ -564,14 +564,14 @@ const AdminUsers = () => {
                   </div>
                   {selectedUser.userType === 'farmer' && (
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">Farm Size</p>
+                      <p className="text-xs text-muted-foreground">Farm Size</p>
                       <p className="text-sm font-medium">
                         {selectedUser.farmSize || 'N/A'} acres
                       </p>
                     </div>
                   )}
                   <div className="space-y-1">
-                    <p className="text-xs text-gray-500">Last Login</p>
+                    <p className="text-xs text-muted-foreground">Last Login</p>
                     <p className="text-sm font-medium">
                       {selectedUser.lastLogin
                         ? formatDate(selectedUser.lastLogin)

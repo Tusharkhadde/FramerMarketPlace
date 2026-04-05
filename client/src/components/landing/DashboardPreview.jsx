@@ -60,9 +60,9 @@ const DashboardPreview = () => {
         className="rounded-2xl overflow-hidden p-3 md:p-4 glass-premium"
       >
         {/* Dashboard internals */}
-        <div className="bg-white rounded-xl overflow-hidden flex h-[600px] text-[11px] select-none pointer-events-none shadow-sm">
+        <div className="bg-card rounded-xl overflow-hidden flex h-[600px] text-[11px] select-none pointer-events-none shadow-sm">
           {/* Sidebar */}
-          <aside className="w-40 border-r border-border flex flex-col p-4 gap-6 shrink-0 bg-white">
+          <aside className="w-40 border-r border-border flex flex-col p-4 gap-6 shrink-0 bg-card">
             <div className="flex items-center gap-2 px-1">
               <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center text-white font-bold text-[12px]">F</div>
               <span className="font-semibold text-foreground text-[13px]">FarmFresh</span>
@@ -105,13 +105,13 @@ const DashboardPreview = () => {
           {/* Main content */}
           <main className="flex-1 flex flex-col overflow-hidden bg-secondary/30">
             {/* Top bar */}
-            <header className="h-12 border-b border-border flex items-center justify-between px-6 bg-white">
+            <header className="h-12 border-b border-border flex items-center justify-between px-6 bg-card">
               <div className="flex-1 max-w-md">
                 <div className="relative flex items-center">
                   <Search className="absolute left-2.5 w-3.5 h-3.5 text-muted-foreground" />
                   <div className="w-full bg-muted/50 rounded-md py-1.5 pl-8 pr-12 text-muted-foreground flex items-center justify-between">
                     <span>Search products, farmers...</span>
-                    <span className="bg-white border rounded px-1 text-[9px]">⌘K</span>
+                    <span className="bg-card border rounded px-1 text-[9px]">⌘K</span>
                   </div>
                 </div>
               </div>
@@ -136,7 +136,7 @@ const DashboardPreview = () => {
                     <motion.div 
                       key={i}
                       variants={itemVariants}
-                      className={`${i === 0 ? 'bg-primary text-white' : 'bg-white border text-foreground'} px-3 py-1 rounded-full whitespace-nowrap`}
+                      className={`${i === 0 ? 'bg-primary text-white' : 'bg-card border text-foreground'} px-3 py-1 rounded-full whitespace-nowrap`}
                     >
                       {pill}
                     </motion.div>
@@ -148,7 +148,7 @@ const DashboardPreview = () => {
               {/* Cards row */}
               <div className="flex gap-4">
                 {/* Card 1 */}
-                <motion.div variants={itemVariants} className="flex-1 bg-white rounded-xl p-4 shadow-sm border">
+                <motion.div variants={itemVariants} className="flex-1 bg-card rounded-xl p-4 shadow-sm border">
                   <div className="flex items-center gap-1.5 mb-3">
                     <Flame className="w-3.5 h-3.5 text-orange-500" />
                     <span className="font-semibold text-[12px]">Trending Today</span>
@@ -174,7 +174,7 @@ const DashboardPreview = () => {
                 </motion.div>
 
                 {/* Card 2 */}
-                <motion.div variants={itemVariants} className="flex-1 bg-white rounded-xl p-4 shadow-sm border">
+                <motion.div variants={itemVariants} className="flex-1 bg-card rounded-xl p-4 shadow-sm border">
                   <div className="flex items-center gap-1.5 mb-3">
                     <MapPin className="w-3.5 h-3.5 text-primary" />
                     <span className="font-semibold text-[12px]">Local Farmers</span>
@@ -230,7 +230,7 @@ const DashboardPreview = () => {
                 </div>
 
                 {/* Table */}
-                <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div className="bg-card rounded-xl shadow-sm border overflow-hidden">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-muted/30 text-[10px] uppercase font-semibold text-muted-foreground">

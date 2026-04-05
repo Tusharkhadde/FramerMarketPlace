@@ -164,10 +164,10 @@ const FarmerDashboard = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 bg-gradient-to-r from-farmer-600/10 to-transparent p-6 md:p-8 rounded-[2rem] border border-farmer-500/20 relative overflow-hidden">
         <div className="absolute right-0 top-0 -mr-20 -mt-20 w-64 h-64 bg-farmer-500/10 rounded-full blur-3xl mix-blend-multiply" />
         <div className="relative z-10">
-          <Badge className="bg-white shadow-sm text-farmer-700 hover:bg-white px-3 py-1 mb-4 border-none uppercase tracking-widest text-[10px] font-bold">
+          <Badge className="bg-card shadow-sm text-farmer-700 hover:bg-card px-3 py-1 mb-4 border-none uppercase tracking-widest text-[10px] font-bold">
             Farmer Dashboard
           </Badge>
-          <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
+          <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">
             Welcome back, <span className="text-farmer-600">{user?.fullName?.split(' ')[0]}</span>! 👋
           </h1>
           <p className="text-muted-foreground mt-2 font-medium">
@@ -197,15 +197,15 @@ const FarmerDashboard = () => {
                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
                       {stat.title}
                     </p>
-                    <p className="text-3xl font-black text-gray-900 mt-2 tracking-tighter">
+                    <p className="text-3xl font-black text-foreground mt-2 tracking-tighter">
                       {stat.value}
                     </p>
                     <p
                       className={cn(
                         'text-xs mt-3 flex items-center font-bold px-2 py-1 rounded-full w-fit',
-                        stat.positive === true && 'bg-green-500/10 text-green-700',
-                        stat.positive === false && 'bg-red-500/10 text-red-700',
-                        stat.positive === null && 'bg-gray-500/10 text-gray-700'
+                        stat.positive === true && 'bg-green-500/20 text-green-400',
+                        stat.positive === false && 'bg-red-500/20 text-red-400',
+                        stat.positive === null && 'bg-gray-500/20 text-gray-300'
                       )}
                     >
                       {stat.positive === true && <TrendingUp className="w-3 h-3 mr-1" />}
@@ -231,8 +231,8 @@ const FarmerDashboard = () => {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Chart */}
-        <Card className="rounded-[2rem] border-none shadow-xl bg-gradient-to-br from-white to-gray-50 overflow-hidden">
-          <CardHeader className="bg-white/50 backdrop-blur-sm border-b border-gray-100 p-6">
+        <Card className="rounded-[2rem] border-none shadow-xl bg-card overflow-hidden">
+          <CardHeader className="bg-card/50 backdrop-blur-sm border-b border-white/5 p-6">
             <CardTitle className="text-xl font-bold flex items-center gap-2">
               <IndianRupee className="w-5 h-5 text-green-500" />
               Sales Overview
@@ -252,12 +252,12 @@ const FarmerDashboard = () => {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 11, fontWeight: 500 }}
+                    tick={{ fontSize: 11, fontWeight: 500, fill: '#a1a1aa' }}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fontWeight: 500 }}
+                    tick={{ fontSize: 11, fontWeight: 500, fill: '#a1a1aa' }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => `₹${value}`}
@@ -287,8 +287,8 @@ const FarmerDashboard = () => {
         </Card>
 
         {/* Orders Chart */}
-        <Card className="rounded-[2rem] border-none shadow-xl bg-gradient-to-br from-white to-gray-50 overflow-hidden">
-          <CardHeader className="bg-white/50 backdrop-blur-sm border-b border-gray-100 p-6">
+        <Card className="rounded-[2rem] border-none shadow-xl bg-card overflow-hidden">
+          <CardHeader className="bg-card/50 backdrop-blur-sm border-b border-white/5 p-6">
             <CardTitle className="text-xl font-bold flex items-center gap-2">
               <Package className="w-5 h-5 text-blue-500" />
               Orders Overview
@@ -308,12 +308,12 @@ const FarmerDashboard = () => {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 11, fontWeight: 500 }}
+                    tick={{ fontSize: 11, fontWeight: 500, fill: '#a1a1aa' }}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 11, fontWeight: 500, tickCount: 5 }}
+                    tick={{ fontSize: 11, fontWeight: 500, fill: '#a1a1aa', tickCount: 5 }}
                     tickLine={false}
                     axisLine={false}
                   />
@@ -361,16 +361,16 @@ const FarmerDashboard = () => {
                         <ShoppingCart className="w-5 h-5 text-farmer-600" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-foreground">
                           #{order.orderNumber}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                           {order.items?.length} items • {formatDate(order.createdAt)}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">
+                      <p className="font-semibold text-foreground">
                         {formatPrice(order.pricing?.total)}
                       </p>
                       <Badge
@@ -385,7 +385,7 @@ const FarmerDashboard = () => {
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-muted-foreground">
                   <ShoppingCart className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>No orders yet</p>
                 </div>
@@ -420,21 +420,21 @@ const FarmerDashboard = () => {
                     className="flex items-center justify-between p-4 bg-muted/40 rounded-2xl hover:bg-muted/80 transition-colors border border-transparent hover:border-border/50"
                   >
                     <div>
-                      <p className="font-medium text-gray-900">{price.commodity}</p>
-                      <p className="text-sm text-gray-500">{price.market}</p>
+                      <p className="font-medium text-foreground">{price.commodity}</p>
+                      <p className="text-sm text-muted-foreground">{price.market}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-farmer-600">
                         {formatPrice(price.modalPrice)}/quintal
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         ₹{price.minPrice} - ₹{price.maxPrice}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-muted-foreground">
                   <TrendingUp className="w-12 h-12 mx-auto mb-3 opacity-50" />
                   <p>No price data available</p>
                 </div>
@@ -491,7 +491,7 @@ const FarmerDashboard = () => {
                 >
                   <action.icon className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-white/80">
                   {action.name}
                 </span>
               </Link>
