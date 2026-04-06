@@ -405,7 +405,7 @@ const Checkout = () => {
 // Address Card Component
 const AddressCard = ({ address, selected, onSelect }) => (
   <div
-    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${selected ? 'border-farmer-500 bg-farmer-50' : 'border-border hover:border-border'
+    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${selected ? 'border-farmer-500 bg-farmer-50 dark:bg-farmer-500/10' : 'border-border hover:border-border'
       }`}
     onClick={onSelect}
   >
@@ -440,7 +440,7 @@ const AddressCard = ({ address, selected, onSelect }) => (
 // Payment Option Component
 const PaymentOption = ({ id, label, icon: Icon, selected, onSelect }) => (
   <div
-    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${selected ? 'border-farmer-500 bg-farmer-50' : 'border-border hover:border-border'
+    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${selected ? 'border-farmer-500 bg-farmer-50 dark:bg-farmer-500/10' : 'border-border hover:border-border'
       }`}
     onClick={onSelect}
   >

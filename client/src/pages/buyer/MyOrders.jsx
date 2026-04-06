@@ -221,22 +221,24 @@ const OrderCard = ({ order, onCancel }) => {
       <Card>
         <CardContent className="p-6">
           {/* Order Header */}
-          <div className="flex items-start justify-between mb-4 pb-4 border-b">
+          <div className="flex items-start justify-between mb-4 pb-4 border-b border-white/10">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h3 className="font-semibold text-lg">
-                  Order #{order.orderNumber || order._id.slice(-8)}
+              <div className="flex items-center gap-3 mb-1 flex-wrap">
+                <h3 className="font-bold text-xl text-white">
+                  {order.items.map((item) => item.product?.cropName || item.productSnapshot?.cropName || 'Product').join(', ')}
                 </h3>
                 <span
-                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm bg-${status.color}-100 text-${status.color}-700`}
+                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-${status.color}-500/20 text-${status.color}-400`}
                 >
-                  <StatusIcon className="w-4 h-4" />
+                  <StatusIcon className="w-3.5 h-3.5" />
                   {status.label}
                 </span>
               </div>
-              <p className="text-sm text-white/70">
-                Placed on{' '}
-                {new Date(order.createdAt).toLocaleDateString('en-IN', {
+              <p className="text-sm font-medium text-white/80 mb-1">
+                Order #{order.orderNumber || order._id.slice(-8)}
+              </p>
+              <p className="text-xs text-white/50">
+                Placed on {new Date(order.createdAt).toLocaleDateString('en-IN', {
                   day: 'numeric',
                   month: 'long',
                   year: 'numeric',
@@ -252,12 +254,12 @@ const OrderCard = ({ order, onCancel }) => {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="flex flex-wrap items-center gap-3 mt-4">
             <Drawer>
               <DrawerTrigger asChild>
-                <Button variant="outline" className="flex-1 rounded-xl hover:bg-zinc-50 transition-colors">
+                <Button className="flex-1 rounded-xl bg-farmer-600 hover:bg-farmer-700 text-white border-none shadow-md">
                   <Eye className="w-4 h-4 mr-2" />
-                  Quick View
+                  View Details
                 </Button>
               </DrawerTrigger>
               <DrawerContent>
@@ -381,7 +383,7 @@ const OrderCard = ({ order, onCancel }) => {
             </Drawer>
 
             {order.status === 'delivered' && (
-              <Button variant="outline">
+              <Button className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md">
                 <Star className="w-4 h-4 mr-2" />
                 Rate & Review
               </Button>
@@ -389,8 +391,8 @@ const OrderCard = ({ order, onCancel }) => {
 
             {order.status === 'pending' && (
               <Button
-                variant="outline"
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                variant="destructive"
+                className="flex-1 rounded-xl shadow-md"
                 onClick={onCancel}
               >
                 Cancel Order
