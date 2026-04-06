@@ -75,7 +75,6 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 // Indexes for performance
-userSchema.index({ email: 1 })
 userSchema.index({ userType: 1 })
 userSchema.index({ district: 1 })
 

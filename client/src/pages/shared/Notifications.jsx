@@ -92,7 +92,7 @@ const NotificationsPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900">Notifications</h1>
+          <h1 className="text-3xl font-bold text-foreground">Notifications</h1>
           <p className="text-muted-foreground mt-1">Stay updated with your marketplace activity</p>
         </div>
         <div className="flex items-center gap-3">
@@ -110,7 +110,7 @@ const NotificationsPage = () => {
       </div>
 
       <Card className="border-border/50 shadow-sm overflow-hidden rounded-2xl">
-        <CardHeader className="bg-zinc-50/50 border-b p-4">
+        <CardHeader className="bg-muted/50 border-b p-4">
           <Tabs defaultValue="all" onValueChange={setFilter} className="w-full">
             <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
               <TabsTrigger value="all">All</TabsTrigger>
@@ -122,7 +122,7 @@ const NotificationsPage = () => {
           {loading ? (
             <div className="p-12 text-center">
               <div className="animate-spin w-8 h-8 border-4 border-farmer-500 border-t-transparent rounded-full mx-auto mb-4" />
-              <p className="text-zinc-500 font-medium">Loading notifications...</p>
+              <p className="text-muted-foreground font-medium">Loading notifications...</p>
             </div>
           ) : filteredNotifications.length > 0 ? (
             <div className="divide-y divide-border/50">
@@ -136,12 +136,12 @@ const NotificationsPage = () => {
                     exit={{ opacity: 0, x: 20 }}
                     className={`p-6 flex items-start gap-4 transition-colors group ${!notification.isRead ? 'bg-farmer-50/20' : ''}`}
                   >
-                    <div className={`p-3 rounded-xl flex-shrink-0 ${!notification.isRead ? 'bg-card shadow-sm ring-1 ring-black/5' : 'bg-zinc-50'}`}>
+                    <div className={`p-3 rounded-xl flex-shrink-0 ${!notification.isRead ? 'bg-card shadow-sm ring-1 ring-border' : 'bg-muted/50'}`}>
                       {getIcon(notification.type)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start mb-1">
-                        <h3 className={`font-bold text-lg truncate ${!notification.isRead ? 'text-zinc-900' : 'text-zinc-600'}`}>
+                        <h3 className={`font-bold text-lg truncate ${!notification.isRead ? 'text-foreground' : 'text-muted-foreground'}`}>
                           {notification.title}
                         </h3>
                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -165,11 +165,11 @@ const NotificationsPage = () => {
                           </Button>
                         </div>
                       </div>
-                      <p className={`text-zinc-600 leading-relaxed mb-3 ${!notification.isRead ? 'font-medium' : ''}`}>
+                      <p className={`text-muted-foreground leading-relaxed mb-3 ${!notification.isRead ? 'font-medium text-foreground/90' : ''}`}>
                         {notification.content}
                       </p>
                       <div className="flex items-center gap-4">
-                        <span className="text-xs text-zinc-400 font-medium bg-zinc-100 px-2 py-1 rounded">
+                        <span className="text-xs text-muted-foreground font-medium bg-muted px-2 py-1 rounded">
                           {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                         </span>
                         {notification.link && (
@@ -189,11 +189,11 @@ const NotificationsPage = () => {
             </div>
           ) : (
             <div className="p-16 text-center">
-              <div className="w-16 h-16 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-100">
-                <Bell className="w-8 h-8 text-zinc-300" />
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 border border-border">
+                <Bell className="w-8 h-8 text-muted-foreground/50" />
               </div>
-              <h3 className="text-lg font-bold text-zinc-900 mb-1">Nothing to see here</h3>
-              <p className="text-zinc-500">You're all caught up! No notifications available.</p>
+              <h3 className="text-lg font-bold text-foreground mb-1">Nothing to see here</h3>
+              <p className="text-muted-foreground">You're all caught up! No notifications available.</p>
             </div>
           )}
         </CardContent>

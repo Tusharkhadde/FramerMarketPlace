@@ -159,7 +159,6 @@ const orderSchema = new mongoose.Schema(
 )
 
 // Indexes
-orderSchema.index({ orderNumber: 1 })
 orderSchema.index({ buyer: 1 })
 orderSchema.index({ 'items.farmer': 1 })
 orderSchema.index({ orderStatus: 1 })

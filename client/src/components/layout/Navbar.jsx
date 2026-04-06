@@ -244,7 +244,7 @@ const Navbar = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-80 p-0 overflow-hidden">
-                    <div className="p-4 border-b bg-zinc-50/50 flex items-center justify-between">
+                    <div className="p-4 border-b bg-muted/50 flex items-center justify-between">
                       <h3 className="font-bold text-foreground">Notifications</h3>
                       {unreadCount > 0 && (
                         <button 
@@ -264,7 +264,7 @@ const Navbar = () => {
                               handleMarkAsRead(notification._id)
                               if (notification.link) navigate(notification.link)
                             }}
-                            className={`p-4 border-b last:border-0 cursor-pointer transition-colors hover:bg-zinc-50 ${!notification.isRead ? 'bg-farmer-50/30' : ''}`}
+                            className={`p-4 border-b last:border-0 cursor-pointer transition-colors hover:bg-muted/50 ${!notification.isRead ? 'bg-farmer-50/30' : ''}`}
                           >
                             <div className="flex gap-3">
                               <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${!notification.isRead ? 'bg-farmer-500' : 'bg-transparent'}`} />
@@ -272,10 +272,10 @@ const Navbar = () => {
                                 <p className={`text-sm ${!notification.isRead ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
                                   {notification.title}
                                 </p>
-                                <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                                   {notification.content}
                                 </p>
-                                <p className="text-[10px] text-zinc-400 mt-2 font-medium">
+                                <p className="text-[10px] text-muted-foreground/70 mt-2 font-medium">
                                   {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                                 </p>
                               </div>
@@ -284,15 +284,15 @@ const Navbar = () => {
                         ))
                       ) : (
                         <div className="p-12 text-center">
-                          <div className="w-12 h-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <Bell className="w-6 h-6 text-zinc-300" />
+                          <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Bell className="w-6 h-6 text-muted-foreground/50" />
                           </div>
-                          <p className="text-sm text-zinc-500 font-medium">No notifications yet</p>
+                          <p className="text-sm text-muted-foreground font-medium">No notifications yet</p>
                         </div>
                       )}
                     </div>
                     {notifications.length > 0 && (
-                      <div className="p-3 bg-zinc-50/50 border-t text-center">
+                      <div className="p-3 bg-muted/50 border-t text-center">
                         <button 
                           onClick={() => navigate('/notifications')}
                           className="text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
@@ -340,10 +340,7 @@ const Navbar = () => {
                           <Package className="w-4 h-4 mr-2" />
                           My Orders
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => navigate('/wishlist')}>
-                          <Heart className="w-4 h-4 mr-2" />
-                          Wishlist
-                        </DropdownMenuItem>
+                      
                       </>
                     )}
 
