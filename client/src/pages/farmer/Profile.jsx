@@ -159,16 +159,16 @@ const FarmerProfile = () => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-center md:justify-start mb-8">
-            <TabsList className="bg-muted/50 p-1.5 rounded-full border border-border/50 inline-flex shadow-sm">
-              <TabsTrigger value="personal" className="rounded-full px-6 py-2.5 data-[state=active]:bg-farmer-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-medium">
+            <TabsList className="h-12 bg-muted/50 p-1.5 rounded-full border border-border/50 inline-flex items-center shadow-sm">
+              <TabsTrigger value="personal" className="h-9 rounded-full px-6 data-[state=active]:bg-farmer-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-medium">
                 <User className="w-4 h-4 mr-2" />
                 Personal Info
               </TabsTrigger>
-              <TabsTrigger value="farm" className="rounded-full px-6 py-2.5 data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-medium">
+              <TabsTrigger value="farm" className="h-9 rounded-full px-6 data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-medium">
                 <Home className="w-4 h-4 mr-2" />
                 Farm Details
               </TabsTrigger>
-              <TabsTrigger value="bank" className="rounded-full px-6 py-2.5 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-medium">
+              <TabsTrigger value="bank" className="h-9 rounded-full px-6 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-medium">
                 <CreditCard className="w-4 h-4 mr-2" />
                 Bank Details
               </TabsTrigger>
