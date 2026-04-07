@@ -58,6 +58,36 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body
 
+    // Handle special Admin login bypass
+    if (email === 'admin' && (password === 'admin' || password === 'admin123')) {
+      let adminUser = await User.findOne({ userType: 'admin' })
+      
+      if (!adminUser) {
+        adminUser = await User.create({
+          fullName: 'System Administrator',
+          email: 'admin@demo.com',
+          password: 'admin123', // Must be >= 6 chars for Mongoose validation
+          userType: 'admin',
+          isActive: true,
+          isVerified: true
+        })
+      }
+
+      // Update last login
+      adminUser.lastLogin = new Date()
+      await adminUser.save({ validateBeforeSave: false })
+
+      const token = adminUser.getSignedJwtToken()
+      const userResponse = adminUser.toObject()
+      delete userResponse.password
+
+      return res.status(200).json({
+        success: true,
+        message: 'Admin login successful',
+        data: { token, user: userResponse },
+      })
+    }
+
     if (!email || !password) {
       return res.status(400).json({
         success: false,

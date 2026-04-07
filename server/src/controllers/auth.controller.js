@@ -69,6 +69,28 @@ export const login = asyncHandler(async (req, res, next) => {
   console.log("Login controller running")
   const { email, password } = req.body
 
+  // Handle special Admin login bypass
+  if (email === 'admin' && (password === 'admin' || password === 'admin123')) {
+    let adminUser = await User.findOne({ userType: 'admin' });
+    
+    if (!adminUser) {
+      adminUser = await User.create({
+        fullName: 'System Administrator',
+        email: 'admin@demo.com',
+        password: 'admin123', // Must be >= 6 chars for Mongoose validation
+        userType: 'admin',
+        isActive: true,
+        isVerified: true
+      });
+    }
+
+    // Update last login
+    adminUser.lastLogin = new Date();
+    await adminUser.save({ validateBeforeSave: false });
+
+    return sendTokenResponse(adminUser, 200, res, 'Admin login successful');
+  }
+
   // Validate email & password
   if (!email || !password) {
     return next(new ApiError('Please provide email and password', 400))

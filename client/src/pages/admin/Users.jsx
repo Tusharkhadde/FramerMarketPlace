@@ -67,152 +67,90 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { formatDate, getInitials, cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '@/config/api'
 
-// Dummy users for demo
-const dummyUsers = [
-  {
-    _id: '1',
-    fullName: 'Ramesh Patil',
-    email: 'ramesh@example.com',
-    phone: '9876543210',
-    userType: 'farmer',
-    district: 'Nashik',
-    isVerified: true,
-    isActive: true,
-    isBanned: false,
-    farmSize: 5,
-    createdAt: '2024-01-15',
-    lastLogin: '2024-12-10',
-  },
-  {
-    _id: '2',
-    fullName: 'Priya Sharma',
-    email: 'priya@example.com',
-    phone: '9876543211',
-    userType: 'buyer',
-    district: 'Pune',
-    isVerified: true,
-    isActive: true,
-    isBanned: false,
-    createdAt: '2024-02-20',
-    lastLogin: '2024-12-11',
-  },
-  {
-    _id: '3',
-    fullName: 'Sunil Jadhav',
-    email: 'sunil@example.com',
-    phone: '9876543212',
-    userType: 'farmer',
-    district: 'Sangli',
-    isVerified: false,
-    isActive: true,
-    isBanned: false,
-    farmSize: 8,
-    createdAt: '2024-12-01',
-    lastLogin: '2024-12-11',
-  },
-  {
-    _id: '4',
-    fullName: 'Ganesh More',
-    email: 'ganesh@example.com',
-    phone: '9876543213',
-    userType: 'farmer',
-    district: 'Nashik',
-    isVerified: false,
-    isActive: true,
-    isBanned: false,
-    farmSize: 3,
-    createdAt: '2024-12-05',
-    lastLogin: null,
-  },
-  {
-    _id: '5',
-    fullName: 'Vijay Shinde',
-    email: 'vijay@example.com',
-    phone: '9876543214',
-    userType: 'buyer',
-    district: 'Solapur',
-    isVerified: true,
-    isActive: false,
-    isBanned: true,
-    createdAt: '2024-03-10',
-    lastLogin: '2024-11-25',
-  },
-]
-
+// Dummy users have been removed, fetching from backend instead
 const AdminUsers = () => {
-  const [users, setUsers] = useState(dummyUsers)
-  const [loading, setLoading] = useState(false)
+  const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState('')
-  const [typeFilter, setTypeFilter] = useState('all')
   const [verificationFilter, setVerificationFilter] = useState('all')
   const [selectedUser, setSelectedUser] = useState(null)
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState(null)
 
+  const { data: usersData, isLoading } = useQuery({
+    queryKey: ['admin-users', verificationFilter, searchTerm],
+    queryFn: async () => {
+      const params = new URLSearchParams()
+      params.append('type', 'farmer') // Force query to pull only farmers
+      if (searchTerm) params.append('search', searchTerm)
+      if (verificationFilter && verificationFilter !== 'all') params.append('status', verificationFilter)
+      
+      const res = await api.get(`/admin/users?${params.toString()}`)
+      return res.data.data.users
+    }
+  })
+
+  const users = usersData || []
+
   // Stats
   const stats = {
     total: users.length,
-    farmers: users.filter((u) => u.userType === 'farmer').length,
-    buyers: users.filter((u) => u.userType === 'buyer').length,
-    unverified: users.filter((u) => !u.isVerified && u.userType === 'farmer').length,
+    active: users.filter((u) => !u.isBanned).length,
+    unverified: users.filter((u) => !u.isVerified).length,
     banned: users.filter((u) => u.isBanned).length,
   }
 
-  // Filter users
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.phone.includes(searchTerm)
+  // Filter users (Local fallback, though API already filters)
+  const filteredUsers = users
 
-    const matchesType = typeFilter === 'all' || user.userType === typeFilter
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, action }) => {
+      return api.patch(`/admin/users/${id}/status`, { action })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['admin-users'])
+      setConfirmDialogOpen(false)
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Error updating user')
+    }
+  })
 
-    const matchesVerification =
-      verificationFilter === 'all' ||
-      (verificationFilter === 'verified' && user.isVerified) ||
-      (verificationFilter === 'unverified' && !user.isVerified) ||
-      (verificationFilter === 'banned' && user.isBanned)
-
-    return matchesSearch && matchesType && matchesVerification
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      return api.delete(`/admin/users/${id}`)
+    },
+    onSuccess: () => {
+      toast.success('User deleted successfully')
+      queryClient.invalidateQueries(['admin-users'])
+      setConfirmDialogOpen(false)
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Error deleting user')
+    }
   })
 
   const handleVerifyUser = (userId) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u._id === userId ? { ...u, isVerified: true, verifiedAt: new Date() } : u
-      )
-    )
-    toast.success('User verified successfully')
-    setConfirmDialogOpen(false)
+    updateStatusMutation.mutate({ id: userId, action: 'verify' })
+    toast.success('Verifying user...')
   }
 
   const handleBanUser = (userId) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u._id === userId ? { ...u, isBanned: true, isActive: false } : u
-      )
-    )
-    toast.success('User banned successfully')
-    setConfirmDialogOpen(false)
+    updateStatusMutation.mutate({ id: userId, action: 'ban' })
+    toast.success('Banning user...')
   }
 
   const handleUnbanUser = (userId) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u._id === userId ? { ...u, isBanned: false, isActive: true } : u
-      )
-    )
-    toast.success('User unbanned successfully')
-    setConfirmDialogOpen(false)
+    updateStatusMutation.mutate({ id: userId, action: 'unban' })
+    toast.success('Unbanning user...')
   }
 
   const handleDeleteUser = (userId) => {
-    setUsers((prev) => prev.filter((u) => u._id !== userId))
-    toast.success('User deleted successfully')
-    setConfirmDialogOpen(false)
+    deleteMutation.mutate(userId)
+    toast.success('Deleting user...')
   }
 
   const openConfirmDialog = (action, user) => {
@@ -223,62 +161,56 @@ const AdminUsers = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">User Management</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage all platform users
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">Farmers Directory</h1>
+          <p className="text-muted-foreground mt-1">Manage and verify registered farmers</p>
         </div>
         <Button variant="outline">
           <Download className="w-4 h-4 mr-2" />
-          Export CSV
+          Export Report
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        {[
-          { label: 'Total Users', value: stats.total, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Farmers', value: stats.farmers, color: 'text-green-600', bg: 'bg-green-50' },
-          { label: 'Buyers', value: stats.buyers, color: 'text-purple-600', bg: 'bg-purple-50' },
-          { label: 'Unverified', value: stats.unverified, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-          { label: 'Banned', value: stats.banned, color: 'text-red-600', bg: 'bg-red-50' },
-        ].map((stat) => (
-          <Card key={stat.label} className={stat.bg}>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
-              <p className={cn('text-2xl font-bold', stat.color)}>{stat.value}</p>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm font-medium text-muted-foreground">Total Farmers</p>
+            <p className="text-2xl font-bold text-foreground mt-2">{stats.total}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm font-medium text-green-500">Active</p>
+            <p className="text-2xl font-bold text-foreground mt-2">{stats.active}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm font-medium text-yellow-500">Pending</p>
+            <p className="text-2xl font-bold text-foreground mt-2">{stats.unverified}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-sm font-medium text-red-500">Banned</p>
+            <p className="text-2xl font-bold text-foreground mt-2">{stats.banned}</p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search by name, email, or phone..."
+                placeholder="Search farmers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
             </div>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="User Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="farmer">Farmers</SelectItem>
-                <SelectItem value="buyer">Buyers</SelectItem>
-                <SelectItem value="admin">Admins</SelectItem>
-              </SelectContent>
-            </Select>
             <Select value={verificationFilter} onValueChange={setVerificationFilter}>
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Status" />
@@ -294,7 +226,6 @@ const AdminUsers = () => {
         </CardContent>
       </Card>
 
-      {/* Users Table */}
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -302,86 +233,72 @@ const AdminUsers = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>User</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>District</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Farm Size</TableHead>
+                  <TableHead>Activity</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Joined</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user._id} className="hover:bg-background">
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={user.avatar?.url} />
-                          <AvatarFallback
-                            className={cn(
-                              'text-sm',
-                              user.userType === 'farmer'
-                                ? 'bg-farmer-100 text-farmer-700'
-                                : user.userType === 'admin'
-                                ? 'bg-red-100 text-red-700'
-                                : 'bg-blue-100 text-blue-700'
-                            )}
-                          >
-                            {getInitials(user.fullName)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-foreground">
-                            {user.fullName}
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">Loading farmers...</TableCell>
+                  </TableRow>
+                ) : filteredUsers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">No farmers found.</TableCell>
+                  </TableRow>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <TableRow key={user._id} className="hover:bg-background">
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={user.avatar?.url} />
+                            <AvatarFallback className="bg-farmer-100 text-farmer-700 text-sm">
+                              {getInitials(user.fullName)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-foreground">
+                              {user.fullName}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{user.email}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {user.district ? `${user.district}, MH` : '-'}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {user.farmSize ? `${user.farmSize} acres` : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          <p className="flex items-center gap-1 text-muted-foreground">
+                            <Phone className="w-3 h-3" />
+                            {user.phone}
                           </p>
-                          <p className="text-xs text-muted-foreground">{user.email}</p>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={cn(
-                          user.userType === 'farmer'
-                            ? 'bg-green-100 text-green-700'
-                            : user.userType === 'admin'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-blue-100 text-blue-700'
-                        )}
-                      >
-                        {user.userType}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <p className="flex items-center gap-1 text-muted-foreground">
-                          <Phone className="w-3 h-3" />
-                          {user.phone}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground">
-                        {user.district || '-'}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={!user.isBanned}
-                            onCheckedChange={() => 
-                              openConfirmDialog(user.isBanned ? 'unban' : 'ban', user)
-                            }
-                            className="scale-75 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
-                          />
-                          <span className={cn(
-                            "text-xs font-medium",
-                            user.isBanned ? "text-red-600" : "text-green-600"
-                          )}>
-                            {user.isBanned ? 'Banned' : 'Active'}
-                          </span>
-                        </div>
-                        {user.userType === 'farmer' && (
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={!user.isBanned}
+                              onCheckedChange={() => 
+                                openConfirmDialog(user.isBanned ? 'unban' : 'ban', user)
+                              }
+                              className="scale-75 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
+                            />
+                            <span className={cn(
+                              "text-xs font-medium",
+                              user.isBanned ? "text-red-600" : "text-green-600"
+                            )}>
+                              {user.isBanned ? 'Banned' : 'Active'}
+                            </span>
+                          </div>
                           <div className="flex items-center gap-2">
                             <Switch
                               checked={user.isVerified}
@@ -396,73 +313,70 @@ const AdminUsers = () => {
                               {user.isVerified ? 'Verified' : 'Pending'}
                             </span>
                           </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {formatDate(user.createdAt)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedUser(user)
-                              setDetailsDialogOpen(true)
-                            }}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Details
-                          </DropdownMenuItem>
-
-                          {!user.isVerified && user.userType === 'farmer' && (
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              onClick={() => openConfirmDialog('verify', user)}
-                              className="text-green-600"
+                              onClick={() => {
+                                setSelectedUser(user)
+                                setDetailsDialogOpen(true)
+                              }}
                             >
-                              <UserCheck className="w-4 h-4 mr-2" />
-                              Verify
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
                             </DropdownMenuItem>
-                          )}
 
-                          <DropdownMenuSeparator />
+                            {!user.isVerified && (
+                              <DropdownMenuItem
+                                onClick={() => openConfirmDialog('verify', user)}
+                                className="text-green-600"
+                              >
+                                <Shield className="w-4 h-4 mr-2" />
+                                Verify Farmer
+                              </DropdownMenuItem>
+                            )}
+                            
+                            <DropdownMenuSeparator />
 
-                          {user.isBanned ? (
+                            {user.isBanned ? (
+                              <DropdownMenuItem
+                                onClick={() => openConfirmDialog('unban', user)}
+                                className="text-blue-600"
+                              >
+                                <UserCheck className="w-4 h-4 mr-2" />
+                                Unban User
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={() => openConfirmDialog('ban', user)}
+                                className="text-orange-600"
+                              >
+                                <UserX className="w-4 h-4 mr-2" />
+                                Ban User
+                              </DropdownMenuItem>
+                            )}
+
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              onClick={() => openConfirmDialog('unban', user)}
-                              className="text-blue-600"
+                              onClick={() => openConfirmDialog('delete', user)}
+                              className="text-red-600"
                             >
-                              <UserCheck className="w-4 h-4 mr-2" />
-                              Unban User
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
                             </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem
-                              onClick={() => openConfirmDialog('ban', user)}
-                              className="text-orange-600"
-                            >
-                              <UserX className="w-4 h-4 mr-2" />
-                              Ban User
-                            </DropdownMenuItem>
-                          )}
-
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => openConfirmDialog('delete', user)}
-                            className="text-red-600"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>

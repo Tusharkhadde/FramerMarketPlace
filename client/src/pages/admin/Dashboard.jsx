@@ -51,50 +51,67 @@ import {
   MenubarShortcut,
   MenubarTrigger,
 } from '@/components/ui/menubar'
+import { useQuery } from '@tanstack/react-query'
 import { formatPrice, formatDate, getInitials, cn } from '@/lib/utils'
 import api from '@/config/api'
 
 const AdminDashboard = () => {
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(true)
+
+  // Fetch real admin stats
+  const { data: statsData, isLoading: loading } = useQuery({
+    queryKey: ['admin-stats'],
+    queryFn: async () => {
+      const res = await api.get('/admin/stats');
+      return res.data.data;
+    }
+  });
+
+  // Safe defaults
+  const dbStats = statsData || { 
+    users: { total: 0 }, 
+    products: { total: 0 }, 
+    orders: { total: 0, revenue: 0 },
+    recentFarmers: []
+  };
 
   // Stats data
   const stats = [
     {
       title: 'Total Users',
-      value: '1,234',
-      change: '+12%',
+      value: dbStats.users.total.toLocaleString(),
+      change: '+-',
       positive: true,
       icon: Users,
       color: 'bg-blue-500',
-      subtext: '45 new this week',
+      subtext: `${dbStats.users.farmers || 0} farmers, ${dbStats.users.buyers || 0} buyers`,
     },
     {
       title: 'Total Products',
-      value: '856',
-      change: '+8%',
+      value: dbStats.products.total.toLocaleString(),
+      change: '+-',
       positive: true,
       icon: Package,
       color: 'bg-purple-500',
-      subtext: '23 pending approval',
+      subtext: 'active on marketplace',
     },
     {
       title: 'Total Orders',
-      value: '3,421',
-      change: '+23%',
+      value: dbStats.orders.total.toLocaleString(),
+      change: '+-',
       positive: true,
       icon: ShoppingCart,
       color: 'bg-orange-500',
-      subtext: '89 active today',
+      subtext: 'platform wide',
     },
     {
       title: 'Revenue',
-      value: '₹12,45,000',
-      change: '+15%',
+      value: formatPrice(dbStats.orders.revenue),
+      change: '+-',
       positive: true,
       icon: IndianRupee,
       color: 'bg-green-500',
-      subtext: 'This month',
+      subtext: 'total value transacted',
     },
   ]
 
@@ -169,16 +186,14 @@ const AdminDashboard = () => {
     },
   ]
 
-  // Pending verifications
-  const pendingVerifications = [
-    { name: 'Ganesh More', district: 'Nashik', date: 'Today', crops: 'Grapes, Onion' },
-    { name: 'Vijay Shinde', district: 'Solapur', date: 'Today', crops: 'Pomegranate' },
-    { name: 'Sanjay Pawar', district: 'Kolhapur', date: 'Yesterday', crops: 'Sugarcane' },
-  ]
+  // Pending verifications (Recent unverified farmers)
+  const pendingVerifications = dbStats.recentFarmers
+    ? dbStats.recentFarmers.filter(f => !f.isVerified)
+    : [];
 
-  useEffect(() => {
-    setTimeout(() => setLoading(false), 500)
-  }, [])
+  if (loading) {
+    return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading Dashboard...</div>
+  }
 
   return (
     <div className="space-y-6">
@@ -192,43 +207,6 @@ const AdminDashboard = () => {
             Platform overview and management
           </p>
         </div>
-        
-        <Menubar className="hidden md:flex">
-          <MenubarMenu>
-            <MenubarTrigger>Management</MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem onClick={() => navigate('/admin/users')}>
-                Users <MenubarShortcut>⌘U</MenubarShortcut>
-              </MenubarItem>
-              <MenubarItem onClick={() => navigate('/admin/products')}>
-                Products <MenubarShortcut>⌘P</MenubarShortcut>
-              </MenubarItem>
-              <MenubarItem onClick={() => navigate('/admin/orders')}>
-                Orders <MenubarShortcut>⌘O</MenubarShortcut>
-              </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem onClick={() => navigate('/admin/apmc')}>
-                APMC Data
-              </MenubarItem>
-            </MenubarContent>
-          </MenubarMenu>
-          <MenubarMenu>
-            <MenubarTrigger>Settings</MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem>Platform Settings</MenubarItem>
-              <MenubarItem>Security Audit</MenubarItem>
-              <MenubarItem>Manage Admins</MenubarItem>
-            </MenubarContent>
-          </MenubarMenu>
-          <MenubarMenu>
-            <MenubarTrigger>Reports</MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem>Revenue Report</MenubarItem>
-              <MenubarItem>Verification Log</MenubarItem>
-              <MenubarItem>User Activity</MenubarItem>
-            </MenubarContent>
-          </MenubarMenu>
-        </Menubar>
       </div>
 
       {/* Stats Cards */}
@@ -445,19 +423,19 @@ const AdminDashboard = () => {
                 >
                   <Avatar className="w-10 h-10">
                     <AvatarFallback className="bg-farmer-100 text-farmer-700 text-sm">
-                      {getInitials(farmer.name)}
+                      {getInitials(farmer.fullName || 'User')}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground">
-                      {farmer.name}
+                      {farmer.fullName}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {farmer.district} • {farmer.crops}
+                      {farmer.district || 'N/A'}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className="text-xs text-muted-foreground">{farmer.date}</span>
+                    <span className="text-xs text-muted-foreground">{formatDate(farmer.createdAt)}</span>
                     <div className="flex gap-1">
                       <Button
                         variant="outline"

@@ -56,7 +56,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Separator } from '@/components/ui/separator'
-import { formatPrice, formatDate, cn } from '@/lib/utils'
+import { formatPrice, formatDate, cn, getProductImageUrl } from '@/lib/utils'
 import { toast } from 'sonner'
 import api from '@/config/api'
 

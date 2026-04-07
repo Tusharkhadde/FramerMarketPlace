@@ -36,8 +36,8 @@ import { cn } from '@/lib/utils'
 
 // Validation
 const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string().min(1, 'Please enter a valid email or username'),
+  password: z.string().min(1, 'Please enter your password'),
 })
 
 const Login = () => {
@@ -95,7 +95,7 @@ const Login = () => {
   const demoAccounts = [
     { email: 'farmer@demo.com', password: 'demo123', type: 'farmer', icon: Tractor },
     { email: 'buyer@demo.com', password: 'demo123', type: 'buyer', icon: ShoppingBag },
-    { email: 'admin@demo.com', password: 'admin123', type: 'admin', icon: ShieldCheck },
+    { email: 'admin', password: 'admin', type: 'admin', icon: ShieldCheck },
   ]
 
   const fillDemoAccount = (account) => {
@@ -170,14 +170,14 @@ const Login = () => {
             {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium text-gray-200">
-                Email Address
+                Email or Username
               </Label>
               <div className="relative group">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-emerald-500 transition-colors" />
                 <Input
                   id="email"
-                  type="email"
-                  placeholder="name@example.com"
+                  type="text"
+                  placeholder="name@example.com or admin"
                   className={cn(
                     'pl-11 h-12 bg-card/5 border-white/10 focus:bg-card/10 focus:border-emerald-500/50 text-white transition-all',
                     errors.email && 'border-red-500/50 focus:ring-red-500/50'

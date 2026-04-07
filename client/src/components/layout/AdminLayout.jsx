@@ -35,13 +35,8 @@ import { cn, getInitials } from '@/lib/utils'
 
 const adminLinks = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-  { name: 'Users', href: '/admin/users', icon: Users },
+  { name: 'Farmers', href: '/admin/users', icon: Users },
   { name: 'Products', href: '/admin/products', icon: Package },
-  { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
-  { name: 'APMC Data', href: '/admin/apmc', icon: Database },
-  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-  { name: 'Reports', href: '/admin/reports', icon: FileText },
-  { name: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 
 const AdminLayout = () => {
@@ -120,11 +115,8 @@ const AdminLayout = () => {
                 >
                   <link.icon className="w-5 h-5" />
                   <span className="font-medium">{link.name}</span>
-                  {link.name === 'Users' && (
-                    <Badge className="ml-auto bg-yellow-500 text-[10px]">3</Badge>
-                  )}
-                  {link.name === 'Orders' && (
-                    <Badge className="ml-auto bg-blue-500 text-[10px]">5</Badge>
+                  {link.name === 'Farmers' && (
+                    <Badge className="ml-auto bg-green-500 text-[10px]">New</Badge>
                   )}
                 </Link>
               )
