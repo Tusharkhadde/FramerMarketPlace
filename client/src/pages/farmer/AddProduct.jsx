@@ -261,7 +261,7 @@ const AddProduct = () => {
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className="w-full border rounded-md p-2"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   required
                 >
                   <option value="">Select Category</option>
@@ -284,7 +284,7 @@ const AddProduct = () => {
                 onChange={handleInputChange}
                 placeholder="Describe your product, growing methods, etc."
                 rows={4}
-                className="w-full border rounded-md p-2"
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 maxLength={1000}
               />
               <p className="text-xs text-muted-foreground mt-1">
@@ -328,7 +328,7 @@ const AddProduct = () => {
                   name="unit"
                   value={formData.unit}
                   onChange={handleInputChange}
-                  className="w-full border rounded-md p-2"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   required
                 >
                   {units.map(unit => (
@@ -365,7 +365,7 @@ const AddProduct = () => {
                   name="qualityGrade"
                   value={formData.qualityGrade}
                   onChange={handleInputChange}
-                  className="w-full border rounded-md p-2"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   required
                 >
                   <option value="A">Grade A (Premium)</option>
@@ -437,7 +437,7 @@ const AddProduct = () => {
                 name="district"
                 value={formData.district}
                 onChange={handleInputChange}
-                className="w-full border rounded-md p-2"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 required
               >
                 <option value="">Select District</option>
