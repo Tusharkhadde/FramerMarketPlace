@@ -25,7 +25,7 @@ const Stats = () => {
               transition={{ delay: index * 0.1, duration: 0.8 }}
               className="flex flex-col items-center text-center"
             >
-              <h2 className="text-4xl md:text-5xl font-display font-bold text-foreground mb-2">
+              <h2 className="text-4xl md:text-5xl font-sans font-bold text-foreground mb-2">
                 {stat.value}
               </h2>
               <p className="text-sm font-body font-medium text-muted-foreground uppercase tracking-widest">
