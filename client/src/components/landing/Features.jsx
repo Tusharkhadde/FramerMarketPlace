@@ -31,7 +31,7 @@ const features = [
 
 const Features = () => {
   return (
-    <section className="py-24 bg-zinc-50/50">
+    <section className="py-24 bg-background">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <motion.h2
@@ -66,7 +66,7 @@ const Features = () => {
               <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors duration-300">
                 <feature.icon className="w-6 h-6 text-emerald-400 group-hover:text-white transition-colors duration-300" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-4 font-display">{feature.title}</h3>
+              <h3 className="text-xl font-bold text-white mb-4 font-sans">{feature.title}</h3>
               <p className="text-white/80 font-body leading-relaxed text-sm">
                 {feature.description}
               </p>

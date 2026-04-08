@@ -22,7 +22,7 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <section className="py-24 bg-card relative overflow-hidden">
+    <section className="py-24 bg-background relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <motion.h2
@@ -38,7 +38,7 @@ const HowItWorks = () => {
 
         <div className="relative">
           {/* Connecting Line (Desktop) */}
-          <div className="hidden lg:block absolute top-24 left-0 w-full h-0.5 bg-zinc-100 z-0" />
+          <div className="hidden lg:block absolute top-24 left-0 w-full h-0.5 bg-zinc-800 z-0" />
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
             {steps.map((step, index) => (
@@ -50,7 +50,7 @@ const HowItWorks = () => {
                 transition={{ delay: index * 0.2 }}
                 className="flex flex-col items-center text-center group"
               >
-                <div className="w-20 h-20 bg-card border-4 border-zinc-50 rounded-full flex items-center justify-center mb-8 shadow-xl shadow-zinc-200/50 group-hover:border-emerald-100 transition-all duration-300">
+                <div className="w-20 h-20 bg-background border-4 border-zinc-900 rounded-full flex items-center justify-center mb-8 shadow-xl shadow-zinc-900/50 group-hover:border-emerald-500/30 transition-all duration-300">
                   <div className="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center text-white">
                     <step.icon className="w-7 h-7" />
                   </div>
@@ -58,7 +58,7 @@ const HowItWorks = () => {
                 <div className="bg-white/10 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4">
                   Step {index + 1}
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3 font-display">{step.title}</h3>
+                <h3 className="text-xl font-bold text-white mb-3 font-sans">{step.title}</h3>
                 <p className="text-white/80 font-body text-sm leading-relaxed max-w-[280px]">
                   {step.description}
                 </p>
