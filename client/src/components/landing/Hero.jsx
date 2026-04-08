@@ -1,126 +1,115 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Sprout } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import DashboardPreview from './DashboardPreview';
+import React, { useState, useEffect } from 'react';
+import { Leaf, ShoppingBag, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+const backgroundImages = [
+  'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1974',
+  'https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&q=80&w=2070',
+  'https://images.unsplash.com/photo-1595856722026-b92476b7e51c?auto=format&fit=crop&q=80&w=1974',
+  'https://images.unsplash.com/photo-1573246123716-6b1782bfc499?auto=format&fit=crop&q=80&w=1965'
+];
 
 const Hero = () => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.1,
-      },
-    },
-  };
+  const navigate = useNavigate();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        duration: 0.8,
-        ease: [0.21, 0.47, 0.32, 0.98]
-      }
-    },
-  };
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % backgroundImages.length);
+    }, 5000); // Change image every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="relative flex flex-col items-center w-full pt-16 pb-0 overflow-hidden min-h-screen">
-      {/* Background Video with Mask */}
-      <div className="absolute inset-0 z-0">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="w-full h-full object-cover"
-        >
-          <source 
-            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260319_015952_e1deeb12-8fb7-4071-a42a-60779fc64ab6.mp4" 
-            type="video/mp4" 
-          />
-        </video>
-        {/* Advanced overlays */}
-        <div className="absolute inset-0 bg-card/20 backdrop-brightness-90"></div>
-        <div className="absolute inset-x-0 bottom-0 h-96 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
-      </div>
+    <div className="relative w-full overflow-hidden bg-background flex flex-col items-center font-body min-h-[80vh]">
       
-      {/* Content */}
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="relative z-10 flex flex-col items-center w-full px-6"
-      >
-        {/* 1. Badge */}
-        <motion.div
-          variants={itemVariants}
-          className="group relative inline-flex items-center gap-1.5 rounded-full border border-border bg-background/80 backdrop-blur-sm px-4 py-1.5 text-sm text-muted-foreground font-body mb-8 overflow-hidden"
+      {/* Background Images Slider */}
+      {backgroundImages.map((img, index) => (
+        <div 
+          key={img}
+          className={`absolute inset-0 z-0 transition-opacity duration-1000 ease-in-out ${
+            index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+          }`}
         >
-          <div className="absolute inset-0 shimmer opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <span className="relative z-10 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-            Fresh from local farms daily
-          </span>
-        </motion.div>
+          <div 
+            className={`absolute inset-0 transition-transform duration-[20s] ease-out ${
+              index === currentImageIndex ? 'scale-110' : 'scale-100'
+            }`}
+            style={{
+              backgroundImage: `url("${img}")`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+        </div>
+      ))}
+      
+      {/* Dark Overlays for Text Readability and Blending */}
+      <div className="absolute inset-0 z-0 bg-black/60 pointer-events-none" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/40 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-x-0 bottom-0 z-0 h-48 bg-gradient-to-t from-background to-transparent pointer-events-none" />
 
-        {/* 2. Headline */}
-        <motion.h1
-          variants={itemVariants}
-          className="text-center font-display text-5xl md:text-7xl lg:text-[6rem] leading-[0.9] tracking-tighter text-foreground max-w-3xl text-balance"
-        >
-          From Farm to <span className="italic font-display text-primary">Fresh</span> Table
-        </motion.h1>
+      <div className="relative z-10 flex flex-col items-center w-full max-w-[1440px] h-full justify-center">
+        
+        {/* Main Content Area */}
+        <div className="flex flex-col items-center text-center px-6 md:px-[120px] pt-32 pb-24 h-full justify-center w-full">
+           
+           {/* Badge Component */}
+           <div 
+             onClick={() => navigate('/products')}
+             className="flex items-center bg-zinc-900/50 border border-zinc-800 rounded-full p-1 pl-[5px] pr-4 gap-2 mb-8 shadow-sm hover:scale-105 transition-transform cursor-pointer backdrop-blur-sm"
+           >
+             <div className="bg-farmer-500 text-white flex items-center justify-center rounded-full px-2 py-1 gap-1 text-[12px] font-medium">
+               <Leaf size={12} fill="currentColor"/> Local
+             </div>
+             <span className="text-sm text-zinc-300 font-medium tracking-wide">Fresh arrivals every morning</span>
+           </div>
 
-        {/* 3. Subheadline */}
-        <motion.p
-          variants={itemVariants}
-          className="mt-6 text-center text-lg md:text-xl text-white font-medium drop-shadow-md max-w-[600px] leading-relaxed font-body text-balance"
-        >
-          Connect directly with local farmers. Buy fresh, organic produce at fair prices while supporting sustainable agriculture in your community.
-        </motion.p>
+           {/* Main Headline */}
+           <h1 className="text-foreground text-center mb-6 font-bold text-5xl md:text-7xl lg:text-8xl tracking-tight leading-[1.1]">
+             Direct Farm Produce
+           </h1>
+           
+           {/* Subtitle */}
+           <p className="font-medium text-lg md:text-xl text-zinc-400 w-full max-w-2xl mb-12 leading-relaxed">
+             Browse high-quality, organic products directly from trusted local farmers. Supporting sustainable agriculture and community health.
+           </p>
 
-        {/* 4. CTA Buttons */}
-        <motion.div
-          variants={itemVariants}
-          className="mt-8 flex flex-wrap items-center justify-center gap-4"
-        >
-          <Button 
-            className="rounded-full px-10 py-7 text-base font-semibold font-body bg-primary text-primary-foreground hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all hover:scale-105 active:scale-95"
-          >
-            Browse Products
-          </Button>
-          <Button 
-            variant="outline"
-            className="rounded-full px-10 py-7 text-base font-semibold font-body border border-border bg-background/80 backdrop-blur-sm hover:bg-muted transition-all hover:border-primary/50"
-          >
-            <Sprout className="w-5 h-5 mr-2 text-primary" />
-            I'm a Farmer
-          </Button>
-        </motion.div>
-
-        {/* 5. Scroll Down Hint */}
-        <motion.div
-          variants={itemVariants}
-          className="mt-12 md:mt-20 flex flex-col items-center gap-4"
-        >
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="w-6 h-10 rounded-full border-2 border-primary/30 flex justify-center p-1.5"
-          >
-            <motion.div className="w-1.5 h-1.5 rounded-full bg-primary" />
-          </motion.div>
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
-            Scroll to Explore
-          </span>
-        </motion.div>
-
-      </motion.div>
+           {/* Call to action buttons */}
+           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full sm:w-auto">
+             <button 
+               onClick={() => navigate('/products')}
+               className="w-full sm:w-auto bg-farmer-600 hover:bg-farmer-500 text-white px-8 py-4 rounded-full font-semibold text-lg flex items-center justify-center gap-2 transition-all hover:scale-105 shadow-[0_0_40px_rgba(34,197,94,0.3)]"
+             >
+               <ShoppingBag size={20} />
+               Shop Fresh Produce
+             </button>
+             <button 
+               onClick={() => navigate('/register')}
+               className="w-full sm:w-auto bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white px-8 py-4 rounded-full font-semibold text-lg flex items-center justify-center gap-2 transition-all hover:scale-105"
+             >
+               Become a Farmer
+               <ArrowRight size={20} />
+             </button>
+           </div>
+           
+           {/* Trust indicators */}
+           <div className="mt-16 flex flex-wrap justify-center gap-8 text-zinc-500 text-sm font-medium">
+              <div className="flex items-center gap-2">
+                 <span className="w-2 h-2 rounded-full bg-farmer-500"></span>
+                 100% Organic Certified
+              </div>
+              <div className="flex items-center gap-2">
+                 <span className="w-2 h-2 rounded-full bg-farmer-500"></span>
+                 Verified Local Farmers
+              </div>
+              <div className="flex items-center gap-2">
+                 <span className="w-2 h-2 rounded-full bg-farmer-500"></span>
+                 Secure Payments
+              </div>
+           </div>
+        </div>
+      </div>
     </div>
   );
 };
