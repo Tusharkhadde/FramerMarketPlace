@@ -1007,7 +1007,7 @@ export const FlickeringFooter = () => {
   };
 
   return (
-    <footer id="footer" className="relative w-full bg-card border-t border-zinc-200 overflow-hidden">
+    <footer id="footer" className="relative w-full bg-background border-t border-border/10 overflow-hidden">
       {/* Background Flickering Grid Pattern */}
       <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
         <FlickeringGrid
@@ -1027,29 +1027,29 @@ export const FlickeringFooter = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-200/50">
                 <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8a7 7 0 0 1-7 7c-1.15 0-2.21-.3-3.12-.8L11 20z"></path><path d="M11 20c0-3 .5-4 1.41-4.72L11 20z"></path></svg>
               </div>
-              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-zinc-900 to-zinc-600">
+              <span className="text-2xl font-bold text-foreground">
                 FarmMarket
               </span>
             </Link>
-            <p className="text-base text-zinc-600 mb-8 max-w-md leading-relaxed font-medium">
+            <p className="text-base text-foreground/70 mb-8 max-w-md leading-relaxed font-medium">
               Connecting Maharashtra's farmers directly with buyers. Fresh produce, fair prices, and sustainable farming delivered to your doorstep.
             </p>
             
             {/* Newsletter */}
             <div className="max-w-md">
-              <p className="text-sm font-semibold text-zinc-900 mb-3">Subscribe to our newsletter</p>
+              <p className="text-sm font-semibold text-foreground mb-3">Subscribe to our newsletter</p>
               <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
                 <div className="relative flex-grow">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/50" />
                   <input
                     type="email"
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all text-sm"
+                    className="w-full pl-10 pr-4 py-2.5 bg-background border border-border/20 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-foreground outline-none transition-all text-sm"
                   />
                 </div>
-                <button className="px-6 py-2.5 bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 transition-all font-medium text-sm flex items-center gap-2 active:scale-95 shadow-lg shadow-zinc-200/50">
+                <button className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-500 transition-all font-medium text-sm flex items-center gap-2 active:scale-95">
                   <Send className="w-4 h-4" />
                   <span>Join</span>
                 </button>
@@ -1060,7 +1060,7 @@ export const FlickeringFooter = () => {
           {/* Links Columns */}
           {siteConfig.footerLinks.map((column, columnIndex) => (
             <div key={columnIndex} className="lg:col-span-1">
-              <h3 className="text-zinc-900 font-bold text-sm mb-6 uppercase tracking-wider">
+              <h3 className="text-foreground font-bold text-sm mb-6 uppercase tracking-wider">
                 {column.title}
               </h3>
               <ul className="flex flex-col gap-y-4">
@@ -1068,7 +1068,7 @@ export const FlickeringFooter = () => {
                   <li key={link.id}>
                     <Link
                       to={link.url}
-                      className="group inline-flex items-center text-sm font-medium text-zinc-500 hover:text-emerald-600 transition-colors duration-300">
+                      className="group inline-flex items-center text-sm font-medium text-foreground/60 hover:text-emerald-500 transition-colors duration-300">
                       <span>{link.title}</span>
                       <ChevronRightIcon className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
                     </Link>
@@ -1080,13 +1080,13 @@ export const FlickeringFooter = () => {
         </div>
 
         {/* Contact & Social Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center pt-10 border-t border-zinc-100 gap-8">
+        <div className="flex flex-col md:flex-row justify-between items-center pt-10 border-t border-border/10 gap-8">
           <div className="flex flex-wrap justify-center gap-8">
-            <div className="flex items-center gap-2 text-sm text-zinc-600 font-medium">
+            <div className="flex items-center gap-2 text-sm text-foreground/60 font-medium">
               <MapPin className="w-4 h-4 text-emerald-500" />
               <span>Maharashtra, India</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-zinc-600 font-medium">
+            <div className="flex items-center gap-2 text-sm text-foreground/60 font-medium">
               <Phone className="w-4 h-4 text-emerald-500" />
               <span>+91 98765 43210</span>
             </div>
@@ -1097,7 +1097,7 @@ export const FlickeringFooter = () => {
               <a 
                 key={i} 
                 href="#" 
-                className="w-10 h-10 rounded-xl bg-zinc-50 flex items-center justify-center text-zinc-500 hover:bg-emerald-50 hover:text-emerald-600 hover:scale-110 active:scale-95 transition-all duration-300 border border-zinc-100"
+                className="w-10 h-10 bg-background border border-border/20 flex items-center justify-center text-foreground/60 rounded-xl hover:border-emerald-500 hover:text-emerald-500 hover:scale-110 active:scale-95 transition-all duration-300"
               >
                 <Icon className="w-5 h-5" />
               </a>
@@ -1107,24 +1107,24 @@ export const FlickeringFooter = () => {
       </div>
 
       {/* Bottom Legal & Back to Top */}
-      <div className="bg-zinc-50/50 py-8 border-t border-zinc-100">
+      <div className="bg-background py-8 border-t border-border/10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
-            <p className="text-[13px] text-zinc-500 font-medium tracking-tight">
+            <p className="text-[13px] text-foreground/50 font-medium tracking-tight">
               © {currentYear} FarmMarket. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <Link to="/privacy" className="text-[13px] text-zinc-400 hover:text-emerald-600 transition-colors font-medium">Privacy Policy</Link>
-              <Link to="/terms" className="text-[13px] text-zinc-400 hover:text-emerald-600 transition-colors font-medium">Terms of Service</Link>
+              <Link to="/privacy" className="text-[13px] text-foreground/40 hover:text-emerald-500 transition-colors font-medium">Privacy Policy</Link>
+              <Link to="/terms" className="text-[13px] text-foreground/40 hover:text-emerald-500 transition-colors font-medium">Terms of Service</Link>
             </div>
           </div>
           
           <button 
             onClick={scrollToTop}
-            className="group flex items-center gap-2 px-4 py-2 bg-card border border-zinc-200 rounded-full text-zinc-500 hover:text-emerald-600 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-50 transition-all duration-300 active:scale-95 shadow-sm"
+            className="group flex items-center gap-2 px-4 py-2 bg-background border border-border/20 rounded-full text-foreground/60 hover:text-emerald-500 hover:border-emerald-500/50 transition-all duration-300 active:scale-95"
           >
             <span className="text-[13px] font-semibold uppercase tracking-wider">Back to top</span>
-            <div className="w-6 h-6 rounded-full bg-zinc-50 flex items-center justify-center group-hover:bg-emerald-50 transition-colors">
+            <div className="w-6 h-6 rounded-full bg-background border border-border/20 flex items-center justify-center group-hover:bg-emerald-500/10 group-hover:text-emerald-500 transition-colors">
               <ArrowUp className="w-3.5 h-3.5" />
             </div>
           </button>
