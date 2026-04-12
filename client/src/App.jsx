@@ -71,7 +71,7 @@ function App() {
       <AuthProvider>
         <CartProvider>
           {/* Apply dark theme globally */}
-          <div className="theme min-h-screen">
+          <div className="dark min-h-screen">
             <Router>
             <Routes>
               {/* Public Routes */}
