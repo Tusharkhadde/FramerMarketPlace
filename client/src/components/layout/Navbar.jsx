@@ -243,19 +243,19 @@ const Navbar = () => {
                       )}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-80 p-0 overflow-hidden">
-                    <div className="p-4 border-b bg-muted/50 flex items-center justify-between">
-                      <h3 className="font-bold text-foreground">Notifications</h3>
+                  <DropdownMenuContent align="end" className="w-80 p-0 overflow-hidden rounded-2xl border-border/40 shadow-2xl backdrop-blur-xl bg-background/95">
+                    <div className="p-4 border-b border-border/40 bg-muted/30 flex items-center justify-between">
+                      <h3 className="font-extrabold text-foreground tracking-tight">Notifications</h3>
                       {unreadCount > 0 && (
                         <button 
                           onClick={handleMarkAllAsRead}
-                          className="text-xs font-semibold text-farmer-600 hover:text-farmer-700 transition-colors"
+                          className="text-[10px] uppercase tracking-wider font-black text-farmer-600 hover:text-farmer-700 transition-colors"
                         >
-                          Mark all as read
+                          MARK ALL READ
                         </button>
                       )}
                     </div>
-                    <div className="max-h-[400px] overflow-y-auto">
+                    <div className="max-h-[400px] overflow-y-auto divide-y divide-border/20">
                       {notifications.length > 0 ? (
                         notifications.map((notification) => (
                           <div 
@@ -264,18 +264,18 @@ const Navbar = () => {
                               handleMarkAsRead(notification._id)
                               if (notification.link) navigate(notification.link)
                             }}
-                            className={`p-4 border-b last:border-0 cursor-pointer transition-colors hover:bg-muted/50 ${!notification.isRead ? 'bg-farmer-50/30' : ''}`}
+                            className={`p-4 cursor-pointer transition-all hover:bg-farmer-500/[0.05] relative group ${!notification.isRead ? 'bg-farmer-500/[0.02]' : ''}`}
                           >
                             <div className="flex gap-3">
-                              <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${!notification.isRead ? 'bg-farmer-500' : 'bg-transparent'}`} />
-                              <div className="flex-1">
-                                <p className={`text-sm ${!notification.isRead ? 'font-bold text-foreground' : 'text-muted-foreground'}`}>
+                              <div className={`mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0 transition-transform group-hover:scale-150 ${!notification.isRead ? 'bg-farmer-500' : 'bg-transparent'}`} />
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm tracking-tight leading-tight ${!notification.isRead ? 'font-black text-foreground' : 'text-muted-foreground font-medium'}`}>
                                   {notification.title}
                                 </p>
-                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                                <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-snug font-medium">
                                   {notification.content}
                                 </p>
-                                <p className="text-[10px] text-muted-foreground/70 mt-2 font-medium">
+                                <p className="text-[9px] uppercase tracking-widest text-muted-foreground/50 mt-2 font-black">
                                   {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                                 </p>
                               </div>
