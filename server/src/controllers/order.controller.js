@@ -136,8 +136,8 @@ export const createOrder = asyncHandler(async (req, res, next) => {
   notificationService.createNotification({
     recipient: req.user.id,
     type: 'order',
-    title: 'Order Confirmed!',
-    content: `Your order #${order.orderNumber} has been placed successfully.`,
+    title: 'Order Confirmed! 🎉',
+    content: `Order #${order.orderNumber} for ₹${order.pricing.total} has been placed. We've notified the farmers!`,
     link: `/orders/${order._id}`,
     sendSMS: true,
     phone: req.user.phone
@@ -171,8 +171,13 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     notificationService.createNotification({
       recipient: farmerId,
       type: 'order',
-      title: 'New Order Received!',
-      content: `You have a new order #${order.orderNumber}.`,
+      title: 'New Order Received! 🌾',
+      content: `${req.user.fullName} ordered ${order.items
+        .filter((item) => item.farmer.toString() === farmerId)
+        .map((item) => item.productSnapshot.cropName)
+        .join(', ')} (Total: ₹${order.items
+        .filter((item) => item.farmer.toString() === farmerId)
+        .reduce((sum, item) => sum + item.subtotal, 0)}).`,
       link: `/farmer/orders`,
       sendSMS: true,
       phone: farmer.phone
@@ -400,8 +405,8 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
   notificationService.createNotification({
     recipient: order.buyer._id,
     type: 'order',
-    title: 'Order Status Updated',
-    content: `Your order #${order.orderNumber} is now ${status}.`,
+    title: `Order ${status.toUpperCase()} 📦`,
+    content: `Good news! Your order #${order.orderNumber} is now ${status}. ${note || ''}`,
     link: `/orders/${order._id}`,
     sendSMS: true,
     phone: order.buyer.phone
