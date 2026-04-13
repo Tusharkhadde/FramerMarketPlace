@@ -1,6 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { io } from 'socket.io-client'
+import { formatDistanceToNow } from 'date-fns'
+import { toast } from 'sonner'
+import api from '@/config/api'
 import {
   LayoutDashboard,
   Users,
@@ -44,6 +48,66 @@ const AdminLayout = () => {
   const { user, signOut } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    if (user) {
+      const SOCKET_URL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000'
+      const socket = io(SOCKET_URL, {
+        transports: ['websocket'],
+        withCredentials: true,
+      })
+
+      socket.on('connect', () => {
+        socket.emit('join', user._id)
+      })
+
+      socket.on('new-notification', (data) => {
+        setNotifications(prev => [data.notification, ...prev])
+        setUnreadCount(data.unreadCount)
+        toast.info(data.notification.title, {
+          description: data.notification.content,
+        })
+      })
+
+      fetchNotifications()
+
+      return () => socket.disconnect()
+    }
+  }, [user])
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await api.get('/notifications')
+      setNotifications(response.data.data.notifications)
+      setUnreadCount(response.data.data.unreadCount)
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error)
+    }
+  }
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await api.patch(`/notifications/${id}/read`)
+      setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n))
+      setUnreadCount(prev => Math.max(0, prev - 1))
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error)
+    }
+  }
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await api.patch('/notifications/mark-all-read')
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+      setUnreadCount(0)
+      toast.success('All notifications marked as read')
+    } catch (error) {
+      console.error('Failed to mark all as read:', error)
+    }
+  }
 
   const handleLogout = async () => {
     await signOut()
@@ -165,10 +229,76 @@ const AdminLayout = () => {
             </div>
 
             <div className="flex items-center space-x-3 ml-auto">
-              <button className="relative p-2 hover:bg-card rounded-lg">
-                <Bell className="w-5 h-5 text-muted-foreground" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="relative p-2 hover:bg-card rounded-lg transition-colors">
+                    <Bell className={cn("w-5 h-5 transition-colors", unreadCount > 0 ? "text-farmer-600 animate-pulse" : "text-muted-foreground")} />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-background">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-80 p-0 overflow-hidden glass-premium border-farmer-500/20 shadow-2xl">
+                  <div className="p-4 border-b border-border/50 flex items-center justify-between bg-muted/30">
+                    <h3 className="font-bold text-foreground">Notifications</h3>
+                    {unreadCount > 0 && (
+                      <button 
+                        onClick={handleMarkAllAsRead}
+                        className="text-xs font-semibold text-farmer-500 hover:text-farmer-600 transition-colors"
+                      >
+                        Mark all as read
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-[400px] overflow-y-auto no-scrollbar">
+                    {notifications.length > 0 ? (
+                      notifications.map((notification) => (
+                        <div 
+                          key={notification._id}
+                          onClick={() => {
+                            handleMarkAsRead(notification._id)
+                            if (notification.link) navigate(notification.link)
+                          }}
+                          className={cn(
+                            "p-4 border-b border-border/50 last:border-0 cursor-pointer transition-colors hover:bg-muted/50",
+                            !notification.isRead ? "bg-farmer-500/5" : ""
+                          )}
+                        >
+                          <div className="flex gap-3">
+                            <div className={cn(
+                              "mt-1 w-2 h-2 rounded-full flex-shrink-0",
+                              !notification.isRead ? "bg-farmer-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-transparent"
+                            )} />
+                            <div className="flex-1">
+                              <p className={cn(
+                                "text-sm",
+                                !notification.isRead ? "font-bold text-foreground" : "text-muted-foreground"
+                              )}>
+                                {notification.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                                {notification.content}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground/70 mt-2 font-medium">
+                                {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-12 text-center">
+                        <div className="w-12 h-12 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <Bell className="w-6 h-6 text-muted-foreground/30" />
+                        </div>
+                        <p className="text-sm text-muted-foreground font-medium">No notifications yet</p>
+                      </div>
+                    )}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
