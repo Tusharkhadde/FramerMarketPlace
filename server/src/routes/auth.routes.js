@@ -170,9 +170,10 @@ router.get('/google', passport.authenticate('google', {
 // Step 2: Google redirects back here with code
 router.get(
   '/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: `${process.env.CLIENT_URL || 'http://localhost:5173'}/login?error=google_failed` }),
+  passport.authenticate('google', { session: false, failureRedirect: `${process.env.CLIENT_URL || 'http://localhost:3000'}/login?error=google_failed` }),
   (req, res) => {
     try {
+      console.log('🔄 Google authentication successful, preparing redirect...')
       const user = req.user
       const token = user.getSignedJwtToken()
 
@@ -182,7 +183,7 @@ router.get(
       delete userObj.googleId
 
       // Redirect to frontend with token and user encoded in query params
-      const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
+      const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000'
       const params = new URLSearchParams({
         token,
         user: JSON.stringify(userObj),
@@ -191,7 +192,7 @@ router.get(
       res.redirect(`${clientUrl}/auth/callback?${params.toString()}`)
     } catch (error) {
       console.error('Google callback error:', error)
-      const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
+      const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000'
       res.redirect(`${clientUrl}/login?error=auth_failed`)
     }
   }
