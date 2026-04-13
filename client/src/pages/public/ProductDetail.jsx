@@ -29,6 +29,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/context/AuthContext'
 import { useCart } from '@/context/CartContext'
 import { Button } from '@/components/ui/button'
+import DigitalPassport from '@/components/product/DigitalPassport'
 
 const ProductDetail = () => {
   const { id } = useParams()
@@ -37,6 +38,7 @@ const ProductDetail = () => {
   const { addToCart } = useCart()
 
   const [product, setProduct] = useState(null)
+  const [passport, setPassport] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -59,6 +61,8 @@ const ProductDetail = () => {
       }
       
       setProduct(foundProduct)
+      setQuantity(foundProduct.minimumOrder || 1)
+      setPassport(response.data.data.passport)
 
       // Fetch related products
       if (foundProduct.category) {
@@ -83,7 +87,7 @@ const ProductDetail = () => {
     }
   }
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return
 
     if (!isAuthenticated) {
@@ -97,13 +101,11 @@ const ProductDetail = () => {
       return
     }
 
-    addToCart({
+    await addToCart({
       product: product._id,
       quantity,
       price: product.pricePerKg || 0,
     })
-
-    toast.success('Product added to cart')
   }
 
   const handleBuyNow = () => {
@@ -486,6 +488,9 @@ const ProductDetail = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Digital Crop Passport */}
+        <DigitalPassport passport={passport} product={product} />
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
