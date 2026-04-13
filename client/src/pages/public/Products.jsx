@@ -12,6 +12,8 @@ import {
   Leaf,
   Filter,
   X,
+  Sparkles,
+  Bot
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -45,6 +47,9 @@ const Products = () => {
   const [showFilters, setShowFilters] = useState(false)
   const [totalProducts, setTotalProducts] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
+
+  const [isSearchingAI, setIsSearchingAI] = useState(false)
+  const [aiMessage, setAiMessage] = useState('')
 
   // Filter States
   const [filters, setFilters] = useState({
@@ -133,7 +138,78 @@ const Products = () => {
     setFilters(prev => ({ ...prev, sortBy, sortOrder }))
   }
 
+  const handleAISearch = (e) => {
+    e.preventDefault()
+    if (!filters.search) return
+
+    setIsSearchingAI(true)
+    setAiMessage('')
+
+    setTimeout(() => {
+      const query = filters.search.toLowerCase()
+      let updatedFilters = { ...filters }
+      let detectedMessage = []
+
+      if (query.includes('fruit') || query.includes('apple') || query.includes('mango') || query.includes('banana')) {
+        updatedFilters.category = 'fruits'
+        detectedMessage.push('Category: Fruits')
+      } else if (query.includes('vegetable') || query.includes('tomato') || query.includes('salad') || query.includes('potato')) {
+        updatedFilters.category = 'vegetables'
+        detectedMessage.push('Category: Vegetables')
+      } else if (query.includes('spice') || query.includes('chili') || query.includes('pepper') || query.includes('turmeric')) {
+        updatedFilters.category = 'spices'
+        detectedMessage.push('Category: Spices')
+      } else if (query.includes('grain') || query.includes('wheat') || query.includes('rice')) {
+        updatedFilters.category = 'grains'
+        detectedMessage.push('Category: Grains')
+      } else if (query.includes('dairy') || query.includes('milk') || query.includes('cheese') || query.includes('paneer')) {
+        updatedFilters.category = 'dairy'
+        detectedMessage.push('Category: Dairy')
+      } else if (query.includes('pulse') || query.includes('dal') || query.includes('beans') || query.includes('lentil')) {
+        updatedFilters.category = 'pulses'
+        detectedMessage.push('Category: Pulses')
+      }
+
+      if (query.includes('organic')) {
+        updatedFilters.isOrganic = true
+        detectedMessage.push('Organic Only')
+      }
+
+      if (query.includes('cheap') || query.includes('low price') || query.includes('lowest')) {
+        updatedFilters.sortBy = 'pricePerKg'
+        updatedFilters.sortOrder = 'asc'
+        detectedMessage.push('Sorted by Lowest Price')
+      }
+
+      if (query.includes('premium') || query.includes('best') || query.includes('high quality') || query.includes('great')) {
+        updatedFilters.qualityGrade = 'A'
+        detectedMessage.push('Grade A Quality')
+      }
+      
+      // Clean the search string so the backend doesn't fail on full sentences
+      let cleanSearch = query;
+      const ignoreWords = [
+        'i', 'want', 'need', 'looking', 'for', 'some', 'cheap', 'premium', 
+        'best', 'organic', 'quality', 'a', 'the', 'lowest', 'price', 'great', 
+        'high', 'spice', 'spices', 'vegetable', 'vegetables', 'fruit', 'fruits', 
+        'dairy', 'grain', 'grains', 'pulse', 'pulses', 'show', 'me', 'good', 'with'
+      ];
+      
+      ignoreWords.forEach(word => {
+         cleanSearch = cleanSearch.replace(new RegExp(`\\b${word}\\b`, 'gi'), ' ');
+      });
+      cleanSearch = cleanSearch.replace(/\s+/g, ' ').trim();
+      
+      updatedFilters.search = cleanSearch;
+      
+      setFilters(updatedFilters)
+      setAiMessage(`✨ AI understood: ${detectedMessage.length > 0 ? detectedMessage.join(' • ') : 'Searching marketplace natively.'}`)
+      setIsSearchingAI(false)
+    }, 1500)
+  }
+
   const clearFilters = () => {
+    setAiMessage('')
     setFilters({
       search: '',
       category: '',
@@ -167,15 +243,26 @@ const Products = () => {
         <div className="bg-card rounded-lg shadow-sm p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-               <Input
-                type="text"
-                placeholder="Search products..."
-                value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="pl-10 bg-card border-zinc-200"
-              />
+            <div className="flex-1">
+              <form onSubmit={handleAISearch} className="relative flex items-center">
+                <Sparkles className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${isSearchingAI ? 'text-amber-500 animate-pulse' : 'text-amber-400'}`} />
+                 <Input
+                  type="text"
+                  placeholder="Ask AI... e.g. 'I want organic vegetables for a salad'"
+                  value={filters.search}
+                  onChange={(e) => handleFilterChange('search', e.target.value)}
+                  disabled={isSearchingAI}
+                  className={`pl-10 pr-24 ${isSearchingAI ? 'border-amber-500/50 bg-amber-500/5' : 'bg-card border-input focus:border-amber-500/50'} focus-visible:ring-amber-500/30 transition-colors shadow-sm`}
+                />
+                <Button 
+                  type="submit" 
+                  size="sm" 
+                  disabled={isSearchingAI}
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0 text-white shadow-sm"
+                >
+                  {isSearchingAI ? 'Thinking...' : 'AI Search'}
+                </Button>
+              </form>
             </div>
 
             {/* Sort */}
@@ -235,9 +322,32 @@ const Products = () => {
             </div>
           </div>
 
+          {/* AI Message Banner */}
+          <AnimatePresence>
+            {aiMessage && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-center gap-3 text-amber-600 dark:text-amber-400"
+              >
+                <div className="p-1.5 bg-amber-500/20 rounded-full text-amber-600 dark:text-amber-400 shadow-sm">
+                  <Bot className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium">{aiMessage}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Active Filters */}
           {activeFiltersCount > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2 items-center">
+              {filters.search && (
+                <FilterTag
+                  label={`Search: ${filters.search}`}
+                  onRemove={() => handleFilterChange('search', '')}
+                />
+              )}
               {filters.category && (
                 <FilterTag
                   label={`Category: ${filters.category}`}
