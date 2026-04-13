@@ -89,8 +89,8 @@ export const addToCart = asyncHandler(async (req, res, next) => {
     },
   })
 
-  sendResponse(res, 200, { cart: user }, 'Item added to cart')
-})
+  sendResponse(res, 200, { items: user.cart }, 'Item added to cart')
+});
 
 // @desc    Update cart item quantity
 // @route   PUT /api/cart/update
@@ -136,8 +136,8 @@ export const updateCartItem = asyncHandler(async (req, res, next) => {
     },
   })
 
-  sendResponse(res, 200, { cart: user }, 'Cart updated')
-})
+  sendResponse(res, 200, { items: user.cart }, 'Cart updated')
+});
 
 // @desc    Remove item from cart
 // @route   DELETE /api/cart/remove/:productId
@@ -161,8 +161,8 @@ export const removeFromCart = asyncHandler(async (req, res, next) => {
     },
   })
 
-  sendResponse(res, 200, { cart: user }, 'Item removed from cart')
-})
+  sendResponse(res, 200, { items: user.cart }, 'Item removed from cart')
+});
 
 // @desc    Clear cart
 // @route   DELETE /api/cart/clear
@@ -172,5 +172,5 @@ export const clearCart = asyncHandler(async (req, res, next) => {
   user.cart = []
   await user.save()
 
-  sendResponse(res, 200, {}, 'Cart cleared')
-})
+  sendResponse(res, 200, { items: [] }, 'Cart cleared')
+});
