@@ -14,6 +14,7 @@ import {
   Award,
   Image as ImageIcon,
   AlertCircle,
+  Sparkles,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,6 +27,9 @@ const AddProduct = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [isAnalyzingPrice, setIsAnalyzingPrice] = useState(false)
+  const [priceAnalysis, setPriceAnalysis] = useState(null)
   const [imagePreview, setImagePreview] = useState([])
 
   const [formData, setFormData] = useState({
@@ -71,6 +75,74 @@ const AddProduct = () => {
   ]
 
   const units = ['kg', 'quintal', 'ton', 'piece', 'dozen', 'litre']
+
+  const generateAIDescription = () => {
+    if (!formData.cropName) {
+      toast.error('Please enter a Crop Name first so the AI knows what to describe!')
+      return
+    }
+    
+    setIsGenerating(true)
+    
+    // Simulate AI API call logic here (e.g., Gemini or OpenAI)
+    setTimeout(() => {
+      const isOrganicStr = formData.isOrganic ? '100% organic, ' : 'fresh, '
+      const categoryStr = formData.category ? formData.category : 'produce'
+      const cropNameCap = formData.cropName.charAt(0).toUpperCase() + formData.cropName.slice(1)
+      
+      const mockAiResponse = `Premium quality ${cropNameCap} sourced directly from our local farms. This ${isOrganicStr}farm-fresh ${categoryStr} is carefully cultivated and harvested to ensure the highest standards of taste and nutrition. Perfect for households and businesses looking for authentic, direct-from-farm produce. We guarantee quality and freshness in every order!`
+      
+      setFormData(prev => ({
+        ...prev,
+        description: mockAiResponse,
+        tags: [...new Set([...prev.tags, 'farm-fresh', 'premium-quality', formData.cropName.toLowerCase().replace(/\s+/g, '-')])]
+      }))
+      
+      setIsGenerating(false)
+      toast.success('✨ AI successfully generated a description and smart tags!')
+    }, 1500)
+  }
+
+  const analyzePrice = async () => {
+    if (!formData.cropName || !formData.pricePerKg) {
+      toast.error('Please enter Crop Name and Price per Kg to get an AI analysis!')
+      return
+    }
+    
+    setIsAnalyzingPrice(true)
+    setPriceAnalysis(null)
+    
+    try {
+      const response = await fetch('http://127.0.0.1:5001/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cropName: formData.cropName,
+          district: formData.district,
+          qualityGrade: formData.qualityGrade,
+          pricePerKg: formData.pricePerKg
+        }),
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to analyze price')
+      }
+      
+      setPriceAnalysis({
+        status: data.status,
+        message: data.message
+      })
+    } catch (error) {
+      console.error('AI Analysis Error:', error)
+      toast.error('Could not connect to ML Server. Is the Python Flask app running on port 5001?')
+    } finally {
+      setIsAnalyzingPrice(false)
+    }
+  }
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -275,9 +347,20 @@ const AddProduct = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Description
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium">
+                  Description
+                </label>
+                <Button 
+                  type="button" 
+                  onClick={generateAIDescription}
+                  disabled={isGenerating}
+                  className="h-7 px-3 text-xs bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-sm transition-all"
+                >
+                  <Sparkles className={`w-3.5 h-3.5 mr-1.5 ${isGenerating ? 'animate-pulse' : ''}`} />
+                  {isGenerating ? 'AI is thinking...' : 'Auto-Fill with AI'}
+                </Button>
+              </div>
               <textarea
                 name="description"
                 value={formData.description}
@@ -340,9 +423,20 @@ const AddProduct = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Price per Kg (₹) *
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium">
+                    Price per Kg (₹) *
+                  </label>
+                  <Button 
+                    type="button" 
+                    onClick={analyzePrice}
+                    disabled={isAnalyzingPrice}
+                    className="h-6 px-2 text-[10px] bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white border-0 shadow-sm transition-all rounded-full"
+                  >
+                    <Sparkles className={`w-3 h-3 mr-1 ${isAnalyzingPrice ? 'animate-pulse' : ''}`} />
+                    {isAnalyzingPrice ? 'Analyzing...' : 'AI Check'}
+                  </Button>
+                </div>
                 <Input
                   type="number"
                   name="pricePerKg"
@@ -355,6 +449,36 @@ const AddProduct = () => {
                 />
               </div>
             </div>
+
+            {priceAnalysis && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`mt-4 p-4 rounded-lg border ${
+                  priceAnalysis.status === 'Excellent' ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-950/30 dark:border-green-900/50 dark:text-green-400' :
+                  priceAnalysis.status === 'Low' ? 'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950/30 dark:border-amber-900/50 dark:text-amber-400' :
+                  'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950/30 dark:border-blue-900/50 dark:text-blue-400'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`mt-0.5 p-1 rounded-full ${
+                    priceAnalysis.status === 'Excellent' ? 'bg-green-200 text-green-700 dark:bg-green-900 dark:text-green-300' :
+                    priceAnalysis.status === 'Low' ? 'bg-amber-200 text-amber-700 dark:bg-amber-900 dark:text-amber-300' :
+                    'bg-blue-200 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                  }`}>
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm flex items-center">
+                      AI Market Analysis: {priceAnalysis.status} Price
+                    </p>
+                    <p className="text-sm mt-1 leading-relaxed opacity-90">
+                      {priceAnalysis.message}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
