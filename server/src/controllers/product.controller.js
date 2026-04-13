@@ -5,6 +5,8 @@ import { sendResponse } from '../utils/apiResponse.js'
 import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary.js'
 import fs from 'fs'
 import path from 'path'
+import User from '../models/User.js'
+import notificationService from '../services/notification.service.js'
 
 // @desc    Get all products with filtering
 // @route   GET /api/products
@@ -210,6 +212,25 @@ export const createProduct = asyncHandler(async (req, res, next) => {
     await product.populate('farmer', 'fullName district')
 
     console.log('=== CREATE PRODUCT SUCCESS ===')
+    
+    // Notify all admins about the new product
+    try {
+      const admins = await User.find({ userType: 'admin' }).select('_id')
+      const notificationPromises = admins.map(admin => 
+        notificationService.createNotification({
+          recipient: admin._id,
+          sender: req.user.id,
+          type: 'product',
+          title: 'New Product for Approval',
+          content: `${req.user.fullName || 'A farmer'} has submitted "${product.cropName}" for approval.`,
+          link: '/admin/products',
+        })
+      )
+      await Promise.all(notificationPromises)
+    } catch (notifyError) {
+      console.error('❌ Failed to send admin notifications:', notifyError.message)
+    }
+
     sendResponse(res, 201, { product }, 'Product created successfully')
 
   } catch (error) {
