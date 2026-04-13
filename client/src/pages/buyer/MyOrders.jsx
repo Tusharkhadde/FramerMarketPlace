@@ -62,7 +62,7 @@ const MyOrders = () => {
   }
 
   const filteredOrders = orders.filter((order) => {
-    const matchesStatus = filter === 'all' || order.status === filter
+    const matchesStatus = filter === 'all' || (order.orderStatus || order.status) === filter
     const matchesDate = !dateFilter || new Date(order.createdAt).toDateString() === dateFilter.toDateString()
     return matchesStatus && matchesDate
   })
@@ -83,10 +83,10 @@ const MyOrders = () => {
 
   const stats = {
     all: orders.length,
-    pending: orders.filter(o => o.status === 'pending').length,
-    processing: orders.filter(o => o.status === 'processing').length,
-    delivered: orders.filter(o => o.status === 'delivered').length,
-    cancelled: orders.filter(o => o.status === 'cancelled').length,
+    pending: orders.filter(o => (o.orderStatus || o.status) === 'pending').length,
+    processing: orders.filter(o => (o.orderStatus || o.status) === 'processing').length,
+    delivered: orders.filter(o => (o.orderStatus || o.status) === 'delivered').length,
+    cancelled: orders.filter(o => (o.orderStatus || o.status) === 'cancelled').length,
   }
 
   if (loading) return <Loading />
@@ -213,7 +213,8 @@ const OrderCard = ({ order, onCancel }) => {
     cancelled: { icon: XCircle, color: 'red', label: 'Cancelled' },
   }
 
-  const status = statusConfig[order.status] || statusConfig.pending
+  const statusField = order.orderStatus || order.status || 'pending'
+  const status = statusConfig[statusField] || statusConfig.pending
   const StatusIcon = status.icon
 
   return (
@@ -232,6 +233,17 @@ const OrderCard = ({ order, onCancel }) => {
                 >
                   <StatusIcon className="w-3.5 h-3.5" />
                   {status.label}
+                </span>
+                
+                {/* Payment Status Badge */}
+                <span
+                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
+                    order.paymentStatus === 'paid' 
+                      ? 'bg-green-500/20 text-green-400' 
+                      : 'bg-yellow-500/20 text-yellow-400'
+                  }`}
+                >
+                  {order.paymentStatus === 'paid' ? 'Paid' : 'Payment Pending'}
                 </span>
               </div>
               <p className="text-sm font-medium text-white/80 mb-1">
