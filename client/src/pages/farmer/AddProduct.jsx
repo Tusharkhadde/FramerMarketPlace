@@ -113,7 +113,8 @@ const AddProduct = () => {
     setPriceAnalysis(null)
     
     try {
-      const response = await fetch('http://127.0.0.1:5001/predict', {
+      const mlApiUrl = import.meta.env.VITE_ML_API_URL || 'http://127.0.0.1:5001'
+      const response = await fetch(`${mlApiUrl}/predict`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
