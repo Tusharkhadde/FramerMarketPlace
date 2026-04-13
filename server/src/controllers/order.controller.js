@@ -97,7 +97,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
       total,
     },
     paymentMethod,
-    paymentStatus: paymentMethod === 'cod' ? 'pending' : 'paid',
+    paymentStatus: 'pending',
     paymentDetails: paymentDetails || {},
     orderStatus: 'confirmed',
     notes,
@@ -112,88 +112,72 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     { path: 'items.farmer', select: 'fullName email phone' },
   ])
 
-  // Send confirmation email
-  try {
-    await sendEmail({
-      email: req.user.email,
-      subject: `Order Confirmed - #${order.orderNumber}`,
-      template: 'orderConfirmation',
-      data: {
-        buyerName: req.user.fullName,
-        orderNumber: order.orderNumber,
-        items: order.items.map((item) => ({
-          name: item.productSnapshot.cropName,
-          quantity: item.quantity,
-          subtotal: item.subtotal,
-        })),
-        total: order.pricing.total,
-        deliveryAddress: `${deliveryAddress.addressLine1}, ${deliveryAddress.district}`,
-        estimatedDelivery: order.estimatedDelivery.toLocaleDateString('en-IN'),
-        orderId: order._id,
-      },
-    })
-  } catch (error) {
-    console.error('Order confirmation email failed:', error)
-  }
+  // Send confirmation email (Background)
+  sendEmail({
+    email: req.user.email,
+    subject: `Order Confirmed - #${order.orderNumber}`,
+    template: 'orderConfirmation',
+    data: {
+      buyerName: req.user.fullName,
+      orderNumber: order.orderNumber,
+      items: order.items.map((item) => ({
+        name: item.productSnapshot.cropName,
+        quantity: item.quantity,
+        subtotal: item.subtotal,
+      })),
+      total: order.pricing.total,
+      deliveryAddress: `${deliveryAddress.addressLine1}, ${deliveryAddress.district}`,
+      estimatedDelivery: order.estimatedDelivery.toLocaleDateString('en-IN'),
+      orderId: order._id,
+    },
+  }).catch(err => console.error('Order confirmation email failed (background):', err))
 
-  // Send real-time notification to buyer
-  try {
-    await notificationService.createNotification({
-      recipient: req.user.id,
-      type: 'order',
-      title: 'Order Confirmed!',
-      content: `Your order #${order.orderNumber} has been placed successfully.`,
-      link: `/orders/${order._id}`,
-      sendSMS: true,
-      phone: req.user.phone
-    })
-  } catch (error) {
-    console.error('Buyer notification failed:', error)
-  }
+  // Send real-time notification to buyer (Background)
+  notificationService.createNotification({
+    recipient: req.user.id,
+    type: 'order',
+    title: 'Order Confirmed!',
+    content: `Your order #${order.orderNumber} has been placed successfully.`,
+    link: `/orders/${order._id}`,
+    sendSMS: true,
+    phone: req.user.phone
+  }).catch(err => console.error('Buyer notification failed (background):', err))
 
-  // Notify farmers about new order
+  // Notify farmers about new order (Background)
   const farmerIds = [...new Set(orderItems.map((item) => item.farmer.toString()))]
-  for (const farmerId of farmerIds) {
+  Promise.all(farmerIds.map(async (farmerId) => {
     const farmer = await User.findById(farmerId)
-    if (farmer) {
-      // Email
-      try {
-        await sendEmail({
-          email: farmer.email,
-          subject: `New Order Received - #${order.orderNumber}`,
-          template: 'newOrderFarmer',
-          data: {
-            farmerName: farmer.fullName,
-            orderNumber: order.orderNumber,
-            items: order.items
-              .filter((item) => item.farmer.toString() === farmerId)
-              .map((item) => ({
-                name: item.productSnapshot.cropName,
-                quantity: item.quantity,
-                subtotal: item.subtotal,
-              })),
-          },
-        })
-      } catch (error) {
-        console.error('Farmer notification email failed:', error)
-      }
+    if (!farmer) return
 
-      // Real-time Notification
-      try {
-        await notificationService.createNotification({
-          recipient: farmerId,
-          type: 'order',
-          title: 'New Order Received!',
-          content: `You have a new order #${order.orderNumber}.`,
-          link: `/farmer/orders`,
-          sendSMS: true,
-          phone: farmer.phone
-        })
-      } catch (error) {
-        console.error('Farmer socket notification failed:', error)
-      }
-    }
-  }
+    // Email
+    sendEmail({
+      email: farmer.email,
+      subject: `New Order Received - #${order.orderNumber}`,
+      template: 'newOrderFarmer',
+      data: {
+        farmerName: farmer.fullName,
+        orderNumber: order.orderNumber,
+        items: order.items
+          .filter((item) => item.farmer.toString() === farmerId)
+          .map((item) => ({
+            name: item.productSnapshot.cropName,
+            quantity: item.quantity,
+            subtotal: item.subtotal,
+          })),
+      },
+    }).catch(err => console.error(`Farmer email failed (${farmerId}):`, err))
+
+    // Real-time Notification
+    notificationService.createNotification({
+      recipient: farmerId,
+      type: 'order',
+      title: 'New Order Received!',
+      content: `You have a new order #${order.orderNumber}.`,
+      link: `/farmer/orders`,
+      sendSMS: true,
+      phone: farmer.phone
+    }).catch(err => console.error(`Farmer notification failed (${farmerId}):`, err))
+  })).catch(err => console.error('Farmer notifications loop error:', err))
 
   sendResponse(res, 201, { order }, 'Order placed successfully')
 })
@@ -398,38 +382,30 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
 
   await order.save()
 
-  // Send status update email to buyer
-  await order.populate('buyer', 'fullName email')
-  try {
-    await sendEmail({
-      email: order.buyer.email,
-      subject: `Order Update - #${order.orderNumber}`,
-      template: 'orderStatusUpdate',
-      data: {
-        buyerName: order.buyer.fullName,
-        orderNumber: order.orderNumber,
-        status: status.charAt(0).toUpperCase() + status.slice(1),
-        note,
-      },
-    })
-  } catch (error) {
-    console.error('Status update email failed:', error)
-  }
+  // Send status update email and notification (Background)
+  await order.populate('buyer', 'fullName email phone')
+  
+  sendEmail({
+    email: order.buyer.email,
+    subject: `Order Update - #${order.orderNumber}`,
+    template: 'orderStatusUpdate',
+    data: {
+      buyerName: order.buyer.fullName,
+      orderNumber: order.orderNumber,
+      status: status.charAt(0).toUpperCase() + status.slice(1),
+      note,
+    },
+  }).catch(err => console.error('Status update email failed (background):', err))
 
-  // Real-time Notification to buyer
-  try {
-    await notificationService.createNotification({
-      recipient: order.buyer._id,
-      type: 'order',
-      title: 'Order Status Updated',
-      content: `Your order #${order.orderNumber} is now ${status}.`,
-      link: `/orders/${order._id}`,
-      sendSMS: true,
-      phone: order.buyer.phone
-    })
-  } catch (error) {
-    console.error('Buyer status update notification failed:', error)
-  }
+  notificationService.createNotification({
+    recipient: order.buyer._id,
+    type: 'order',
+    title: 'Order Status Updated',
+    content: `Your order #${order.orderNumber} is now ${status}.`,
+    link: `/orders/${order._id}`,
+    sendSMS: true,
+    phone: order.buyer.phone
+  }).catch(err => console.error('Buyer status update notification failed (background):', err))
 
   sendResponse(res, 200, { order }, 'Order status updated')
 })
