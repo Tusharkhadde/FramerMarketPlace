@@ -170,7 +170,7 @@ const FarmerProducts = () => {
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="border rounded-md px-4 py-2 w-full md:w-48"
+              className="bg-secondary text-foreground border border-border rounded-md px-4 py-2 w-full md:w-48 focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {categories.map(cat => (
                 <option key={cat.value} value={cat.value}>
@@ -181,7 +181,7 @@ const FarmerProducts = () => {
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="border rounded-md px-4 py-2 w-full md:w-48"
+              className="bg-secondary text-foreground border border-border rounded-md px-4 py-2 w-full md:w-48 focus:outline-none focus:ring-1 focus:ring-primary"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
