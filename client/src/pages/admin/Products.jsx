@@ -14,6 +14,7 @@ import {
   AlertCircle,
   MapPin,
   Ban,
+  Clock,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -164,20 +165,35 @@ const AdminProducts = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {[
-          { label: 'Total', value: stats.total, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Approved', value: stats.approved, color: 'text-green-600', bg: 'bg-green-50' },
-          { label: 'Pending', value: stats.pending, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-          { label: 'Featured', value: stats.featured, color: 'text-purple-600', bg: 'bg-purple-50' },
-          { label: 'Out of Stock', value: stats.outOfStock, color: 'text-red-600', bg: 'bg-red-50' },
+          { label: 'Total Products', value: stats.total, icon: Package, color: 'text-blue-400', border: 'border-blue-500/20', glow: 'shadow-blue-500/10' },
+          { label: 'Approved', value: stats.approved, icon: CheckCircle, color: 'text-emerald-400', border: 'border-emerald-500/20', glow: 'shadow-emerald-500/10' },
+          { label: 'Pending Approval', value: stats.pending, icon: Clock, color: 'text-amber-400', border: 'border-amber-500/20', glow: 'shadow-amber-500/10' },
+          { label: 'Featured', value: stats.featured, icon: Star, color: 'text-purple-400', border: 'border-purple-500/20', glow: 'shadow-purple-500/10' },
+          { label: 'Out of Stock', value: stats.outOfStock, icon: AlertCircle, color: 'text-rose-400', border: 'border-rose-500/20', glow: 'shadow-rose-500/10' },
         ].map(stat => (
-          <Card key={stat.label} className={stat.bg}>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">{stat.label}</p>
-              <p className={cn('text-2xl font-bold', stat.color)}>{stat.value}</p>
-            </CardContent>
-          </Card>
+          <motion.div
+            key={stat.label}
+            whileHover={{ y: -4 }}
+            className="group"
+          >
+            <Card className={cn("glass-premium border-t-2 relative overflow-hidden transition-all duration-300", stat.border, stat.glow)}>
+              <CardContent className="p-4 relative z-10">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase mb-1">{stat.label}</p>
+                    <p className={cn('text-3xl font-black tracking-tight', stat.color)}>{stat.value}</p>
+                  </div>
+                  <div className={cn("p-2.5 rounded-xl transition-colors duration-300", stat.color.replace('text', 'bg') + '/10')}>
+                    <stat.icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110", stat.color)} />
+                  </div>
+                </div>
+              </CardContent>
+              {/* Subtle glow effect */}
+              <div className={cn("absolute -bottom-6 -right-6 w-24 h-24 blur-3xl opacity-10 group-hover:opacity-30 transition-opacity duration-500", stat.color.replace('text', 'bg'))} />
+            </Card>
+          </motion.div>
         ))}
       </div>
 
