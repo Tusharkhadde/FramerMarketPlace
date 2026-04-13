@@ -33,7 +33,7 @@ export function CartProvider({ children }) {
   const addToCart = async (item) => {
     try {
       const response = await api.post('/cart/add', item)
-      setCart(response.data.data.cart.items)
+      setCart(response.data.data.items)
       toast.success('Item added to cart')
       return { success: true }
     } catch (error) {
@@ -45,7 +45,7 @@ export function CartProvider({ children }) {
   const updateQuantity = async (productId, quantity) => {
     try {
       const response = await api.put('/cart/update', { productId, quantity })
-      setCart(response.data.data.cart.items)
+      setCart(response.data.data.items)
       return { success: true }
     } catch (error) {
       toast.error('Failed to update quantity')
@@ -56,7 +56,7 @@ export function CartProvider({ children }) {
   const removeFromCart = async (productId) => {
     try {
       const response = await api.delete(`/cart/remove/${productId}`)
-      setCart(response.data.data.cart.items)
+      setCart(response.data.data.items)
       toast.success('Item removed from cart')
       return { success: true }
     } catch (error) {
@@ -77,11 +77,11 @@ export function CartProvider({ children }) {
     }
   }
 
-  const cartTotal = cart.reduce((total, item) => {
+  const cartTotal = Array.isArray(cart) ? cart.reduce((total, item) => {
     return total + (item.price * item.quantity)
-  }, 0)
+  }, 0) : 0
 
-  const cartCount = cart.reduce((count, item) => count + item.quantity, 0)
+  const cartCount = Array.isArray(cart) ? cart.reduce((count, item) => count + item.quantity, 0) : 0
 
   const value = {
     cart,
