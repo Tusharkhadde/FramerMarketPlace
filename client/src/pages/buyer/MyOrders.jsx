@@ -375,6 +375,15 @@ const OrderCard = ({ order, onCancel, onReleaseEscrow, isReleasing }) => {
                             `, ${order.deliveryAddress.addressLine2}`}<br />
                           {order.deliveryAddress.city}, {order.deliveryAddress.district} - {order.deliveryAddress.pincode}
                         </p>
+                        {order.deliveryPartner && (
+                          <div className="mt-3 pt-3 border-t border-zinc-200">
+                            <div className="flex items-center gap-2 text-sm font-semibold text-farmer-600">
+                              <Truck className="w-4 h-4" />
+                              <span className="capitalize">{order.deliveryPartner.name === 'self' ? 'Farmer Direct Delivery' : `${order.deliveryPartner.name} Logistics`}</span>
+                            </div>
+                            <p className="text-xs text-zinc-500 mt-1 font-medium">Estimated Arrival: {order.deliveryPartner.estimatedTime}</p>
+                          </div>
+                        )}
                       </div>
 
                       {/* Price Summary */}
