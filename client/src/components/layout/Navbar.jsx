@@ -23,6 +23,8 @@ import {
   Home,
   Store,
   LayoutDashboard,
+  Users,
+  MessageSquare,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -146,6 +148,7 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Products', href: '/products', icon: Store },
+    { name: 'Community Deals', href: '/community-deals', icon: Users },
     { name: 'Market Prices', href: '/market-prices', icon: TrendingUp },
     { name: 'Farms', href: '/farms', icon: MapPin },
   ]
@@ -230,6 +233,11 @@ const Navbar = () => {
                     )}
                   </Button>
                 )}
+
+                {/* Messages */}
+                <Button variant="ghost" size="icon" className="relative hover:bg-zinc-100 transition-colors rounded-full" onClick={() => navigate('/messages')}>
+                  <MessageSquare className="w-5 h-5 text-muted-foreground" />
+                </Button>
 
                 {/* Notifications */}
                 <DropdownMenu>
@@ -405,6 +413,18 @@ const Navbar = () => {
                 )}
               </Button>
             )}
+            
+            {isAuthenticated && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
+                onClick={() => navigate('/messages')}
+              >
+                <MessageSquare className="w-5 h-5 text-muted-foreground" />
+              </Button>
+            )}
+            
             <Button
               variant="ghost"
               size="icon"
