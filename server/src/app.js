@@ -22,6 +22,7 @@ import aiRoutes from './routes/ai.routes.js'
 import adminRoutes from './routes/admin.routes.js'
 import notificationRoutes from './routes/notification.routes.js'
 import groupBuyRoutes from './routes/groupBuy.routes.js'
+import chatRoutes from './routes/chat.routes.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -94,6 +95,7 @@ app.use('/api/ai', aiRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/notifications', notificationRoutes)
 app.use('/api/group-buys', groupBuyRoutes)
+app.use('/api/chat', chatRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => {
