@@ -8,6 +8,7 @@ import {
   updateOrderStatus,
   getFarmerRecentOrders,
   getFarmerOrderStats,
+  releaseEscrow,
 } from '../controllers/order.controller.js'
 import { protect, authorize } from '../middleware/auth.middleware.js'
 
@@ -20,6 +21,7 @@ router.use(protect)
 router.post('/', authorize('buyer'), createOrder)
 router.get('/my-orders', authorize('buyer'), getMyOrders)
 router.patch('/:id/cancel', authorize('buyer'), cancelOrder)
+router.patch('/:id/release-escrow', authorize('buyer'), releaseEscrow)
 
 // Farmer routes
 router.get('/farmer/orders', authorize('farmer'), getFarmerOrders)
