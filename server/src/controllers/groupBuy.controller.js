@@ -1,5 +1,7 @@
 import GroupBuy from '../models/GroupBuy.js'
 import Product from '../models/Product.js'
+import User from '../models/User.js'
+import { sendBulkEmail } from '../services/email.service.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { ApiError } from '../utils/apiError.js'
 import { sendResponse } from '../utils/apiResponse.js'
@@ -29,6 +31,24 @@ export const createGroupBuy = asyncHandler(async (req, res, next) => {
     expiryDate: new Date(expiryDate),
     minParticipantQuantity: minParticipantQuantity || 1
   })
+
+  // Send mass email to all buyers asynchronously
+  try {
+    const farmer = await User.findById(req.user.id).select('fullName')
+    const buyers = await User.find({ userType: 'buyer' }).select('email fullName')
+    const recipients = buyers.map(buyer => ({ email: buyer.email, name: buyer.fullName }))
+    
+    sendBulkEmail(recipients, 'New Community Deal!', 'newCommunityDeal', {
+      farmerName: farmer?.fullName || 'A local farmer',
+      cropName: product.cropName,
+      regularPrice: product.pricePerKg,
+      discountPrice: discountPrice,
+      targetQuantity: targetQuantity,
+      dealUrl: `${process.env.CLIENT_URL}/community-deals`
+    }).catch(err => console.error('Failed to send mass email for group buy', err))
+  } catch (err) {
+    console.error('Error preparing mass email:', err)
+  }
 
   sendResponse(res, 201, { groupBuy }, 'Group Buy deal created successfully')
 })
@@ -101,6 +121,17 @@ export const getGroupBuys = asyncHandler(async (req, res, next) => {
     .sort({ expiryDate: 1 })
 
   sendResponse(res, 200, { deals }, 'Active deals fetched successfully')
+})
+
+// @desc    Get all group buy deals for the logged in farmer
+// @route   GET /api/group-buys/farmer/me
+// @access  Private (Farmer)
+export const getFarmerGroupBuys = asyncHandler(async (req, res, next) => {
+  const deals = await GroupBuy.find({ farmer: req.user.id })
+    .populate('product', 'cropName images category pricePerKg')
+    .sort({ createdAt: -1 })
+
+  sendResponse(res, 200, { deals }, 'Farmer deals fetched successfully')
 })
 
 // @desc    Get single deal details
