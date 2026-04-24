@@ -110,7 +110,7 @@ const orderSchema = new mongoose.Schema(
     },
     paymentStatus: {
       type: String,
-      enum: ['pending', 'paid', 'failed', 'refunded'],
+      enum: ['pending', 'paid', 'failed', 'refunded', 'escrow'],
       default: 'pending',
     },
     paymentDetails: {
@@ -119,6 +119,11 @@ const orderSchema = new mongoose.Schema(
       razorpaySignature: String,
       paidAt: Date,
     },
+    isEscrowOrder: {
+      type: Boolean,
+      default: false,
+    },
+    escrowReleasedAt: Date,
     orderStatus: {
       type: String,
       enum: ['pending', 'confirmed', 'processing', 'packed', 'shipped', 'delivered', 'cancelled'],
