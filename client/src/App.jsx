@@ -15,6 +15,7 @@ import AdminLayout from '@/components/layout/AdminLayout'
 import Home from '@/pages/public/Home'
 import Products from '@/pages/public/Products'
 import ProductDetail from '@/pages/public/ProductDetail'
+import CommunityDeals from '@/pages/public/CommunityDeals'
 
 // Auth Pages
 import Login from '@/pages/auth/Login'
@@ -30,6 +31,7 @@ import BuyerProfile from '@/pages/buyer/Profile'
 import BuyerSettings from '@/pages/buyer/Settings'
 import FarmMap from '@/pages/buyer/FarmMap'
 import NotificationsPage from '@/pages/shared/Notifications'
+import Messages from '@/pages/shared/Messages'
 
 // Farmer Pages
 import FarmerDashboard from '@/pages/farmer/Dashboard'
@@ -40,6 +42,8 @@ import MarketPrices from '@/pages/farmer/MarketPrices'
 import FarmerProfile from '@/pages/farmer/Profile'
 import FarmerSettings from '@/pages/farmer/Settings'
 import FarmerAnalytics from '@/pages/farmer/Analytics'
+import PriceAdvisor from '@/pages/farmer/PriceAdvisor'
+import FarmerDeals from '@/pages/farmer/Deals'
 
 // Admin Pages
 import AdminDashboard from '@/pages/admin/Dashboard'
@@ -79,6 +83,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/products/:id" element={<ProductDetail />} />
+                <Route path="/community-deals" element={<CommunityDeals />} />
                 <Route path="/market-prices" element={<MarketPrices />} />
                 {/* <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} /> */}
@@ -148,6 +153,14 @@ function App() {
                   </PrivateRoute>
                 }
               />
+              <Route
+                path="/messages"
+                element={
+                  <PrivateRoute allowedRoles={['buyer', 'farmer']}>
+                    <Messages />
+                  </PrivateRoute>
+                }
+              />
             </Route>
 
               {/* Farmer Routes */}
@@ -166,6 +179,8 @@ function App() {
                 <Route path="orders" element={<FarmerOrdersPage />} />
                 <Route path="market-prices" element={<MarketPrices />} />
                 <Route path="analytics" element={<FarmerAnalytics />} />
+                <Route path="advisor" element={<PriceAdvisor />} />
+                <Route path="deals" element={<FarmerDeals />} />
                 <Route path="profile" element={<FarmerProfile />} />
                 <Route path="settings" element={<FarmerSettings />} />
               </Route>
