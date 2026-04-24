@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import Navbar from './Navbar'
 import { FlickeringFooter } from './FlickeringFooter'
+import OnboardingWizard from '@/components/shared/OnboardingWizard'
 
 const MainLayout = () => {
   return (
@@ -10,6 +11,7 @@ const MainLayout = () => {
         <Outlet />
       </main>
       <FlickeringFooter />
+      <OnboardingWizard />
     </div>
   )
 }
