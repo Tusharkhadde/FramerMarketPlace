@@ -50,6 +50,7 @@ const AddProduct = () => {
     tags: [],
     minimumOrder: 1,
     deliveryOptions: {
+      deliveryType: 'both',
       pickup: true,
       delivery: true,
       deliveryRadius: 50,
@@ -809,6 +810,56 @@ const AddProduct = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="space-y-3 mb-6 border-b pb-6">
+              <label className="block text-sm font-medium">
+                Who will deliver this product? *
+              </label>
+              <div className="flex flex-col space-y-2">
+                <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                  <input
+                    type="radio"
+                    name="deliveryType"
+                    value="self"
+                    checked={formData.deliveryOptions.deliveryType === 'self'}
+                    onChange={(e) => handleNestedChange('deliveryOptions', 'deliveryType', e.target.value)}
+                    className="mr-3"
+                  />
+                  <div>
+                    <p className="font-semibold text-sm">Self Delivery</p>
+                    <p className="text-xs text-muted-foreground">I will deliver the orders myself to the buyers.</p>
+                  </div>
+                </label>
+                <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                  <input
+                    type="radio"
+                    name="deliveryType"
+                    value="platform"
+                    checked={formData.deliveryOptions.deliveryType === 'platform'}
+                    onChange={(e) => handleNestedChange('deliveryOptions', 'deliveryType', e.target.value)}
+                    className="mr-3"
+                  />
+                  <div>
+                    <p className="font-semibold text-sm flex items-center gap-2">Platform Partners <Sparkles className="w-3 h-3 text-farmer-500" /></p>
+                    <p className="text-xs text-muted-foreground">Use our logistics network (Porter, Dunzo) to pick up from my farm.</p>
+                  </div>
+                </label>
+                <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                  <input
+                    type="radio"
+                    name="deliveryType"
+                    value="both"
+                    checked={formData.deliveryOptions.deliveryType === 'both'}
+                    onChange={(e) => handleNestedChange('deliveryOptions', 'deliveryType', e.target.value)}
+                    className="mr-3"
+                  />
+                  <div>
+                    <p className="font-semibold text-sm">Let the Buyer Choose</p>
+                    <p className="text-xs text-muted-foreground">Support both Self Delivery and Platform Partners.</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
