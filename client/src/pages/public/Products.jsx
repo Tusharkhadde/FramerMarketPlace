@@ -13,7 +13,10 @@ import {
   Filter,
   X,
   Sparkles,
-  Bot
+  Bot,
+  Wind,
+  Droplets,
+  Users
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -50,6 +53,7 @@ const Products = () => {
 
   const [isSearchingAI, setIsSearchingAI] = useState(false)
   const [aiMessage, setAiMessage] = useState('')
+  const [sustainabilityStats, setSustainabilityStats] = useState(null)
 
   // Filter States
   const [filters, setFilters] = useState({
@@ -93,7 +97,17 @@ const Products = () => {
   // Fetch products
   useEffect(() => {
     fetchProducts()
+    fetchSustainabilityStats()
   }, [filters, currentPage])
+
+  const fetchSustainabilityStats = async () => {
+    try {
+      const response = await api.get('/products/sustainability-stats')
+      setSustainabilityStats(response.data.data.stats)
+    } catch (error) {
+      console.error('Error fetching sustainability stats:', error)
+    }
+  }
 
   const fetchProducts = async () => {
     try {
@@ -238,6 +252,51 @@ const Products = () => {
             {totalProducts} products available from verified farmers
           </p>
         </div>
+
+        {/* Sustainability Dashboard Widget */}
+        {sustainabilityStats && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+          >
+            <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20 shadow-sm">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="p-3 bg-green-500/20 rounded-full text-green-600">
+                  <Wind className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-700">{sustainabilityStats.totalCO2Saved}kg</div>
+                  <div className="text-xs text-green-600 uppercase font-semibold tracking-wider">CO2 Emissions Saved</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 shadow-sm">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="p-3 bg-blue-500/20 rounded-full text-blue-600">
+                  <Droplets className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-blue-700">{sustainabilityStats.waterSaved}L</div>
+                  <div className="text-xs text-blue-600 uppercase font-semibold tracking-wider">Water Conserved</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/20 shadow-sm">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="p-3 bg-amber-500/20 rounded-full text-amber-600">
+                  <Users className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-amber-700">{sustainabilityStats.localFarmsSupported}</div>
+                  <div className="text-xs text-amber-600 uppercase font-semibold tracking-wider">Local Farmers Supported</div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Search and Actions Bar */}
         <div className="bg-card rounded-lg shadow-sm p-4 mb-6">
