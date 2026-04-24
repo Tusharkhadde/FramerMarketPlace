@@ -39,6 +39,14 @@ connectDB().then(() => {
       }
     })
 
+    // CHAT EVENTS
+    socket.on('send-message', (data) => {
+      // data: { recipientId, message, roomId, sender }
+      if (data.recipientId) {
+        io.to(data.recipientId.toString()).emit('receive-message', data)
+      }
+    })
+
     socket.on('disconnect', () => {
       console.log('🔌 Client disconnected')
     })
