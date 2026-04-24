@@ -6,6 +6,7 @@ import { uploadToCloudinary, deleteFromCloudinary } from '../config/cloudinary.j
 import fs from 'fs'
 import path from 'path'
 import User from '../models/User.js'
+import Order from '../models/Order.js'
 import notificationService from '../services/notification.service.js'
 
 // @desc    Get all products with filtering
@@ -87,6 +88,21 @@ export const getProductById = asyncHandler(async (req, res, next) => {
 
   if (!product) {
     return next(new ApiError('Product not found', 404))
+  }
+
+  // Track views
+  product.views = (product.views || 0) + 1
+  await product.save()
+
+  // View Milestone Actionable Alert
+  if ([5, 20, 50, 100].includes(product.views)) {
+    notificationService.createNotification({
+      recipient: product.farmer._id,
+      type: 'alert',
+      title: 'High Interest Alert! 📈',
+      content: `Your ${product.cropName} just hit ${product.views} views! Consider lowering the price slightly to close the sale.`,
+      link: `/farmer/products/edit/${product._id}`
+    }).catch(err => console.error('Failed to send view alert:', err))
   }
 
   // Generate Real Digital Passport Data
@@ -365,11 +381,34 @@ export const updateProduct = asyncHandler(async (req, res, next) => {
     minimumOrder: req.body.minimumOrder ? Number(req.body.minimumOrder) : product.minimumOrder,
   }
 
+  const oldPrice = product.pricePerKg
+
   product = await Product.findByIdAndUpdate(
     req.params.id,
     updateData,
     { new: true, runValidators: true }
   ).populate('farmer', 'fullName district')
+
+  // Price Drop Actionable Alert
+  if (updateData.pricePerKg && updateData.pricePerKg < oldPrice) {
+    try {
+      // Find all buyers who have previously ordered this product
+      const pastOrders = await Order.find({ 'items.product': product._id }).distinct('buyer')
+      
+      const notificationPromises = pastOrders.map(buyerId => 
+        notificationService.createNotification({
+          recipient: buyerId,
+          type: 'alert',
+          title: 'Price Drop Alert! 📉',
+          content: `Great news! The price of ${product.cropName} just dropped to ₹${updateData.pricePerKg}/kg. Order now!`,
+          link: `/products/${product._id}`
+        })
+      )
+      await Promise.all(notificationPromises)
+    } catch (error) {
+      console.error('Failed to send price drop alerts:', error)
+    }
+  }
 
   sendResponse(res, 200, { product }, 'Product updated successfully')
 })
