@@ -85,6 +85,11 @@ const productSchema = new mongoose.Schema({
     default: 1,
   },
   deliveryOptions: {
+    deliveryType: { 
+      type: String, 
+      enum: ['self', 'platform', 'both'], 
+      default: 'both' 
+    },
     pickup: { type: Boolean, default: true },
     delivery: { type: Boolean, default: true },
     deliveryRadius: { type: Number, default: 50 },
