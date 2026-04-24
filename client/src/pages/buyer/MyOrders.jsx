@@ -11,6 +11,9 @@ import {
   Download,
   Star,
   MapPin,
+  ShieldCheck,
+  ShieldAlert,
+  Lock
 } from 'lucide-react'
 import {
   Dialog,
@@ -43,6 +46,7 @@ const MyOrders = () => {
   const [filter, setFilter] = useState('all')
   const [dateFilter, setDateFilter] = useState(null)
   const [orderToCancel, setOrderToCancel] = useState(null)
+  const [isReleasingEscrow, setIsReleasingEscrow] = useState(false)
 
   useEffect(() => {
     fetchOrders()
@@ -78,6 +82,20 @@ const MyOrders = () => {
       toast.error('Failed to cancel order')
     } finally {
       setOrderToCancel(null)
+    }
+  }
+
+  const handleReleaseEscrow = async (orderId) => {
+    try {
+      setIsReleasingEscrow(true)
+      await api.patch(`/orders/${orderId}/release-escrow`)
+      toast.success('Funds released from Escrow! Payment completed. 🔓')
+      fetchOrders()
+    } catch (error) {
+      console.error('Error releasing escrow:', error)
+      toast.error(error.response?.data?.message || 'Failed to release funds')
+    } finally {
+      setIsReleasingEscrow(false)
     }
   }
 
@@ -169,6 +187,8 @@ const MyOrders = () => {
                 key={order._id}
                 order={order}
                 onCancel={() => setOrderToCancel(order)}
+                onReleaseEscrow={() => handleReleaseEscrow(order._id)}
+                isReleasing={isReleasingEscrow}
               />
             ))}
           </div>
@@ -201,7 +221,7 @@ const MyOrders = () => {
 }
 
 // Order Card Component
-const OrderCard = ({ order, onCancel }) => {
+const OrderCard = ({ order, onCancel, onReleaseEscrow, isReleasing }) => {
   const navigate = useNavigate()
 
   const statusConfig = {
@@ -245,6 +265,20 @@ const OrderCard = ({ order, onCancel }) => {
                 >
                   {order.paymentStatus === 'paid' ? 'Paid' : 'Payment Pending'}
                 </span>
+
+                {/* Escrow Status Badge */}
+                {order.isEscrowOrder && order.paymentStatus === 'escrow' && (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black bg-blue-500 text-white shadow-sm animate-pulse">
+                    <Lock className="w-3 h-3" />
+                    MONEY PROTECTED IN ESCROW
+                  </span>
+                )}
+                {order.isEscrowOrder && order.paymentStatus === 'paid' && (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-600 border border-green-200">
+                    <ShieldCheck className="w-3 h-3" />
+                    Escrow Released
+                  </span>
+                )}
               </div>
               <p className="text-sm font-medium text-white/80 mb-1">
                 Order #{order.orderNumber || order._id.slice(-8)}
@@ -408,6 +442,24 @@ const OrderCard = ({ order, onCancel }) => {
                 onClick={onCancel}
               >
                 Cancel Order
+              </Button>
+            )}
+
+            {/* Escrow Release Button */}
+            {order.isEscrowOrder && order.paymentStatus === 'escrow' && (
+              <Button 
+                onClick={onReleaseEscrow}
+                disabled={isReleasing}
+                className="flex-1 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg border-0 font-bold"
+              >
+                {isReleasing ? (
+                  'Releasing...'
+                ) : (
+                  <>
+                    <ShieldCheck className="w-4 h-4 mr-2" />
+                    Verify Quality & Release Funds
+                  </>
+                )}
               </Button>
             )}
           </div>
