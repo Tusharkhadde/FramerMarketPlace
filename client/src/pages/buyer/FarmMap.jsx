@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -53,6 +53,8 @@ const FarmMap = () => {
   const [userLocation, setUserLocation] = useState([19.0760, 72.8777]); // Default Mumbai
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [maxDistance, setMaxDistance] = useState("all");
+  const [selectedCrop, setSelectedCrop] = useState("all");
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -100,11 +102,23 @@ const FarmMap = () => {
     }
   }, []);
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.speciality.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.district?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const uniqueCrops = Array.from(new Set(products.map(p => p.name)));
+
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          p.speciality.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          p.district?.toLowerCase().includes(searchTerm.toLowerCase());
+                          
+    const matchesCrop = selectedCrop === 'all' || p.name === selectedCrop;
+    
+    let matchesDistance = true;
+    if (maxDistance !== 'all') {
+      const dist = calculateDistance(userLocation[0], userLocation[1], p.coordinates[0], p.coordinates[1]);
+      matchesDistance = parseFloat(dist) <= parseFloat(maxDistance);
+    }
+
+    return matchesSearch && matchesCrop && matchesDistance;
+  });
 
   return (
     <div className="flex h-[calc(100vh-120px)] gap-4 overflow-hidden mt-4">
@@ -112,7 +126,7 @@ const FarmMap = () => {
       <div className="w-[380px] flex-shrink-0 flex flex-col bg-card/40 backdrop-blur-md rounded-3xl border border-border/50 overflow-hidden shadow-xl">
         <div className="p-5 border-b border-border/50 bg-background/50">
           <h2 className="text-2xl font-black mb-4">Farm Map</h2>
-          <div className="relative">
+          <div className="relative mb-3">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input 
               placeholder="Search farms, specialties..."
@@ -120,6 +134,28 @@ const FarmMap = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-11 rounded-full bg-muted/30 border-border/50 focus:bg-background/80 transition-all h-11 text-sm shadow-sm"
             />
+          </div>
+          <div className="flex gap-2">
+            <select 
+              value={maxDistance} 
+              onChange={e => setMaxDistance(e.target.value)}
+              className="flex-1 bg-muted/30 border border-border/50 rounded-full px-3 h-9 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+            >
+              <option value="all">Any Distance</option>
+              <option value="5">Within 5 km</option>
+              <option value="10">Within 10 km</option>
+              <option value="20">Within 20 km</option>
+              <option value="50">Within 50 km</option>
+              <option value="100">Within 100 km</option>
+            </select>
+            <select 
+              value={selectedCrop} 
+              onChange={e => setSelectedCrop(e.target.value)}
+              className="flex-1 bg-muted/30 border border-border/50 rounded-full px-3 h-9 text-xs focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+            >
+              <option value="all">All Crops</option>
+              {uniqueCrops.map(crop => <option key={crop} value={crop}>{crop}</option>)}
+            </select>
           </div>
         </div>
         
@@ -170,6 +206,15 @@ const FarmMap = () => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
+          
+          {/* Delivery Radius Circle */}
+          {maxDistance !== 'all' && (
+            <Circle 
+              center={userLocation} 
+              radius={parseFloat(maxDistance) * 1000} 
+              pathOptions={{ fillColor: 'rgb(34, 197, 94)', fillOpacity: 0.1, color: 'rgb(34, 197, 94)', weight: 2, dashArray: '5, 5' }} 
+            />
+          )}
           
           {/* User Location Marker */}
           <Marker 
