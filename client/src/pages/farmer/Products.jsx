@@ -13,6 +13,8 @@ import {
   TrendingUp,
   AlertCircle,
   Filter,
+  Users,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,6 +39,14 @@ const FarmerProducts = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterCategory, setFilterCategory] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
+  const [dealModalOpen, setDealModalOpen] = useState(false)
+  const [selectedProductForDeal, setSelectedProductForDeal] = useState(null)
+  const [dealFormData, setDealFormData] = useState({
+    targetQuantity: '',
+    discountPrice: '',
+    expiryDate: '',
+    minParticipantQuantity: '5'
+  })
 
   const categories = [
     { value: '', label: 'All Categories' },
@@ -86,6 +96,31 @@ const FarmerProducts = () => {
       toast.success('Product deleted successfully')
     } catch (error) {
       toast.error('Failed to delete product')
+    }
+  }
+
+  const openDealModal = (product) => {
+    setSelectedProductForDeal(product)
+    setDealFormData({
+      targetQuantity: product.quantityAvailable > 50 ? '50' : product.quantityAvailable.toString(),
+      discountPrice: Math.floor(product.pricePerKg * 0.8).toString(), // 20% default discount
+      expiryDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 3 days from now
+      minParticipantQuantity: '5'
+    })
+    setDealModalOpen(true)
+  }
+
+  const handleCreateDeal = async (e) => {
+    e.preventDefault()
+    try {
+      await api.post('/group-buys', {
+        productId: selectedProductForDeal._id,
+        ...dealFormData
+      })
+      toast.success('Group Buy deal created successfully! 🎉')
+      setDealModalOpen(false)
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to create deal')
     }
   }
 
@@ -221,8 +256,73 @@ const FarmerProducts = () => {
               onToggleAvailability={handleToggleAvailability}
               onDelete={handleDeleteProduct}
               onEdit={(id) => navigate(`/farmer/products/edit/${id}`)}
+              onCreateDeal={() => openDealModal(product)}
             />
           ))}
+        </div>
+      )}
+
+      {/* Create Deal Modal */}
+      {dealModalOpen && selectedProductForDeal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md shadow-2xl border-border/50">
+            <div className="flex justify-between items-center p-6 border-b border-border/50 bg-gradient-to-r from-emerald-500/10 to-transparent">
+              <div>
+                <h3 className="text-xl font-bold">Create Group Buy Deal</h3>
+                <p className="text-sm text-muted-foreground">{selectedProductForDeal.cropName}</p>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setDealModalOpen(false)}>
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+            <CardContent className="p-6">
+              <form onSubmit={handleCreateDeal} className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Target Quantity to Unlock Deal (kg)</Label>
+                  <Input 
+                    type="number" 
+                    value={dealFormData.targetQuantity}
+                    onChange={e => setDealFormData({...dealFormData, targetQuantity: e.target.value})}
+                    max={selectedProductForDeal.quantityAvailable}
+                    required 
+                  />
+                  <p className="text-xs text-muted-foreground">Max available: {selectedProductForDeal.quantityAvailable}kg</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Wholesale Discount Price (₹/kg)</Label>
+                  <Input 
+                    type="number" 
+                    value={dealFormData.discountPrice}
+                    onChange={e => setDealFormData({...dealFormData, discountPrice: e.target.value})}
+                    max={selectedProductForDeal.pricePerKg - 1}
+                    required 
+                  />
+                  <p className="text-xs text-muted-foreground">Current price: ₹{selectedProductForDeal.pricePerKg}/kg</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Minimum Quantity per Participant (kg)</Label>
+                  <Input 
+                    type="number" 
+                    value={dealFormData.minParticipantQuantity}
+                    onChange={e => setDealFormData({...dealFormData, minParticipantQuantity: e.target.value})}
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Expiry Date</Label>
+                  <Input 
+                    type="date" 
+                    value={dealFormData.expiryDate}
+                    onChange={e => setDealFormData({...dealFormData, expiryDate: e.target.value})}
+                    required 
+                  />
+                </div>
+                <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-12 rounded-xl mt-4">
+                  Publish Deal to Community
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>
@@ -256,7 +356,7 @@ const StatCard = ({ label, value, icon: Icon, color }) => {
 }
 
 // Product Card Component
-const ProductCard = ({ product, onToggleAvailability, onDelete, onEdit }) => {
+const ProductCard = ({ product, onToggleAvailability, onDelete, onEdit, onCreateDeal }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -314,6 +414,12 @@ const ProductCard = ({ product, onToggleAvailability, onDelete, onEdit }) => {
                   <Edit className="w-4 h-4 mr-2" />
                   Edit
                 </DropdownMenuItem>
+                {product.isAvailable && product.quantityAvailable > 10 && (
+                  <DropdownMenuItem onClick={onCreateDeal} className="text-emerald-500 font-medium">
+                    <Users className="w-4 h-4 mr-2" />
+                    Create Group Buy
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   onClick={() => onToggleAvailability(product._id, product.isAvailable)}
                 >
