@@ -80,6 +80,14 @@ const orderSchema = new mongoose.Schema(
         enum: ['morning', 'afternoon', 'evening'],
       },
     },
+    deliveryPartner: {
+      name: {
+        type: String,
+        enum: ['self', 'porter', 'dunzo'],
+      },
+      estimatedTime: String,
+      cost: Number,
+    },
     pricing: {
       subtotal: {
         type: Number,
