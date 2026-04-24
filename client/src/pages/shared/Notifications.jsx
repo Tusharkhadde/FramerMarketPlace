@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Bell, 
@@ -28,6 +29,7 @@ const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchNotifications()
@@ -192,7 +194,7 @@ const NotificationsPage = () => {
                         {notification.link && (
                           <Button 
                             variant="link" 
-                            onClick={() => (window.location.href = notification.link)}
+                            onClick={() => navigate(notification.link)}
                             className="p-0 h-auto text-xs font-black text-farmer-600 hover:text-farmer-700 decoration-2 underline-offset-4"
                           >
                             VIEW DETAILS →
