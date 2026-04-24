@@ -19,6 +19,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     paymentMethod,
     paymentDetails,
     notes,
+    useEscrow = false
   } = req.body
 
   if (!items || items.length === 0) {
@@ -82,6 +83,9 @@ export const createOrder = asyncHandler(async (req, res, next) => {
   const deliveryCharges = subtotal >= 500 ? 0 : 50
   const total = subtotal + deliveryCharges
 
+  const isEscrowOrder = useEscrow || total > 5000
+  const paymentStatus = (paymentMethod === 'online' && isEscrowOrder) ? 'escrow' : 'pending'
+
   // Create order
   const order = await Order.create({
     buyer: req.user.id,
@@ -97,8 +101,9 @@ export const createOrder = asyncHandler(async (req, res, next) => {
       total,
     },
     paymentMethod,
-    paymentStatus: 'pending',
+    paymentStatus,
     paymentDetails: paymentDetails || {},
+    isEscrowOrder,
     orderStatus: 'confirmed',
     notes,
     estimatedDelivery: deliverySchedule?.date
@@ -136,8 +141,10 @@ export const createOrder = asyncHandler(async (req, res, next) => {
   notificationService.createNotification({
     recipient: req.user.id,
     type: 'order',
-    title: 'Order Confirmed! 🎉',
-    content: `Order #${order.orderNumber} for ₹${order.pricing.total} has been placed. We've notified the farmers!`,
+    title: isEscrowOrder ? 'Escrow Order Confirmed! 🔒' : 'Order Confirmed! 🎉',
+    content: isEscrowOrder 
+      ? `Order #${order.orderNumber} is held in Secure Escrow. Funds will be released only after your confirmation.`
+      : `Order #${order.orderNumber} for ₹${order.pricing.total} has been placed. We've notified the farmers!`,
     link: `/orders/${order._id}`,
     sendSMS: true,
     phone: req.user.phone
@@ -484,4 +491,48 @@ export const getFarmerOrderStats = asyncHandler(async (req, res, next) => {
     pendingOrders: stats?.pendingOrders || 0,
     monthlyRevenue: monthlyRevenue[0]?.revenue || 0,
   }, 'Stats fetched successfully')
+})
+
+// @desc    Release funds from Escrow
+// @route   PATCH /api/orders/:id/release-escrow
+// @access  Private (Buyer)
+export const releaseEscrow = asyncHandler(async (req, res, next) => {
+  const order = await Order.findById(req.params.id)
+
+  if (!order) {
+    return next(new ApiError('Order not found', 404))
+  }
+
+  if (order.buyer.toString() !== req.user.id) {
+    return next(new ApiError('Not authorized', 403))
+  }
+
+  if (order.paymentStatus !== 'escrow') {
+    return next(new ApiError('This order is not in escrow', 400))
+  }
+
+  order.paymentStatus = 'paid'
+  order.escrowReleasedAt = new Date()
+  order.statusHistory.push({
+    status: order.orderStatus,
+    timestamp: new Date(),
+    note: 'Payment released from Escrow by Buyer',
+    updatedBy: req.user.id,
+  })
+
+  await order.save()
+
+  // Notify Farmers
+  const farmerIds = [...new Set(order.items.map((item) => item.farmer.toString()))]
+  farmerIds.forEach(farmerId => {
+    notificationService.createNotification({
+      recipient: farmerId,
+      type: 'payment',
+      title: 'Payment Released! 💰',
+      content: `Funds for Order #${order.orderNumber} have been released from Escrow.`,
+      link: `/farmer/orders`
+    })
+  })
+
+  sendResponse(res, 200, { order }, 'Payment released successfully')
 })
