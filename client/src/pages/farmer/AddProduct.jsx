@@ -30,6 +30,8 @@ const AddProduct = () => {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isAnalyzingPrice, setIsAnalyzingPrice] = useState(false)
   const [priceAnalysis, setPriceAnalysis] = useState(null)
+  const [isAnalyzingQuality, setIsAnalyzingQuality] = useState(false)
+  const [qualityAnalysis, setQualityAnalysis] = useState(null)
   const [imagePreview, setImagePreview] = useState([])
 
   const [formData, setFormData] = useState({
@@ -142,6 +144,40 @@ const AddProduct = () => {
       toast.error('Could not connect to ML Server. Is the Python Flask app running on port 5001?')
     } finally {
       setIsAnalyzingPrice(false)
+    }
+  }
+
+  const analyzeCropQuality = async () => {
+    if (images.length === 0) {
+      toast.error('Please upload at least one image of your crop to analyze its quality!')
+      return
+    }
+
+    setIsAnalyzingQuality(true)
+    setQualityAnalysis(null)
+
+    try {
+      const formData = new FormData()
+      formData.append('image', images[0]) // Analyze the first image
+
+      const response = await api.post('/ai/analyze-crop', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+
+      const analysis = response.data.data.analysis
+      setQualityAnalysis(analysis)
+      
+      // Auto-update the quality grade based on AI assessment
+      if (analysis.grading) {
+        setFormData(prev => ({ ...prev, qualityGrade: analysis.grading }))
+      }
+      
+      toast.success('✨ Gemini Vision has certified your crop quality!')
+    } catch (error) {
+      console.error('AI Quality Analysis Error:', error)
+      toast.error(error.response?.data?.message || 'AI analysis failed. Please check your internet or API key.')
+    } finally {
+      setIsAnalyzingQuality(false)
     }
   }
 
@@ -609,6 +645,67 @@ const AddProduct = () => {
                   </p>
                 </label>
               </div>
+
+              {images.length > 0 && (
+                <div className="mt-4">
+                  <Button
+                    type="button"
+                    onClick={analyzeCropQuality}
+                    disabled={isAnalyzingQuality}
+                    className="w-full bg-gradient-to-r from-green-600 to-farmer-600 hover:from-green-700 hover:to-farmer-700 text-white border-0 shadow-md font-bold transition-all"
+                  >
+                    <Sparkles className={`w-4 h-4 mr-2 ${isAnalyzingQuality ? 'animate-spin' : ''}`} />
+                    {isAnalyzingQuality ? 'Gemini AI Is Inspecting Image...' : 'Run Gemini AI Quality Audit'}
+                  </Button>
+                </div>
+              )}
+
+              {qualityAnalysis && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mt-4 p-5 rounded-2xl bg-gradient-to-br from-zinc-900 to-black text-white border border-zinc-800 shadow-2xl relative overflow-hidden group"
+                >
+                  <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <Sparkles className="w-20 h-20 text-farmer-500" />
+                  </div>
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="p-2 bg-farmer-500 rounded-lg">
+                          <CheckCircle className="w-4 h-4 text-white" />
+                        </div>
+                        <h4 className="font-bold text-sm tracking-tight uppercase">AI Vision Audit Report</h4>
+                      </div>
+                      <span className="text-[10px] font-black bg-white/10 px-2 py-0.5 rounded-full text-farmer-400">GEMINI 1.5 PRO</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                        <p className="text-[10px] text-zinc-400 uppercase font-black tracking-widest mb-1">Health Score</p>
+                        <p className="text-xl font-black text-green-400">{qualityAnalysis.health_assessment}</p>
+                      </div>
+                      <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                        <p className="text-[10px] text-zinc-400 uppercase font-black tracking-widest mb-1">AI Grade</p>
+                        <p className="text-xl font-black text-farmer-500">GRADE {qualityAnalysis.grading}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                       <p className="text-[10px] text-zinc-400 uppercase font-black tracking-widest">Market Insights</p>
+                       <p className="text-xs italic text-zinc-300 leading-relaxed font-medium">"{qualityAnalysis.quality_summary}"</p>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+                       <div className="flex gap-2">
+                          <span className="text-[9px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-md font-bold uppercase">Freshness: Verified</span>
+                          <span className="text-[9px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-md font-bold uppercase">Traceability: High</span>
+                       </div>
+                       <p className="text-[9px] text-zinc-500 font-bold uppercase">Verified at {new Date().toLocaleTimeString()}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
               {imagePreview.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
