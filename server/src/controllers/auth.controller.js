@@ -4,6 +4,7 @@ import { ApiError } from '../utils/apiError.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { sendResponse } from '../utils/apiResponse.js'
 import { sendEmail } from '../services/email.service.js'
+import notificationService from '../services/notification.service.js'
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -42,6 +43,59 @@ export const register = asyncHandler(async (req, res, next) => {
 
   // Create user
   const user = await User.create(userData)
+
+  // In-app welcome notification for the newly registered user
+  try {
+    await notificationService.createNotification({
+      recipient: user._id,
+      type: 'system',
+      title: 'Welcome to Farmer Marketplace! 🌾',
+      content: user.userType === 'farmer' 
+        ? "Welcome aboard! 🚜 Let's set up your farm profile to start selling." 
+        : "Welcome! Check out the fresh produce available near you today.",
+      link: user.userType === 'farmer' ? '/farmer/dashboard' : '/products'
+    });
+  } catch (err) {
+    console.error('In-app welcome notification failed:', err);
+  }
+
+  // Alerts for Admins if a farmer registered
+  if (userType === 'farmer') {
+    try {
+      const admins = await User.find({ userType: 'admin' });
+      
+      const adminPromises = admins.map(async (admin) => {
+        // In-app alert to admin
+        await notificationService.createNotification({
+          recipient: admin._id,
+          type: 'alert',
+          title: 'New Farmer Registration 👨‍🌾',
+          content: `${user.fullName} just registered as a farmer in ${user.district}. Please verify their profile.`,
+          link: '/admin/users'
+        });
+
+        // Email alert to admin
+        await sendEmail({
+          email: admin.email,
+          subject: 'New Farmer Registration Needs Verification',
+          data: {
+            html: `
+              <h3>New Farmer Registration 👨‍🌾</h3>
+              <p><strong>Name:</strong> ${user.fullName}</p>
+              <p><strong>District:</strong> ${user.district}</p>
+              <p><strong>Phone:</strong> ${user.phone}</p>
+              <br/>
+              <a href="${process.env.CLIENT_URL}/login" style="padding: 10px 20px; background-color: #22c55e; color: white; text-decoration: none; border-radius: 5px;">Login to Admin Panel</a>
+            `
+          }
+        });
+      });
+
+      await Promise.all(adminPromises);
+    } catch (err) {
+      console.error('Admin alerts failed:', err);
+    }
+  }
 
   // Send welcome email
   try {
