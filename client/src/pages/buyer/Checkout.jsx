@@ -37,6 +37,11 @@ const Checkout = () => {
   const [showAddressForm, setShowAddressForm] = useState(false)
   const [showDemoPayment, setShowDemoPayment] = useState(false)
   const [demoOrder, setDemoOrder] = useState(null)
+  
+  // Delivery Logistics State
+  const [deliveryPartner, setDeliveryPartner] = useState(null)
+  const [isSearchingPartners, setIsSearchingPartners] = useState(false)
+  const [availablePartners, setAvailablePartners] = useState([])
 
   const [addressForm, setAddressForm] = useState({
     label: 'home',
@@ -57,6 +62,44 @@ const Checkout = () => {
     fetchAddresses()
   }, [])
 
+  useEffect(() => {
+    if (selectedAddress && cart.length > 0) {
+      simulatePartnerSearch()
+    }
+  }, [selectedAddress, cart])
+
+  const simulatePartnerSearch = () => {
+    setIsSearchingPartners(true)
+    setDeliveryPartner(null)
+    
+    // Check product delivery types
+    const requiresSelfDelivery = cart.some(item => item.product.deliveryOptions?.deliveryType === 'self')
+    const supportsPlatform = cart.every(item => item.product.deliveryOptions?.deliveryType === 'platform' || item.product.deliveryOptions?.deliveryType === 'both')
+
+    setTimeout(() => {
+      let partners = []
+      if (requiresSelfDelivery) {
+        partners = [
+          { name: 'self', label: 'Farmer Direct Delivery', eta: 'Tomorrow', cost: 50, icon: Truck }
+        ]
+      } else if (supportsPlatform) {
+        partners = [
+          { name: 'porter', label: 'Porter Logistics', eta: '2 Hours', cost: 45, icon: Package },
+          { name: 'dunzo', label: 'Dunzo', eta: '3 Hours', cost: 40, icon: Truck },
+          { name: 'self', label: 'Farmer Direct Delivery', eta: 'Tomorrow', cost: 50, icon: Truck }
+        ]
+      } else {
+        partners = [
+          { name: 'self', label: 'Farmer Direct Delivery', eta: 'Tomorrow', cost: 50, icon: Truck }
+        ]
+      }
+      
+      setAvailablePartners(partners)
+      setDeliveryPartner(partners[0]) // auto-select first
+      setIsSearchingPartners(false)
+    }, 1500)
+  }
+
   const fetchAddresses = async () => {
     try {
       const response = await api.get('/users/addresses')
@@ -75,8 +118,11 @@ const Checkout = () => {
     e.preventDefault()
     try {
       const response = await api.post('/users/addresses', addressForm)
-      const newAddress = response.data.data.address
-      setAddresses([...addresses, newAddress])
+      const updatedAddresses = response.data.data.addresses
+      setAddresses(updatedAddresses)
+      
+      // Select the newly added address (the last one in the array)
+      const newAddress = updatedAddresses[updatedAddresses.length - 1]
       setSelectedAddress(newAddress)
       setShowAddressForm(false)
       setAddressForm({
@@ -112,8 +158,13 @@ const Checkout = () => {
           price: item.price,
         })),
         deliveryAddress: selectedAddress,
+        deliveryPartner: deliveryPartner ? {
+          name: deliveryPartner.name,
+          estimatedTime: deliveryPartner.eta,
+          cost: deliveryPartner.cost
+        } : undefined,
         paymentMethod,
-        totalAmount: cartTotal + (cartTotal > 500 ? 0 : 50) + (cartTotal * 0.05),
+        totalAmount: cartTotal + (deliveryPartner ? deliveryPartner.cost : 50) + (cartTotal * 0.05),
       }
 
       const response = await api.post('/orders', orderData)
@@ -191,7 +242,7 @@ const Checkout = () => {
 
   if (loading) return <Loading />
 
-  const deliveryFee = cartTotal > 500 ? 0 : 50
+  const deliveryFee = deliveryPartner ? deliveryPartner.cost : (cartTotal > 500 ? 0 : 50)
   const tax = cartTotal * 0.05
   const totalAmount = cartTotal + deliveryFee + tax
 
@@ -302,6 +353,63 @@ const Checkout = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Delivery Partner Selection */}
+            {selectedAddress && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Truck className="w-5 h-5 mr-2" />
+                    Delivery Partner
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isSearchingPartners ? (
+                    <div className="py-8 flex flex-col items-center justify-center text-center space-y-4">
+                      <div className="relative">
+                        <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                        <MapPin className="absolute inset-0 m-auto w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-lg">Searching Logistics Network...</p>
+                        <p className="text-sm text-muted-foreground">Finding the fastest delivery partners for your location.</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {availablePartners.map((partner) => (
+                        <div
+                          key={partner.name}
+                          className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${deliveryPartner?.name === partner.name ? 'border-primary bg-primary/5' : 'border-border'}`}
+                          onClick={() => setDeliveryPartner(partner)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${deliveryPartner?.name === partner.name ? 'bg-primary text-primary-foreground' : 'bg-muted/20'}`}>
+                                <partner.icon className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <p className="font-bold">{partner.label}</p>
+                                <p className="text-sm text-muted-foreground">Estimated Delivery: <span className="font-semibold text-foreground">{partner.eta}</span></p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-lg">{formatPrice(partner.cost)}</p>
+                              {deliveryPartner?.name === partner.name && (
+                                <div className="flex items-center justify-end text-primary mt-1">
+                                  <Check className="w-4 h-4 mr-1" />
+                                  <span className="text-xs font-bold uppercase">Selected</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Payment Method */}
             <Card>
