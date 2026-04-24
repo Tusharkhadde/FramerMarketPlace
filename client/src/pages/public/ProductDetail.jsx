@@ -16,8 +16,8 @@ import {
   Mail,
   Leaf,
   Award,
-  TrendingUp,
   CheckCircle,
+  MessageSquare,
 } from 'lucide-react'
 import { ChronicleButton } from '@/components/chronicle-button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -115,13 +115,27 @@ const ProductDetail = () => {
     }
   }
 
-  const handleContactFarmer = () => {
+  const handleContactFarmer = async () => {
     if (!isAuthenticated) {
-      toast.error('Please login to contact farmer')
-      navigate('/login')
+      toast.error('Please login to message the farmer')
+      navigate('/login?redirect=/products/' + id)
       return
     }
-    toast.info('Contact feature coming soon')
+
+    if (user._id === product.farmer._id) {
+      toast.error("You can't message yourself!")
+      return
+    }
+
+    try {
+      await api.post('/chat/rooms', {
+        recipientId: product.farmer._id,
+        productId: product._id
+      })
+      navigate('/messages')
+    } catch (error) {
+      toast.error('Failed to initiate chat')
+    }
   }
 
   const nextImage = () => {
@@ -472,13 +486,9 @@ const ProductDetail = () => {
                     {product?.farmer?.district || product?.district}
                   </p>
                   <div className="mt-4 flex gap-4">
-                    <Button variant="outline" onClick={handleContactFarmer}>
-                      <Phone className="w-4 h-4 mr-2" />
-                      Contact
-                    </Button>
-                    <Button variant="outline">
-                      <Mail className="w-4 h-4 mr-2" />
-                      Message
+                    <Button variant="outline" onClick={handleContactFarmer} className="bg-primary/5 text-primary border-primary/20 hover:bg-primary/10 font-bold w-full">
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Message Farmer Directly
                     </Button>
                   </div>
                 </div>
