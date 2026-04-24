@@ -2,6 +2,9 @@ import APMCPrice from '../models/APMCPrice.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { sendResponse } from '../utils/apiResponse.js'
 import { linearRegression, linearRegressionLine } from 'simple-statistics'
+import { generateMarketAdvice, analyzeCropImage } from '../services/ai.service.js'
+import { ApiError } from '../utils/apiError.js'
+import fs from 'fs'
 
 // @desc    Predict future price
 // @route   POST /api/ai/predict-price
@@ -24,7 +27,7 @@ export const predictPrice = asyncHandler(async (req, res) => {
       ? historicalPrices.reduce((sum, p) => sum + p.modalPrice, 0) / historicalPrices.length
       : 2000
 
-    return sendResponse(res, 200, {
+    const predictionData = {
       commodity,
       district,
       currentPrice: avgPrice,
@@ -35,6 +38,15 @@ export const predictPrice = asyncHandler(async (req, res) => {
       ],
       method: 'average_estimation',
       dataPoints: historicalPrices.length,
+      trend: 'slight_rise'
+    }
+
+    // Add AI Advisor Narrative
+    const aiAdvisor = await generateMarketAdvice(predictionData)
+
+    return sendResponse(res, 200, {
+      ...predictionData,
+      aiAdvisor,
     }, 'Prediction generated (limited data)')
   }
 
@@ -65,16 +77,12 @@ export const predictPrice = asyncHandler(async (req, res) => {
 
   // Generate recommendation
   const shortTermTrend = predictions[0].price > currentPrice ? 'rising' : 'falling'
-  const recommendation = shortTermTrend === 'rising'
-    ? `HOLD - ${commodity} prices are expected to rise in ${district}. Consider selling after 7 days for better returns.`
-    : `SELL - ${commodity} prices may decrease in ${district}. Consider selling now to maximize returns.`
-
-  sendResponse(res, 200, {
+  
+  const predictionData = {
     commodity,
     district,
     currentPrice,
     predictions,
-    recommendation,
     trend: shortTermTrend,
     method: 'linear_regression',
     dataPoints: historicalPrices.length,
@@ -84,6 +92,15 @@ export const predictPrice = asyncHandler(async (req, res) => {
       'Seasonal demand factors',
       'Market conditions',
     ],
+  }
+
+  // Add Master AI Advisor Narrative
+  const aiAdvisor = await generateMarketAdvice(predictionData)
+
+  sendResponse(res, 200, {
+    ...predictionData,
+    aiAdvisor,
+    recommendation: aiAdvisor, // Use AI's recommendation primarily
   }, 'Prediction generated successfully')
 })
 
@@ -116,4 +133,34 @@ export const getCropRecommendations = asyncHandler(async (req, res) => {
       'Consider organic farming for premium pricing',
     ],
   }, 'Recommendations generated')
+})
+
+// @desc    Analyze crop image for health and quality
+// @route   POST /api/ai/analyze-crop
+export const analyzeCrop = asyncHandler(async (req, res, next) => {
+  if (!req.file) {
+    return next(new ApiError('No image provided', 400))
+  }
+
+  try {
+    // Read file and convert to base64
+    const imageBase64 = fs.readFileSync(req.file.path).toString('base64')
+    const mimeType = req.file.mimetype
+
+    // Call service
+    const analysis = await analyzeCropImage(imageBase64, mimeType)
+
+    // Clean up temporary file
+    fs.unlinkSync(req.file.path)
+
+    sendResponse(res, 200, { analysis }, 'Crop analysis completed')
+  } catch (error) {
+    // Clean up on error
+    if (req.file) {
+      try {
+        fs.unlinkSync(req.file.path)
+      } catch (e) {}
+    }
+    return next(new ApiError(error.message || 'Image analysis failed', 500))
+  }
 })
