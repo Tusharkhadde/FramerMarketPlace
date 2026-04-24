@@ -59,7 +59,7 @@ const emailTemplates = {
             <p>If you have any questions, feel free to reach out to our support team.</p>
           </div>
           <div class="footer">
-            <p>© 2024 Farmer Marketplace. All rights reserved.</p>
+            <p>© 2026 Farmer Marketplace. All rights reserved.</p>
             <p>Maharashtra, India</p>
           </div>
         </div>
@@ -99,7 +99,7 @@ const emailTemplates = {
             <p>If you didn't request this, please ignore this email or contact support if you have concerns.</p>
           </div>
           <div class="footer">
-            <p>© 2024 Farmer Marketplace. All rights reserved.</p>
+            <p>© 2026 Farmer Marketplace. All rights reserved.</p>
           </div>
         </div>
       </body>
@@ -153,7 +153,112 @@ const emailTemplates = {
             <a href="${process.env.CLIENT_URL}/orders/${data.orderId}" class="button">Track Order</a>
           </div>
           <div class="footer">
-            <p>© 2024 Farmer Marketplace. All rights reserved.</p>
+            <p>© 2026 Farmer Marketplace. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  }),
+
+  newChatMessage: (data) => ({
+    subject: `New Message from ${data.senderName} - Farmer Marketplace`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New Message Received</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1f2937; background-color: #f3f4f6; margin: 0; padding: 20px; }
+          .container { max-width: 550px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #f3f4f6; }
+          .header { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; padding: 30px; text-align: center; }
+          .header-icon { font-size: 32px; margin-bottom: 10px; display: block; }
+          .header-title { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+          .content { padding: 40px 30px; }
+          .greeting { font-size: 18px; margin-top: 0; color: #111827; }
+          .message-context { color: #6b7280; font-size: 15px; margin-bottom: 25px; }
+          .message-card { background: #f8fafc; border-left: 4px solid #22c55e; border-radius: 0 12px 12px 0; padding: 20px; margin: 25px 0; position: relative; }
+          .message-card::before { content: '"'; font-size: 40px; color: #cbd5e1; position: absolute; top: 10px; left: 15px; font-family: serif; line-height: 1; }
+          .message-text { color: #334155; font-size: 16px; font-style: italic; margin: 0; padding-left: 30px; line-height: 1.5; }
+          .action-container { text-align: center; margin-top: 35px; }
+          .button { display: inline-block; background: #22c55e; color: #ffffff !important; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; transition: background 0.3s ease; box-shadow: 0 4px 6px rgba(34, 197, 94, 0.2); }
+          .button:hover { background: #16a34a; }
+          .footer { text-align: center; padding: 25px; color: #9ca3af; font-size: 13px; background: #f9fafb; border-top: 1px solid #f3f4f6; }
+          .footer p { margin: 5px 0; }
+          .brand { font-weight: 600; color: #6b7280; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <span class="header-icon">💬</span>
+            <h2 class="header-title">New Message</h2>
+          </div>
+          <div class="content">
+            <p class="greeting">Hi <strong>${data.recipientName}</strong>,</p>
+            <p class="message-context"><strong>${data.senderName}</strong> sent you a direct message regarding your marketplace activity.</p>
+            
+            <div class="message-card">
+              <p class="message-text">${data.messagePreview}</p>
+            </div>
+            
+            <div class="action-container">
+              <a href="${data.chatUrl}" class="button">View Conversation</a>
+            </div>
+          </div>
+          <div class="footer">
+            <p>You're receiving this notification because you have an unread message.</p>
+            <p class="brand">© 2026 Farmer Marketplace. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  }),
+
+  newCommunityDeal: (data) => ({
+    subject: `🔥 New Community Deal: ${data.cropName}!`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1f2937; background-color: #f3f4f6; margin: 0; padding: 20px; }
+          .container { max-width: 550px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+          .header { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; padding: 30px; text-align: center; }
+          .header-title { margin: 0; font-size: 24px; font-weight: 700; }
+          .content { padding: 40px 30px; text-align: center; }
+          .deal-box { background: #f8fafc; border: 2px dashed #22c55e; border-radius: 12px; padding: 20px; margin: 25px 0; }
+          .price { font-size: 28px; font-weight: 900; color: #16a34a; }
+          .button { display: inline-block; background: #22c55e; color: #ffffff !important; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; }
+          .footer { text-align: center; padding: 25px; color: #9ca3af; font-size: 13px; background: #f9fafb; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h2 class="header-title">🤝 New Community Deal!</h2>
+          </div>
+          <div class="content">
+            <p style="font-size: 18px; margin-top: 0;"><strong>${data.farmerName}</strong> just launched a new bulk deal!</p>
+            
+            <div class="deal-box">
+              <h3 style="margin: 0 0 10px 0; font-size: 22px;">${data.cropName}</h3>
+              <p style="margin: 0 0 5px 0; text-decoration: line-through; color: #6b7280;">Regular Price: ₹${data.regularPrice}/kg</p>
+              <div class="price">Group Price: ₹${data.discountPrice}/kg</div>
+              <p style="margin: 10px 0 0 0; font-size: 14px; color: #4b5563;">Goal: ${data.targetQuantity}kg</p>
+            </div>
+            
+            <p style="margin-bottom: 25px; color: #4b5563;">Join forces with other buyers to unlock this wholesale discount. You won't be charged unless the goal is reached!</p>
+            
+            <a href="${data.dealUrl}" class="button">View & Join Deal</a>
+          </div>
+          <div class="footer">
+            <p>You received this email because you are registered as a buyer.</p>
+            <p>© 2026 Farmer Marketplace. All rights reserved.</p>
           </div>
         </div>
       </body>
