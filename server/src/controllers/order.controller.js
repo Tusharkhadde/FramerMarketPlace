@@ -19,7 +19,8 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     paymentMethod,
     paymentDetails,
     notes,
-    useEscrow = false
+    useEscrow = false,
+    deliveryPartner
   } = req.body
 
   if (!items || items.length === 0) {
@@ -95,6 +96,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
       date: deliverySchedule?.date ? new Date(deliverySchedule.date) : undefined,
       timeSlot: deliverySchedule?.timeSlot,
     },
+    deliveryPartner,
     pricing: {
       subtotal,
       deliveryCharges,
