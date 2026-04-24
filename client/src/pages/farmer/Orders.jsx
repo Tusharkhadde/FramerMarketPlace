@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Package,
@@ -11,6 +12,7 @@ import {
   MapPin,
   Calendar,
   Filter,
+  MessageSquare,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -46,6 +48,7 @@ import {
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import orderService from '@/services/order.service'
+import api from '@/config/api'
 import { formatPrice, formatDate, cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -88,6 +91,7 @@ const FarmerOrders = () => {
   const [newStatus, setNewStatus] = useState('')
   const [statusNote, setStatusNote] = useState('')
   const [updating, setUpdating] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetchOrders()
@@ -126,6 +130,18 @@ const FarmerOrders = () => {
       toast.error(error.response?.data?.message || 'Failed to update status')
     } finally {
       setUpdating(false)
+    }
+  }
+
+  const handleContactBuyer = async (buyerId, productId) => {
+    try {
+      await api.post('/chat/rooms', {
+        recipientId: buyerId,
+        productId: productId
+      })
+      navigate('/messages')
+    } catch (error) {
+      toast.error('Failed to initiate chat')
     }
   }
 
@@ -356,11 +372,20 @@ const FarmerOrders = () => {
                     <div className="flex items-center gap-4 mt-2">
                       <a
                         href={`tel:${selectedOrder.buyer?.phone}`}
-                        className="text-sm text-farmer-600 flex items-center"
+                        className="text-sm text-farmer-600 flex items-center hover:underline"
                       >
                         <Phone className="w-3 h-3 mr-1" />
                         {selectedOrder.buyer?.phone}
                       </a>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 text-xs text-primary hover:text-primary hover:bg-primary/10"
+                        onClick={() => handleContactBuyer(selectedOrder.buyer?._id, selectedOrder.items?.[0]?.product || selectedOrder.items?.[0]?.productSnapshot?._id)}
+                      >
+                        <MessageSquare className="w-3 h-3 mr-1" />
+                        Message
+                      </Button>
                     </div>
                   </div>
                   <Badge className={statusConfig[selectedOrder.orderStatus]?.color}>
