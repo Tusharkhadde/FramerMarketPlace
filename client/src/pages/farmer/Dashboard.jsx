@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -114,6 +114,29 @@ const FarmerDashboard = () => {
     return data
   }
 
+  const profileProgress = useMemo(() => {
+    if (!user) return { score: 0, missing: [] }
+    let score = 20
+    let missing = []
+
+    if (user.phone) score += 15
+    else missing.push({ field: 'Phone Number', points: 15 })
+
+    if (user.district && user.taluka && user.village) score += 20
+    else missing.push({ field: 'Location Details', points: 20 })
+
+    if (user.farmSize) score += 15
+    else missing.push({ field: 'Farm Size', points: 15 })
+
+    if (user.avatar?.url) score += 15
+    else missing.push({ field: 'Profile Photo', points: 15 })
+
+    if (user.addresses && user.addresses.length > 0) score += 15
+    else missing.push({ field: 'Delivery Address', points: 15 })
+
+    return { score, missing }
+  }, [user])
+
   const statCards = [
     {
       title: 'Total Products',
@@ -179,6 +202,70 @@ const FarmerDashboard = () => {
           Add New Product
         </Button>
       </div>
+
+      {/* Profile Completion Tracker */}
+      {profileProgress.score < 100 && (
+        <Card className="rounded-[2rem] border border-farmer-500/20 bg-gradient-to-r from-background to-farmer-500/5 shadow-lg overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="flex-1 w-full space-y-2">
+                <div className="flex justify-between items-end">
+                  <div>
+                    <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                      Profile Completion
+                      <Badge variant="outline" className="text-xs bg-farmer-500/10 text-farmer-700 border-farmer-500/20">
+                        {profileProgress.score}%
+                      </Badge>
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Complete your profile to build trust with buyers and unlock all features.
+                    </p>
+                  </div>
+                </div>
+                <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-farmer-400 to-farmer-600 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${profileProgress.score}%` }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                  />
+                </div>
+              </div>
+              
+              <div className="w-full md:w-auto bg-card rounded-xl p-4 border border-border shadow-sm flex flex-col gap-3 min-w-[250px]">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Next Steps:</p>
+                {profileProgress.missing.slice(0, 2).map((item, i) => (
+                  <div key={i} className="flex justify-between items-center text-sm">
+                    <span className="font-medium flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-farmer-500" />
+                      Add {item.field}
+                    </span>
+                    <span className="text-farmer-600 font-bold">+{item.points}%</span>
+                  </div>
+                ))}
+                <Button 
+                  className="w-full mt-1 bg-farmer-600 hover:bg-farmer-700 text-white rounded-lg shadow-md"
+                  onClick={() => navigate('/farmer/settings')}
+                >
+                  Complete Profile
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {profileProgress.score === 100 && (
+        <div className="flex items-center gap-3 bg-gradient-to-r from-green-500/10 to-transparent p-4 rounded-[1.5rem] border border-green-500/20">
+          <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white shadow-lg">
+            <CheckCircle className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="font-bold text-green-700 dark:text-green-400">All-Star Farmer 🌟</h3>
+            <p className="text-sm text-muted-foreground">Your profile is 100% complete! Buyers love verified sellers.</p>
+          </div>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
