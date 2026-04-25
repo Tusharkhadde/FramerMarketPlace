@@ -173,6 +173,10 @@ export const createOrder = asyncHandler(async (req, res, next) => {
             quantity: item.quantity,
             subtotal: item.subtotal,
           })),
+        buyerName: req.user.fullName,
+        buyerEmail: req.user.email,
+        buyerPhone: req.user.phone,
+        deliveryAddress: `${deliveryAddress.addressLine1}, ${deliveryAddress.district}`,
       },
     }).catch(err => console.error(`Farmer email failed (${farmerId}):`, err))
 
