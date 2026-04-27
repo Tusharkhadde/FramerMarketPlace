@@ -34,7 +34,7 @@ const FarmerDeals = () => {
       setLoading(true)
       const [dealsRes, productsRes] = await Promise.all([
         api.get('/group-buys/farmer/me'),
-        api.get('/products/farmer/me')
+        api.get('/products/my/products')
       ])
       
       setDeals(dealsRes.data.data.deals)
@@ -194,7 +194,7 @@ const FarmerDeals = () => {
                   <SelectTrigger>
                     <SelectValue placeholder="Select a product from your inventory" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" className="z-[9999]">
                     {products.map(p => (
                       <SelectItem key={p._id} value={p._id}>
                         {p.cropName} (Reg: {formatPrice(p.pricePerKg)}) - {p.quantityAvailable}kg available

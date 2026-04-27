@@ -37,6 +37,7 @@ import Messages from '@/pages/shared/Messages'
 import FarmerDashboard from '@/pages/farmer/Dashboard'
 import FarmerProducts from '@/pages/farmer/Products'
 import AddProduct from '@/pages/farmer/AddProduct'
+import EditProduct from '@/pages/farmer/EditProduct'
 import FarmerOrdersPage from '@/pages/farmer/Orders'
 import MarketPrices from '@/pages/farmer/MarketPrices'
 import FarmerProfile from '@/pages/farmer/Profile'
@@ -176,6 +177,7 @@ function App() {
                 <Route path="dashboard" element={<FarmerDashboard />} />
                 <Route path="products" element={<FarmerProducts />} />
                 <Route path="products/add" element={<AddProduct />} />
+                <Route path="products/edit/:id" element={<EditProduct />} />
                 <Route path="orders" element={<FarmerOrdersPage />} />
                 <Route path="market-prices" element={<MarketPrices />} />
                 <Route path="analytics" element={<FarmerAnalytics />} />
