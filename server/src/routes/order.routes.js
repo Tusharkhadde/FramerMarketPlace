@@ -4,6 +4,7 @@ import {
   getMyOrders,
   getOrderById,
   cancelOrder,
+  farmerCancelOrder,
   getFarmerOrders,
   updateOrderStatus,
   getFarmerRecentOrders,
@@ -27,6 +28,7 @@ router.patch('/:id/release-escrow', authorize('buyer'), releaseEscrow)
 router.get('/farmer/orders', authorize('farmer'), getFarmerOrders)
 router.get('/farmer/recent', authorize('farmer'), getFarmerRecentOrders)
 router.get('/farmer/stats', authorize('farmer'), getFarmerOrderStats)
+router.patch('/:id/farmer-cancel', authorize('farmer'), farmerCancelOrder)
 router.patch('/:id/status', authorize('farmer', 'admin'), updateOrderStatus)
 
 // Common routes
