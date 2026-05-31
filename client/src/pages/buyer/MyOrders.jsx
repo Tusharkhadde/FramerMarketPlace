@@ -13,7 +13,8 @@ import {
   MapPin,
   ShieldCheck,
   ShieldAlert,
-  Lock
+  Lock,
+  AlertTriangle
 } from 'lucide-react'
 import {
   Dialog,
@@ -39,6 +40,7 @@ import Loading from '@/components/shared/Loading'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
 const MyOrders = () => {
   const navigate = useNavigate()
   const [orders, setOrders] = useState([])
@@ -46,6 +48,8 @@ const MyOrders = () => {
   const [filter, setFilter] = useState('all')
   const [dateFilter, setDateFilter] = useState(null)
   const [orderToCancel, setOrderToCancel] = useState(null)
+  const [cancelReason, setCancelReason] = useState('')
+  const [isCancelling, setIsCancelling] = useState(false)
   const [isReleasingEscrow, setIsReleasingEscrow] = useState(false)
 
   useEffect(() => {
@@ -73,15 +77,18 @@ const MyOrders = () => {
 
   const handleCancelOrder = async () => {
     if (!orderToCancel) return
+    setIsCancelling(true)
     try {
-      await api.patch(`/orders/${orderToCancel._id}/cancel`)
+      await api.patch(`/orders/${orderToCancel._id}/cancel`, { reason: cancelReason })
       toast.success('Order cancelled successfully')
       fetchOrders()
     } catch (error) {
       console.error('Error cancelling order:', error)
-      toast.error('Failed to cancel order')
+      toast.error(error.response?.data?.message || 'Failed to cancel order')
     } finally {
       setOrderToCancel(null)
+      setCancelReason('')
+      setIsCancelling(false)
     }
   }
 
@@ -195,22 +202,34 @@ const MyOrders = () => {
         )}
 
         {/* Cancel Order Dialog */}
-        <Dialog open={!!orderToCancel} onOpenChange={() => setOrderToCancel(null)}>
+        <Dialog open={!!orderToCancel} onOpenChange={(open) => { if (!open) { setOrderToCancel(null); setCancelReason('') } }}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Cancel Order</DialogTitle>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+                Cancel Order
+              </DialogTitle>
               <DialogDescription>
                 Are you sure you want to cancel order #
-                {orderToCancel?.orderNumber || orderToCancel?._id.slice(-8)}?
+                {orderToCancel?.orderNumber || orderToCancel?._id?.slice(-8)}?
                 This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Reason for cancellation (optional)</label>
+              <Textarea
+                placeholder="Please provide a reason for cancellation..."
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                rows={3}
+              />
+            </div>
             <DialogFooter className="gap-2 sm:gap-0">
-              <Button variant="outline" onClick={() => setOrderToCancel(null)}>
+              <Button variant="outline" onClick={() => { setOrderToCancel(null); setCancelReason('') }}>
                 No, Keep Order
               </Button>
-              <Button variant="destructive" onClick={handleCancelOrder}>
-                Yes, Cancel Order
+              <Button variant="destructive" onClick={handleCancelOrder} disabled={isCancelling}>
+                {isCancelling ? 'Cancelling...' : 'Yes, Cancel Order'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -437,14 +456,14 @@ const OrderCard = ({ order, onCancel, onReleaseEscrow, isReleasing }) => {
               </DrawerContent>
             </Drawer>
 
-            {order.status === 'delivered' && (
+            {(order.orderStatus || order.status) === 'delivered' && (
               <Button className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-md">
                 <Star className="w-4 h-4 mr-2" />
                 Rate & Review
               </Button>
             )}
 
-            {order.status === 'pending' && (
+            {!['shipped', 'delivered', 'cancelled'].includes(order.orderStatus || order.status) && (
               <Button
                 variant="destructive"
                 className="flex-1 rounded-xl shadow-md"
