@@ -65,18 +65,18 @@ const statusConfig = {
 const statusActions = {
   confirmed: [
     { value: 'processing', label: 'Start Processing' },
-    { value: 'cancelled', label: 'Cancel' },
   ],
   processing: [
     { value: 'packed', label: 'Mark as Packed' },
-    { value: 'cancelled', label: 'Cancel' },
   ],
   packed: [
     { value: 'shipped', label: 'Mark as Shipped' },
-    { value: 'cancelled', label: 'Cancel' },
   ],
   shipped: [{ value: 'delivered', label: 'Mark as Delivered' }],
 }
+
+// Statuses that allow cancellation by farmer
+const cancellableStatuses = ['confirmed', 'processing', 'packed']
 
 const FarmerOrders = () => {
   const [orders, setOrders] = useState([])
@@ -88,6 +88,10 @@ const FarmerOrders = () => {
   })
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false)
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+  const [cancelReason, setCancelReason] = useState('')
+  const [orderToCancel, setOrderToCancel] = useState(null)
+  const [cancelling, setCancelling] = useState(false)
   const [newStatus, setNewStatus] = useState('')
   const [statusNote, setStatusNote] = useState('')
   const [updating, setUpdating] = useState(false)
@@ -143,6 +147,29 @@ const FarmerOrders = () => {
     } catch (error) {
       toast.error('Failed to initiate chat')
     }
+  }
+
+  const handleCancelOrder = async () => {
+    if (!orderToCancel) return
+    setCancelling(true)
+    try {
+      await orderService.farmerCancelOrder(orderToCancel._id, cancelReason)
+      toast.success('Order cancelled successfully')
+      setCancelDialogOpen(false)
+      setOrderToCancel(null)
+      setCancelReason('')
+      fetchOrders(pagination.currentPage)
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to cancel order')
+    } finally {
+      setCancelling(false)
+    }
+  }
+
+  const openCancelDialog = (order) => {
+    setOrderToCancel(order)
+    setCancelDialogOpen(true)
+    setCancelReason('')
   }
 
   const getOrderStats = () => {
@@ -300,6 +327,15 @@ const FarmerOrders = () => {
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
+                          {cancellableStatuses.includes(order.orderStatus) && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => openCancelDialog(order)}
+                            >
+                              Cancel
+                            </Button>
+                          )}
                           {statusActions[order.orderStatus] && (
                             <Button
                               variant="outline"
@@ -472,6 +508,52 @@ const FarmerOrders = () => {
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Order Dialog */}
+      <Dialog open={cancelDialogOpen} onOpenChange={(open) => { if (!open) { setCancelDialogOpen(false); setOrderToCancel(null); setCancelReason('') } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <XCircle className="w-5 h-5 text-red-500" />
+              Cancel Order
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel order #{orderToCancel?.orderNumber}?
+              The buyer will be notified and product quantities will be restored.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Reason for cancellation (required)</label>
+            <Textarea
+              placeholder="Please provide a reason for cancellation (e.g., out of stock, unable to deliver)..."
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCancelDialogOpen(false)
+                setOrderToCancel(null)
+                setCancelReason('')
+              }}
+            >
+              Go Back
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelOrder}
+              disabled={cancelling}
+            >
+              {cancelling ? 'Cancelling...' : 'Confirm Cancellation'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
