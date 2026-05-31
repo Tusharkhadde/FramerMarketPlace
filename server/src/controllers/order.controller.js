@@ -287,6 +287,10 @@ export const cancelOrder = asyncHandler(async (req, res, next) => {
     return next(new ApiError('Cannot cancel order at this stage', 400))
   }
 
+  if (order.orderStatus === 'cancelled') {
+    return next(new ApiError('Order is already cancelled', 400))
+  }
+
   // Restore product quantities
   for (const item of order.items) {
     await Product.findByIdAndUpdate(item.product, {
@@ -296,9 +300,116 @@ export const cancelOrder = asyncHandler(async (req, res, next) => {
   }
 
   order.orderStatus = 'cancelled'
-  order.cancellationReason = reason
+  order.cancellationReason = reason || 'Cancelled by buyer'
   order.cancelledBy = 'buyer'
   await order.save()
+
+  // Populate for response
+  await order.populate([
+    { path: 'buyer', select: 'fullName email phone' },
+    { path: 'items.farmer', select: 'fullName email phone' },
+  ])
+
+  // Notify farmers about cancellation (Background)
+  const farmerIds = [...new Set(order.items.map((item) => item.farmer.toString()))]
+  Promise.all(farmerIds.map(async (farmerId) => {
+    const farmer = await User.findById(farmerId)
+    if (!farmer) return
+
+    // Email
+    sendEmail({
+      email: farmer.email,
+      subject: `Order Cancelled - #${order.orderNumber}`,
+      template: 'orderStatusUpdate',
+      data: {
+        farmerName: farmer.fullName,
+        orderNumber: order.orderNumber,
+        status: 'Cancelled',
+        note: `Order has been cancelled by the buyer. Reason: ${reason || 'No reason provided'}`,
+      },
+    }).catch(err => console.error(`Farmer cancellation email failed (${farmerId}):`, err))
+
+    // Real-time Notification
+    notificationService.createNotification({
+      recipient: farmerId,
+      type: 'order',
+      title: 'Order Cancelled ❌',
+      content: `Order #${order.orderNumber} has been cancelled by the buyer. Reason: ${reason || 'No reason provided'}`,
+      link: `/farmer/orders`,
+      sendSMS: true,
+      phone: farmer.phone
+    }).catch(err => console.error(`Farmer cancellation notification failed (${farmerId}):`, err))
+  })).catch(err => console.error('Farmer cancellation notifications loop error:', err))
+
+  sendResponse(res, 200, { order }, 'Order cancelled successfully')
+})
+
+// @desc    Farmer cancel order
+// @route   PATCH /api/orders/:id/farmer-cancel
+// @access  Private (Farmer)
+export const farmerCancelOrder = asyncHandler(async (req, res, next) => {
+  const { reason } = req.body
+  const order = await Order.findById(req.params.id)
+    .populate('buyer', 'fullName email phone')
+    .populate('items.farmer', 'fullName email phone')
+
+  if (!order) {
+    return next(new ApiError('Order not found', 404))
+  }
+
+  // Check if farmer owns items in this order
+  const isFarmer = order.items.some(
+    (item) => item.farmer._id.toString() === req.user.id
+  )
+
+  if (!isFarmer) {
+    return next(new ApiError('Not authorized', 403))
+  }
+
+  // Can only cancel if not shipped or delivered
+  if (['shipped', 'delivered'].includes(order.orderStatus)) {
+    return next(new ApiError('Cannot cancel order at this stage. Order is already shipped/delivered.', 400))
+  }
+
+  if (order.orderStatus === 'cancelled') {
+    return next(new ApiError('Order is already cancelled', 400))
+  }
+
+  // Restore product quantities
+  for (const item of order.items) {
+    await Product.findByIdAndUpdate(item.product, {
+      $inc: { quantityAvailable: item.quantity },
+      isAvailable: true,
+    })
+  }
+
+  order.orderStatus = 'cancelled'
+  order.cancellationReason = reason || 'Cancelled by farmer'
+  order.cancelledBy = 'farmer'
+  await order.save()
+
+  // Notify buyer about cancellation (Background)
+  sendEmail({
+    email: order.buyer.email,
+    subject: `Order Cancelled by Farmer - #${order.orderNumber}`,
+    template: 'orderStatusUpdate',
+    data: {
+      buyerName: order.buyer.fullName,
+      orderNumber: order.orderNumber,
+      status: 'Cancelled',
+      note: `Your order has been cancelled by the farmer. Reason: ${reason || 'No reason provided'}. ${order.paymentMethod === 'online' ? 'If you made an online payment, refund will be processed shortly.' : ''}`,
+    },
+  }).catch(err => console.error('Buyer cancellation email failed:', err))
+
+  notificationService.createNotification({
+    recipient: order.buyer._id,
+    type: 'order',
+    title: 'Order Cancelled by Farmer ❌',
+    content: `Your order #${order.orderNumber} has been cancelled by the farmer. Reason: ${reason || 'No reason provided'}. ${order.paymentMethod === 'online' ? 'Refund will be processed if applicable.' : ''}`,
+    link: `/orders/${order._id}`,
+    sendSMS: true,
+    phone: order.buyer.phone
+  }).catch(err => console.error('Buyer cancellation notification failed:', err))
 
   sendResponse(res, 200, { order }, 'Order cancelled successfully')
 })
@@ -368,9 +479,9 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
   }
 
   const validTransitions = {
-    confirmed: ['processing', 'cancelled'],
-    processing: ['packed', 'cancelled'],
-    packed: ['shipped', 'cancelled'],
+    confirmed: ['processing'],
+    processing: ['packed'],
+    packed: ['shipped'],
     shipped: ['delivered'],
     delivered: [],
     cancelled: [],
