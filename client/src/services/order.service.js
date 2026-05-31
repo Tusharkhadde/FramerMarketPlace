@@ -33,6 +33,12 @@ const orderService = {
     return response.data
   },
 
+  // Farmer cancel order
+  farmerCancelOrder: async (orderId, reason) => {
+    const response = await api.patch(`/orders/${orderId}/farmer-cancel`, { reason })
+    return response.data
+  },
+
   // Update order status (for farmers)
   updateOrderStatus: async (orderId, status, note) => {
     const response = await api.patch(`/orders/${orderId}/status`, { status, note })
